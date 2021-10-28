@@ -92,6 +92,8 @@ deploy-job:
     stage: deploy 
     image: alpine
     tags: ['matpay']
+    only:
+        - main
     before_script:
         - apk add openssh-client
         - eval $(ssh-agent -s)
