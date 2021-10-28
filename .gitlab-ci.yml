@@ -1,0 +1,102 @@
+# This file is a template, and might need editing before it works on your project.
+# To contribute improvements to CI/CD templates, please follow the Development guide at:
+# https://docs.gitlab.com/ee/development/cicd/templates.html
+# This specific template is located at:
+# https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Getting-Started.gitlab-ci.yml
+
+# This is a sample GitLab CI/CD configuration file that should run without any modifications.
+# It demonstrates a basic 3 stage CI/CD pipeline. Instead of real tests or scripts,
+# it uses echo commands to simulate the pipeline execution.
+#
+# A pipeline is composed of independent jobs that run scripts, grouped into stages.
+# Stages run in sequential order, but jobs within stages run in parallel.
+#
+# For more information, see: https://docs.gitlab.com/ee/ci/yaml/index.html#stages
+stages: 
+    - dependencies 
+    - test       
+    - build
+    - deploy
+
+install_dependencies:
+    image: node:16-alpine
+    stage: dependencies
+    tags: ['docker']
+    only:
+        - main
+    script: 
+        - npm install
+    cache:
+        key: 
+            files:
+                - package-lock.json
+        paths:
+            - node_modules
+
+test:
+    image: node:16-alpine
+    stage: test
+    tags: ['docker']
+    only:
+        - main
+    script: 
+        - npm install -g @vue/cli
+        - npm run test:unit
+    cache:
+        key: 
+            files:
+                - package-lock.json
+        paths:
+            - node_modules
+        policy: pull
+
+lint:
+    image: node:16-alpine
+    stage: test
+    tags: ['docker']
+    only:
+        - main
+    script: 
+        - npm install -g @vue/cli
+        - npm run lint
+    cache:
+        key: 
+            files:
+                - package-lock.json
+        paths:
+            - node_modules
+        policy: pull
+
+build-frontend: 
+    stage: build
+    image: node:16-alpine
+    tags: ['docker']
+    only:
+        - main
+    script:
+        - npm install -g @vue/cli
+        - npm run build 
+    artifacts:
+        paths:
+            - $CI_PROJECT_DIR/dist
+    cache:
+        key: 
+            files:
+                - package-lock.json
+        paths:
+            - node_modules
+        policy: pull
+
+
+deploy-job:     
+    stage: deploy 
+    image: alpine
+    tags: ['docker']
+    before_script:
+        - apk add openssh-client
+        - eval $(ssh-agent -s)
+        - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+        - mkdir -p ~/.ssh
+        - chmod 700 ~/.ssh
+    script:
+        - scp -o StrictHostKeyChecking=no -r dist/* uploader@tes.dsn.kastel.kit.edu:/srv/www/matpay/
