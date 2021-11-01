@@ -20,7 +20,7 @@
         </ul>
         <ul class="navbar-nav ml-auto mb-2 mb-lg-0">
           <li class="nav-item">
-            <label aria-current="page" class="nav-link" v-if="is_logged_in">{{ this.username }}</label>
+            <label aria-current="page" class="nav-link" v-if="this.is_logged_in">{{ this.user_id }}</label>
           </li>
           <li class="nav-item">
             <router-link active-class="active" to="/login" v-if="!this.is_logged_in" class="nav-link"
@@ -38,26 +38,25 @@
 </template>
 <script lang="ts">
 import { defineComponent } from 'vue'
+import { mapGetters } from 'vuex'
 
 export default defineComponent({
   name: 'App',
   data () {
     return {
-      is_logged_in: false as boolean,
-      username: '' as string
     }
+  },
+  computed: {
+    ...mapGetters('auth', [
+      'is_logged_in',
+      'user_id',
+      'homeserver'
+    ])
   },
   methods: {
-    updateNavBarLogin () {
-      this.is_logged_in = !!localStorage.getItem('access_token')
-      this.username = localStorage.getItem('user_id') || ''
-    },
     logout () {
-      console.log('implement logout here.')
+      console.log('logout')
     }
-  },
-  created () {
-    this.updateNavBarLogin()
   }
 })
 </script>

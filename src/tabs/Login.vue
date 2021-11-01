@@ -29,18 +29,8 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import axios from 'axios'
-
-interface GETLoginResponse {
-  flows: [{
-    type: string
-  }]
-}
-
-interface POSTLoginResponse {
-  user_id: string,
-  access_token: string,
-  device_id: string
-}
+import { GETLoginResponse, POSTLoginResponse } from '@/interface/login.interface'
+import { mapGetters } from 'vuex'
 
 export default defineComponent({
   name: 'Login',
@@ -51,6 +41,11 @@ export default defineComponent({
       password: '' as string,
       error: '' as string
     }
+  },
+  computed: {
+    ...mapGetters('auth', [
+      'device_id'
+    ])
   },
   methods: {
     login () {
@@ -70,7 +65,7 @@ export default defineComponent({
                 user: this.username
               },
               password: this.password,
-              device_id: localStorage.getItem('device_id') || undefined
+              device_id: this.device_id
             }, {
               validateStatus: () => true // Always resolve unless we throw an error manually
             })
@@ -79,10 +74,12 @@ export default defineComponent({
         .then(response => {
           console.log(response)
           if (response.status === 200) {
-            localStorage.setItem('user_id', response.data.user_id)
-            localStorage.setItem('access_token', response.data.access_token)
-            localStorage.setItem('device_id', response.data.device_id)
-            localStorage.setItem('homeserver', this.homeserver)
+            this.$store.commit('auth/mutation_login', {
+              user_id: response.data.user_id,
+              access_token: response.data.access_token,
+              device_id: response.data.device_id,
+              homeserver: this.homeserver
+            })
             this.$router.push('/rooms')
           } else {
             throw new Error('Authentication failed!')
