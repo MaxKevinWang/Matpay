@@ -1,5 +1,7 @@
 <template>
-
+<div>
+  Rooms here.
+</div>
 </template>
 
 <script lang="ts">
