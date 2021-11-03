@@ -9,10 +9,10 @@ export const auth_store = {
   namespaced: true,
   state () : State {
     return {
-      user_id: '' as string,
-      homeserver: '' as string,
-      access_token: '' as string,
-      device_id: '' as string
+      user_id: localStorage.getItem('user_id') || '',
+      homeserver: localStorage.getItem('homeserver') || '',
+      access_token: localStorage.getItem('access_token') || '',
+      device_id: localStorage.getItem('device_id') || ''
     }
   },
   mutations: {
@@ -29,6 +29,7 @@ export const auth_store = {
     mutation_logout (state: State) : void {
       state.access_token = ''
       localStorage.removeItem('access_token')
+      localStorage.removeItem('user_id')
     }
   },
   actions: {

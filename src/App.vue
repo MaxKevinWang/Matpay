@@ -22,11 +22,12 @@
           <li class="nav-item">
             <label aria-current="page" class="nav-link" v-if="this.is_logged_in">{{ this.user_id }}</label>
           </li>
-          <li class="nav-item">
-            <router-link active-class="active" to="/login" v-if="!this.is_logged_in" class="nav-link"
+          <li id="login_logout_button" class="nav-item">
+            <router-link id="login_button" active-class="active" to="/login" v-if="!this.is_logged_in" class="nav-link"
                          aria-current="page">Login
             </router-link>
-            <button @click="logout()" v-if="this.is_logged_in" type="button" class="btn btn-light nav-link"
+            <button id="logout_button" @click="logout()" v-if="this.is_logged_in" type="button"
+                    class="btn btn-light nav-link"
                     aria-current="page">Logout
             </button>
           </li>
@@ -39,12 +40,12 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { mapGetters } from 'vuex'
+import axios from 'axios'
 
 export default defineComponent({
   name: 'App',
   data () {
-    return {
-    }
+    return {}
   },
   computed: {
     ...mapGetters('auth', [
@@ -55,7 +56,11 @@ export default defineComponent({
   },
   methods: {
     logout () {
-      console.log('logout')
+      axios.post(`${this.homeserver}/_matrix/client/r0/logout`)
+        .then(() => {
+          this.$store.commit('auth/mutation_logout')
+          this.$router.push('/login')
+        })
     }
   }
 })
