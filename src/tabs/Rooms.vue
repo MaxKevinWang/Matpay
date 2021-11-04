@@ -32,8 +32,8 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-interface RoomInterface {
-  id: number
+interface RoomTableRow {
+  id: string
   name: string
   member_count: number
   user_type: string
@@ -45,18 +45,37 @@ export default defineComponent({
     return {
       rooms: [
         {
-          id: 1234,
+          id: '1234',
           name: 'xxxx',
           member_count: 0,
           user_type: 'admin'
         }
-      ] as RoomInterface[]
+      ] as RoomTableRow[]
     }
   },
   computed: {
     room_exists (): boolean {
       return !!this.rooms && this.rooms.length > 0
     }
+  },
+  methods: {
+    updateRoomTable () {
+      this.$store.dispatch('rooms/action_get_joined_rooms')
+        .then((response: { joined_rooms: [string] }) => {
+          // first only list id
+          this.rooms = response.joined_rooms.map(room => {
+            return {
+              id: room.split(':')[0].substring(1),
+              name: '',
+              member_count: 0,
+              user_type: ''
+            }
+          })
+        })
+    }
+  },
+  created () {
+    this.updateRoomTable()
   }
 })
 

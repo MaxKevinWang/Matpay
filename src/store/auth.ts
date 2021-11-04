@@ -1,3 +1,5 @@
+import { ActionTree, GetterTree, MutationTree } from 'vuex'
+
 interface State {
   user_id: string
   homeserver: string
@@ -15,8 +17,8 @@ export const auth_store = {
       device_id: localStorage.getItem('device_id') || ''
     }
   },
-  mutations: {
-    mutation_login (state: State, payload: State) : void {
+  mutations: <MutationTree<State>>{
+    mutation_login (state, payload: State) : void {
       state.user_id = payload.user_id
       state.homeserver = payload.homeserver
       state.access_token = payload.access_token
@@ -32,9 +34,9 @@ export const auth_store = {
       localStorage.removeItem('user_id')
     }
   },
-  actions: {
+  actions: <ActionTree<State, any>>{
   },
-  getters: {
+  getters: <GetterTree<State, any>>{
     device_id (state : State) : string | undefined {
       return state.device_id === '' ? undefined : state.device_id
     },
