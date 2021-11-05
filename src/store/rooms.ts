@@ -21,6 +21,7 @@ export const rooms_store = {
   },
   mutations: <MutationTree<State>>{
     mutation_set_joined_rooms (state: State, payload: { joined_rooms: string[] }) {
+      state.joined_room_state_events = {} // clear state before setting new rooms
       for (const room of payload.joined_rooms) {
         state.joined_room_state_events[room] = []
       }

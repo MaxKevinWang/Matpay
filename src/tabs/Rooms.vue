@@ -90,7 +90,7 @@ export default defineComponent({
             const name_event: MatrixRoomStateEvent = room.state_event.filter(
               event => event.type === 'm.room.name'
             )[0]
-            current_room.name = name_event.content.name ? name_event.content.name as string : 'No name available.'
+            current_room.name = name_event ? name_event.content.name as string : '<NO NAME>'
             // count room members: state event 'm.room.member' AND content.membership === join
             const member_join_event: MatrixRoomStateEvent[] = room.state_event.filter(
               event => event.type === 'm.room.member' && event.content.membership as string === 'join'
