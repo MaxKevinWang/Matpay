@@ -24,7 +24,7 @@
         <td>{{ room.member_count }}</td>
         <td>{{ room.user_type }}</td>
         <td>
-          <button class="btn btn-primary" @click="joinRoom(room.room_id)">Details</button>
+          <button class="btn btn-primary" @click="enter_room_detail(room.room_id)">Details</button>
         </td>
       </tr>
       </tbody>
@@ -109,6 +109,14 @@ export default defineComponent({
             this.is_loading = false
           }
         })
+    },
+    enter_room_detail (room_id: string) {
+      this.$router.push({
+        name: 'room_detail',
+        params: {
+          room_id: room_id
+        }
+      })
     }
   },
   created () {
