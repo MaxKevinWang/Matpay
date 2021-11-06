@@ -67,7 +67,7 @@ export default defineComponent({
     ])
   },
   methods: {
-    updateRoomTable () {
+    update_room_table () {
       this.$store.dispatch('rooms/action_get_joined_rooms')
         .then((response: { joined_rooms: [string] }) => {
           // first only list id
@@ -120,7 +120,7 @@ export default defineComponent({
     }
   },
   created () {
-    this.updateRoomTable()
+    this.update_room_table()
   }
 })
 
