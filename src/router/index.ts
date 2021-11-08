@@ -7,17 +7,17 @@ import RoomDetail from '@/views/RoomDetail.vue'
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    name: 'Home',
+    name: 'home',
     component: Home
   },
   {
     path: '/login',
-    name: 'Login',
+    name: 'login',
     component: Login
   },
   {
     path: '/rooms',
-    name: 'Room',
+    name: 'rooms',
     component: Rooms
   },
   {

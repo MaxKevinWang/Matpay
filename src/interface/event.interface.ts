@@ -16,3 +16,15 @@ export interface MatrixRoomStateEvent extends MatrixEvent {
   state_key: string,
   prev_content: Record<string, unknown>
 }
+
+export interface MatrixRoomMemberStateEvent extends MatrixRoomStateEvent {
+  type: 'm.room.member',
+  content: {
+    avatar_url: string,
+    displayname: string | null,
+    membership: 'join' | 'invite' | 'leave' | 'ban' | 'knock'
+    third_party_invite?: {
+      display_name: string
+    }
+  }
+}

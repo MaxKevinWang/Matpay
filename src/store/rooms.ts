@@ -1,14 +1,14 @@
 import { GETJoinedRoomsResponse } from '@/interface/rooms.interface'
 import axios from 'axios'
 import { ActionTree, GetterTree, MutationTree } from 'vuex'
-import { MatrixRoomStateEvent } from '@/interface/event.interface'
+import { MatrixRoomMemberStateEvent, MatrixRoomStateEvent } from '@/interface/event.interface'
 
 interface State {
   joined_room_state_events: Record<string, MatrixRoomStateEvent[]>,
 }
 
 type RoomState = {
-  room: string,
+  room_id: string,
   state_event: MatrixRoomStateEvent[]
 }
 type RoomStatePromise = Promise<RoomState>
@@ -27,8 +27,8 @@ export const rooms_store = {
       }
     },
     mutation_set_state_event_for_joined_room (state: State,
-      payload: { room: string, state_event: MatrixRoomStateEvent[] }) {
-      state.joined_room_state_events[payload.room] = payload.state_event
+      payload: { room_id: string, state_event: MatrixRoomStateEvent[] }) {
+      state.joined_room_state_events[payload.room_id] = payload.state_event
     }
   },
   actions: <ActionTree<State, any>>{
@@ -48,7 +48,7 @@ export const rooms_store = {
           })
       })
     },
-    action_get_joined_room_state_events ({
+    action_get_all_joined_room_state_events ({
       state,
       commit,
       rootGetters
@@ -60,11 +60,11 @@ export const rooms_store = {
           axios.get<MatrixRoomStateEvent[]>(`${homeserver}/_matrix/client/r0/rooms/${room}/state`)
             .then(response => {
               commit('mutation_set_state_event_for_joined_room', {
-                room,
+                room_id: room,
                 state_event: response.data
               })
               resolve({
-                room,
+                room_id: room,
                 state_event: response.data
               })
             })
@@ -74,7 +74,51 @@ export const rooms_store = {
         }))
       }
       return Promise.all(promises)
+    },
+    action_get_room_state_events ({
+      commit,
+      rootGetters
+    }, payload: { room_id: string }) {
+      return new Promise((resolve, reject) => {
+        const homeserver = rootGetters['auth/homeserver']
+        axios.get<MatrixRoomStateEvent[]>(`${homeserver}/_matrix/client/r0/rooms/${payload.room_id}/state`)
+          .then(response => {
+            commit('mutation_set_state_event_for_joined_room', {
+              room_id: payload.room_id,
+              state_event: response.data
+            })
+            resolve({
+              room_id: payload.room_id,
+              state_event: response.data
+            })
+          })
+          .catch(error => {
+            reject(error)
+          })
+      })
     }
   },
-  getters: <GetterTree<State, any>>{}
+  getters: <GetterTree<State, any>>{
+    get_member_state_events_for_room: (state: State) => (room_id: string) : MatrixRoomMemberStateEvent[] | null => {
+      const events = state.joined_room_state_events[room_id]
+      if (events) {
+        return events.filter(event => event.type === 'm.room.member') as MatrixRoomMemberStateEvent[]
+      } else {
+        return null
+      }
+    },
+    get_room_name: (state: State) => (room_id: string) : string | null => {
+      const events = state.joined_room_state_events[room_id]
+      if (events) {
+        const name_event = events.find(event => event.type === 'm.room.name')
+        if (name_event) {
+          return name_event.content.name as string
+        } else {
+          return null
+        }
+      } else {
+        return null
+      }
+    }
+  }
 }

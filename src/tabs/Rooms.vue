@@ -34,8 +34,8 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { MatrixRoomStateEvent } from '@/interface/event.interface'
-import { mapGetters } from 'vuex'
+import { MatrixRoomMemberStateEvent, MatrixRoomStateEvent } from '@/interface/event.interface'
+import { mapActions, mapGetters } from 'vuex'
 
 interface RoomTableRow {
   room_id: string,
@@ -46,7 +46,7 @@ interface RoomTableRow {
 }
 
 type RoomState = {
-  room: string,
+  room_id: string,
   state_event: MatrixRoomStateEvent[]
 }
 
@@ -67,8 +67,12 @@ export default defineComponent({
     ])
   },
   methods: {
+    ...mapActions('rooms', [
+      'action_get_all_joined_room_state_events',
+      'action_get_joined_rooms'
+    ]),
     update_room_table () {
-      this.$store.dispatch('rooms/action_get_joined_rooms')
+      this.action_get_joined_rooms()
         .then((response: { joined_rooms: [string] }) => {
           // first only list id
           this.rooms = response.joined_rooms.map(room => {
@@ -81,20 +85,20 @@ export default defineComponent({
             }
           })
           // then get room details
-          return this.$store.dispatch('rooms/action_get_joined_room_state_events')
+          return this.action_get_all_joined_room_state_events()
         })
         .then((response: RoomState[]) => {
           for (const room of response) {
-            const current_room = this.rooms.filter(i => i.room_id === room.room)[0]
+            const current_room = this.rooms.filter(i => i.room_id === room.room_id)[0]
             // get room name: state event 'm.room.name'
             const name_event: MatrixRoomStateEvent = room.state_event.filter(
               event => event.type === 'm.room.name'
             )[0]
             current_room.name = name_event ? name_event.content.name as string : '<NO NAME>'
             // count room members: state event 'm.room.member' AND content.membership === join
-            const member_join_event: MatrixRoomStateEvent[] = room.state_event.filter(
+            const member_join_event: MatrixRoomMemberStateEvent[] = room.state_event.filter(
               event => event.type === 'm.room.member' && event.content.membership as string === 'join'
-            )
+            ) as MatrixRoomMemberStateEvent[]
             current_room.member_count = member_join_event.length
             // determine user type: if the user can send state events then treat him as admin.
             const power_level_event: MatrixRoomStateEvent = room.state_event.filter(
