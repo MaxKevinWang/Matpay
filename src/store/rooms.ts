@@ -1,7 +1,11 @@
 import { GETJoinedRoomsResponse } from '@/interface/rooms.interface'
 import axios from 'axios'
 import { ActionTree, GetterTree, MutationTree } from 'vuex'
-import { MatrixRoomMemberStateEvent, MatrixRoomStateEvent } from '@/interface/event.interface'
+import {
+  MatrixRoomMemberStateEvent,
+  MatrixRoomPermissionConfiguration,
+  MatrixRoomStateEvent
+} from '@/interface/event.interface'
 
 interface State {
   joined_room_state_events: Record<string, MatrixRoomStateEvent[]>,
@@ -99,7 +103,7 @@ export const rooms_store = {
     }
   },
   getters: <GetterTree<State, any>>{
-    get_member_state_events_for_room: (state: State) => (room_id: string) : MatrixRoomMemberStateEvent[] | null => {
+    get_member_state_events_for_room: (state: State) => (room_id: string): MatrixRoomMemberStateEvent[] | null => {
       const events = state.joined_room_state_events[room_id]
       if (events) {
         return events.filter(event => event.type === 'm.room.member') as MatrixRoomMemberStateEvent[]
@@ -107,7 +111,7 @@ export const rooms_store = {
         return null
       }
     },
-    get_room_name: (state: State) => (room_id: string) : string | null => {
+    get_room_name: (state: State) => (room_id: string): string | null => {
       const events = state.joined_room_state_events[room_id]
       if (events) {
         const name_event = events.find(event => event.type === 'm.room.name')
@@ -119,6 +123,16 @@ export const rooms_store = {
       } else {
         return null
       }
+    },
+    get_room_permissions: (state: State) => (room_id: string): MatrixRoomPermissionConfiguration | null => {
+      const events = state.joined_room_state_events[room_id]
+      if (events) {
+        const permission_event = events.find(event => event.type === 'm.room.power_levels')
+        if (permission_event) {
+          return permission_event.content as MatrixRoomPermissionConfiguration
+        }
+      }
+      return null
     }
   }
 }

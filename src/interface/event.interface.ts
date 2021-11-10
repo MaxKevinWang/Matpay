@@ -28,3 +28,15 @@ export interface MatrixRoomMemberStateEvent extends MatrixRoomStateEvent {
     }
   }
 }
+
+export interface MatrixRoomPermissionConfiguration extends Record<string, unknown> {
+  ban: number,
+  events: Record<string, number>,
+  events_default: number,
+  invite: number,
+  kick: number,
+  redact: number,
+  state_default: number,
+  users_default: number,
+  users: Record<string, number>
+}

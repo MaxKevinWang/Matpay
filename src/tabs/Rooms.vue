@@ -104,8 +104,11 @@ export default defineComponent({
             const power_level_event: MatrixRoomStateEvent = room.state_event.filter(
               event => event.type === 'm.room.power_levels'
             )[0]
-            if (((power_level_event.content.users as Record<string, number>)[this.user_id]) >= (power_level_event.content.state_default as number)) {
+            const power_level = (power_level_event.content.users as Record<string, number>)[this.user_id]
+            if (power_level >= 100) {
               current_room.user_type = 'Admin'
+            } else if (power_level >= 50) {
+              current_room.user_type = 'Moderator'
             } else {
               current_room.user_type = 'User'
             }

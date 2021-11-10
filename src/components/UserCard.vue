@@ -1,8 +1,8 @@
 <template>
   <img :src="this.avatar" alt="avatar" class="avatar">
   <div class="about">
-    <div :class="['name', {'self_name': this.is_self }]">{{ this.displayname }}</div>
-    <div class="status">{{ this.is_self ? 'Yourself, Member' : 'Member' }}</div>
+    <div :class="['name', {'self_name': this.is_self }, {'admin': this.user_type === 'Admin'}]">{{ this.displayname }}</div>
+    <div class="status">{{ this.is_self ? 'Yourself, ' + this.user_type : this.user_type }}</div>
   </div>
 </template>
 
@@ -19,7 +19,8 @@ export default defineComponent({
       user_id: string,
       displayname: string,
       avatar_url: string | undefined,
-      is_self: boolean
+      is_self: boolean,
+      user_type: 'Member' | 'Moderator' | 'Admin'
     }>
   },
   computed: {
@@ -32,7 +33,8 @@ export default defineComponent({
       user_id: '' as string,
       displayname: '' as string,
       avatar: DEFAULT_AVATAR as string,
-      is_self: false as boolean
+      is_self: false as boolean,
+      user_type: 'Member'
     }
   },
   methods: {
@@ -41,6 +43,7 @@ export default defineComponent({
         this.user_id = this.member_prop.user_id
         this.displayname = this.member_prop.displayname
         this.is_self = this.member_prop.is_self
+        this.user_type = this.member_prop.user_type
         if (this.member_prop.avatar_url) {
           get_file_from_content_repository(this.homeserver, this.member_prop.avatar_url)
             .then(response => {
@@ -94,5 +97,8 @@ img {
 }
 .self_name {
   text-decoration: underline;
+}
+.admin {
+  color: red
 }
 </style>
