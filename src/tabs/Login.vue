@@ -37,7 +37,7 @@ export default defineComponent({
   data () {
     return {
       username: '' as string,
-      homeserver: 'https://tchncs.de' as string,
+      homeserver: this.$store.getters['auth/homeserver'] || 'https://tchncs.de' as string,
       password: '' as string,
       error: '' as string
     }

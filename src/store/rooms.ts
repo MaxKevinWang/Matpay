@@ -100,6 +100,12 @@ export const rooms_store = {
             reject(error)
           })
       })
+    },
+    action_invite_user_to_room ({
+      commit,
+      rootGetters
+    }, payload: { room_id: string, user_id: string}) {
+      console.log()
     }
   },
   getters: <GetterTree<State, any>>{

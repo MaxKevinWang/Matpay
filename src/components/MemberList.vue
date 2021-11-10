@@ -5,19 +5,65 @@
       <UserCard :member_prop="member"/>
     </li>
     <li class="row">
-      <button class="btn btn-primary" @click="onAddUser()">Add user</button>
+      <button class="btn btn-primary" @click="on_invite_user_clicked()">Invite user</button>
     </li>
   </ul>
+  <!-- Invite User Dialog -->
+  <div class="modal fade" id="invite-user-modal" tabindex="-1" aria-labelledby="invite-label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="invite-label">Invite User</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form>
+            <div class="form-group">
+              <label for="invite-userid">User ID</label>
+              <input v-model="invite_user_id" type="text" class="form-control" id="invite-userid" placeholder="@aaa:bbb.ccc">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" @click="on_invite()">Invite</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Invite Message Dialog -->
+  <div class="modal fade" id="invite-message-modal" tabindex="-2" aria-labelledby="invite-message-label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="invite-message-label">Invite</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          {{ invite_message }}
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
 import UserCard from '@/components/UserCard.vue'
-import { mapGetters } from 'vuex'
+import { mapActions, mapGetters } from 'vuex'
 import { MatrixRoomPermissionConfiguration } from '@/interface/event.interface'
-
+import { Modal } from 'bootstrap'
 export default defineComponent({
   name: 'MemberList',
+  emits: {
+    'on-invite-user': null,
+    'on-error': (error: string) => {
+      return !!error
+    }
+  },
   props: {
     room_id: {
       type: String as PropType<string>
@@ -40,7 +86,9 @@ export default defineComponent({
         user_type: 'Member' | 'Moderator' | 'Admin'
       }>,
       displayname_table: {} as Record<string, string[]>,
-      permission: {} as MatrixRoomPermissionConfiguration
+      permission: {} as MatrixRoomPermissionConfiguration,
+      invite_message: '' as string,
+      invite_user_id: null as string | null
     }
   },
   computed: {
@@ -55,6 +103,9 @@ export default defineComponent({
     UserCard
   },
   methods: {
+    ...mapActions('rooms', [
+      'action_invite_user_to_room'
+    ]),
     show_member_detail () {
       // update permission data
       this.permission = this.get_room_permissions(this.room_id)
@@ -110,6 +161,34 @@ export default defineComponent({
         }
       }
       return this.members
+    },
+    on_invite_user_clicked () {
+      // check permission
+      const permission_value = this.permission.users[this.user_id]
+      if (permission_value) {
+        if (this.permission.users[this.user_id] < this.permission.invite) {
+          this.$emit('on-error', 'You have no permission to invite user')
+          return
+        }
+      } else if (this.permission.users_default < this.permission.invite) {
+        this.$emit('on-error', 'You have no permission to invite user')
+        return
+      }
+      // invite user dialog
+      const invite_user_modal = new Modal(document.getElementById('invite-user-modal') as HTMLElement, {
+        backdrop: false
+      })
+      invite_user_modal.show()
+    },
+    on_invite () {
+      const invite_message_model = new Modal(document.getElementById('invite-message-modal') as HTMLElement, {
+        backdrop: false
+      })
+      if (!this.invite_user_id || this.invite_user_id === '') {
+        this.invite_message = 'The user ID cannot be blank!'
+        invite_message_model.toggle()
+        // return
+      }
     }
   },
   watch: {

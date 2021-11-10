@@ -1,11 +1,14 @@
 <template>
   <div class="container">
+    <div class="alert alert-danger" role="alert" v-if="error !== ''">
+      {{ error }}
+    </div>
     <div class="row">
       <h2>Room: {{ this.room_name }}</h2>
     </div>
     <div class="row clearfix">
       <div class="col-lg-3 chat-frame">
-        <MemberList :room_id="room_id" :member_list="member_list"/>
+        <MemberList :room_id="room_id" :member_list="member_list" @on-error="on_error"/>
       </div>
       <div class="col-lg-9 chat-frame">
         <h4>Chat</h4>
@@ -29,7 +32,8 @@ export default defineComponent({
         user_id: string,
         displayname: string | null,
         avatar_url: string | undefined,
-      }>
+      }>,
+      error: '' as string
     }
   },
   computed: {
@@ -75,6 +79,9 @@ export default defineComponent({
             name: 'rooms'
           })
         })
+    },
+    on_error (error: string) {
+      this.error = error
     }
   },
   created () {
