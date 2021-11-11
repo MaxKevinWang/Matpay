@@ -58,6 +58,7 @@ import UserCard from '@/components/UserCard.vue'
 import { mapActions, mapGetters } from 'vuex'
 import { MatrixRoomPermissionConfiguration } from '@/interface/event.interface'
 import { Modal } from 'bootstrap'
+import RightClickMenu from '@/components/RightClickMenu.vue'
 
 export default defineComponent({
   name: 'MemberList',
@@ -107,7 +108,7 @@ export default defineComponent({
   },
   methods: {
     ...mapActions('rooms', [
-      'action_invite_user_to_room'
+      'action_change_user_membership_on_room'
     ]),
     show_member_detail () {
       // update permission data
@@ -194,9 +195,10 @@ export default defineComponent({
         this.invite_message = 'You cannot invite yourself!'
         invite_message_model.toggle()
       } else {
-        this.action_invite_user_to_room({
+        this.action_change_user_membership_on_room({
           room_id: this.room_id,
-          user_id: this.invite_user_id
+          user_id: this.invite_user_id,
+          action: 'invite'
         })
           .then(() => {
             this.invite_user_id = ''

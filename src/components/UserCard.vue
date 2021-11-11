@@ -1,9 +1,16 @@
 <template>
   <img :src="this.avatar" alt="avatar" class="avatar">
-  <div class="about">
+  <div class="about" @contextmenu="open_right_click_menu">
     <div :class="['name', {'self_name': this.is_self }, {'admin': this.user_type === 'Admin'}]">{{ this.displayname }}</div>
     <div class="status">{{ this.is_self ? 'Yourself, ' + this.user_type : this.user_type }}</div>
   </div>
+  <!-- Right Click Menu -->
+  <RightClickMenu :display="show_right_click_menu" ref="menu">
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item">Kick User</li>
+      <li class="list-group-item">Ban User</li>
+    </ul>
+  </RightClickMenu>
 </template>
 
 <script lang="ts">
@@ -11,6 +18,7 @@ import { defineComponent, PropType } from 'vue'
 import { DEFAULT_AVATAR } from '@/utils/consts'
 import { get_file_from_content_repository } from '@/utils/ContentRepository'
 import { mapGetters } from 'vuex'
+import RightClickMenu from '@/components/RightClickMenu.vue'
 
 export default defineComponent({
   name: 'UserCard',
@@ -34,7 +42,8 @@ export default defineComponent({
       displayname: '' as string,
       avatar: DEFAULT_AVATAR as string,
       is_self: false as boolean,
-      user_type: 'Member'
+      user_type: 'Member',
+      show_right_click_menu: false as boolean
     }
   },
   methods: {
@@ -57,6 +66,11 @@ export default defineComponent({
           this.avatar = DEFAULT_AVATAR
         }
       }
+    },
+    open_right_click_menu (e: MouseEvent) {
+      e.preventDefault()
+      const menu_ref = this.$refs.menu as { open : (e: MouseEvent) => void }
+      menu_ref.open(e)
     }
   },
   watch: {
@@ -64,6 +78,9 @@ export default defineComponent({
       handler: 'update_user_card',
       immediate: true
     }
+  },
+  components: {
+    RightClickMenu
   }
 })
 
