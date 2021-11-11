@@ -6,6 +6,7 @@ import {
   MatrixRoomPermissionConfiguration,
   MatrixRoomStateEvent
 } from '@/interface/event.interface'
+import { MatrixError } from '@/interface/MatrixError.interface'
 
 interface State {
   joined_room_state_events: Record<string, MatrixRoomStateEvent[]>,
@@ -105,7 +106,22 @@ export const rooms_store = {
       commit,
       rootGetters
     }, payload: { room_id: string, user_id: string}) {
-      console.log()
+      return new Promise((resolve, reject) => {
+        const homeserver = rootGetters['auth/homeserver']
+        axios.post<Record<string, never>>(`${homeserver}/_matrix/client/r0/rooms/${payload.room_id}/invite`, {
+          user_id: payload.user_id
+        }, { validateStatus: () => true })
+          .then(response => {
+            if (response.status === 200) {
+              resolve(response.data)
+            } else {
+              throw new Error((response.data as unknown as MatrixError).error)
+            }
+          })
+          .catch(error => {
+            reject(error)
+          })
+      })
     }
   },
   getters: <GetterTree<State, any>>{

@@ -20,7 +20,8 @@
           <form>
             <div class="form-group">
               <label for="invite-userid">User ID</label>
-              <input v-model="invite_user_id" type="text" class="form-control" id="invite-userid" placeholder="@aaa:bbb.ccc">
+              <input v-model="invite_user_id" type="text" class="form-control" id="invite-userid"
+                     :placeholder="'@user:' + this.user_id.split(':')[1]">
             </div>
           </form>
         </div>
@@ -32,7 +33,8 @@
     </div>
   </div>
   <!-- Invite Message Dialog -->
-  <div class="modal fade" id="invite-message-modal" tabindex="-2" aria-labelledby="invite-message-label" aria-hidden="true">
+  <div class="modal fade" id="invite-message-modal" tabindex="-2" aria-labelledby="invite-message-label"
+       aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
@@ -56,6 +58,7 @@ import UserCard from '@/components/UserCard.vue'
 import { mapActions, mapGetters } from 'vuex'
 import { MatrixRoomPermissionConfiguration } from '@/interface/event.interface'
 import { Modal } from 'bootstrap'
+
 export default defineComponent({
   name: 'MemberList',
   emits: {
@@ -178,7 +181,7 @@ export default defineComponent({
       const invite_user_modal = new Modal(document.getElementById('invite-user-modal') as HTMLElement, {
         backdrop: false
       })
-      invite_user_modal.show()
+      invite_user_modal.toggle()
     },
     on_invite () {
       const invite_message_model = new Modal(document.getElementById('invite-message-modal') as HTMLElement, {
@@ -187,7 +190,23 @@ export default defineComponent({
       if (!this.invite_user_id || this.invite_user_id === '') {
         this.invite_message = 'The user ID cannot be blank!'
         invite_message_model.toggle()
-        // return
+      } else if (this.invite_user_id === this.user_id) {
+        this.invite_message = 'You cannot invite yourself!'
+        invite_message_model.toggle()
+      } else {
+        this.action_invite_user_to_room({
+          room_id: this.room_id,
+          user_id: this.invite_user_id
+        })
+          .then(() => {
+            this.invite_user_id = ''
+            this.invite_message = 'An invitation has been sent.'
+            invite_message_model.toggle()
+          })
+          .catch(error => {
+            this.invite_message = error.message
+            invite_message_model.toggle()
+          })
       }
     }
   },
