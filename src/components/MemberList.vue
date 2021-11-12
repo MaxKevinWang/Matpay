@@ -2,7 +2,7 @@
   <h4>Members</h4>
   <ul class="list-unstyled card chat-list mt-2 mb-0">
     <li class="clearfix" v-for="member in members" :key="member.user_id">
-      <UserCard :member_prop="member"/>
+      <UserCard :member_prop="member" :can_i_kick_user="can_i_kick_user" @on-kick="on_kick" @on-ban="on_ban"/>
     </li>
     <li class="row">
       <button class="btn btn-primary" @click="on_invite_user_clicked()">Invite user</button>
@@ -32,17 +32,17 @@
       </div>
     </div>
   </div>
-  <!-- Invite Message Dialog -->
-  <div class="modal fade" id="invite-message-modal" tabindex="-2" aria-labelledby="invite-message-label"
+  <!-- Message Dialog -->
+  <div class="modal fade" id="message-modal" tabindex="-2" aria-labelledby="message-label"
        aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="invite-message-label">Invite</h5>
+          <h5 class="modal-title" id="message-label">Message</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          {{ invite_message }}
+          {{ dialog_message }}
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -50,20 +50,38 @@
       </div>
     </div>
   </div>
+  <!-- Confirm Dialog -->
+  <div class="modal fade" id="confirm-modal" tabindex="-3" aria-labelledby="confirm-label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="confirm-label">Confirm</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          {{ confirm_message }}
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" @click="on_confirm">Yes</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script lang="ts">
+/* eslint-disable no-unused-expressions */
 import { defineComponent, PropType } from 'vue'
 import UserCard from '@/components/UserCard.vue'
 import { mapActions, mapGetters } from 'vuex'
 import { MatrixRoomPermissionConfiguration } from '@/interface/event.interface'
 import { Modal } from 'bootstrap'
-import RightClickMenu from '@/components/RightClickMenu.vue'
 
 export default defineComponent({
   name: 'MemberList',
   emits: {
-    'on-invite-user': null,
+    'on-user-change': null,
     'on-error': (error: string) => {
       return !!error
     }
@@ -91,8 +109,14 @@ export default defineComponent({
       }>,
       displayname_table: {} as Record<string, string[]>,
       permission: {} as MatrixRoomPermissionConfiguration,
-      invite_message: '' as string,
-      invite_user_id: null as string | null
+      dialog_message: '' as string,
+      confirm_message: '' as string,
+      invite_user_id: null as string | null,
+      invite_user_modal: null as Modal | null,
+      message_modal: null as Modal | null,
+      confirm_modal: null as Modal | null,
+      current_operation: null as 'kick' | 'ban' | null,
+      current_operation_user_id: '' as string
     }
   },
   computed: {
@@ -101,7 +125,11 @@ export default defineComponent({
     ]),
     ...mapGetters('rooms', [
       'get_room_permissions'
-    ])
+    ]),
+    can_i_kick_user () {
+      const my_user_type = this.members.filter(member => member.user_id === this.user_id)[0].user_type
+      return my_user_type === 'Admin' || my_user_type === 'Moderator'
+    }
   },
   components: {
     UserCard
@@ -178,22 +206,15 @@ export default defineComponent({
         this.$emit('on-error', 'You have no permission to invite user')
         return
       }
-      // invite user dialog
-      const invite_user_modal = new Modal(document.getElementById('invite-user-modal') as HTMLElement, {
-        backdrop: false
-      })
-      invite_user_modal.toggle()
+      this.invite_user_modal?.toggle()
     },
     on_invite () {
-      const invite_message_model = new Modal(document.getElementById('invite-message-modal') as HTMLElement, {
-        backdrop: false
-      })
       if (!this.invite_user_id || this.invite_user_id === '') {
-        this.invite_message = 'The user ID cannot be blank!'
-        invite_message_model.toggle()
+        this.dialog_message = 'The user ID cannot be blank!'
+        this.message_modal?.toggle()
       } else if (this.invite_user_id === this.user_id) {
-        this.invite_message = 'You cannot invite yourself!'
-        invite_message_model.toggle()
+        this.dialog_message = 'You cannot invite yourself!'
+        this.message_modal?.toggle()
       } else {
         this.action_change_user_membership_on_room({
           room_id: this.room_id,
@@ -202,14 +223,42 @@ export default defineComponent({
         })
           .then(() => {
             this.invite_user_id = ''
-            this.invite_message = 'An invitation has been sent.'
-            invite_message_model.toggle()
+            this.dialog_message = 'An invitation has been sent.'
+            this.message_modal?.toggle()
+            this.invite_user_modal?.toggle()
           })
           .catch(error => {
-            this.invite_message = error.message
-            invite_message_model.toggle()
+            this.dialog_message = error.message
+            this.message_modal?.toggle()
+            this.invite_user_modal?.toggle()
           })
       }
+    },
+    on_kick (event: Event, user_id: string) {
+      this.current_operation = 'kick'
+      this.current_operation_user_id = user_id
+      this.confirm_message = 'Are you sure you want to kick user?'
+      this.confirm_modal?.toggle()
+    },
+    on_ban (event: Event, user_id: string) {
+      this.current_operation = 'ban'
+      this.current_operation_user_id = user_id
+      this.confirm_message = 'Are you sure you want to ban user?'
+      this.confirm_modal?.toggle()
+    },
+    on_confirm () {
+      this.action_change_user_membership_on_room({
+        room_id: this.room_id,
+        user_id: this.user_id,
+        action: this.current_operation
+      })
+        .then(() => {
+          this.$emit('on-user-change')
+        })
+        .catch(error => {
+          this.dialog_message = error.message
+          this.message_modal?.toggle()
+        })
     }
   },
   watch: {
@@ -219,6 +268,17 @@ export default defineComponent({
       },
       deep: true
     }
+  },
+  mounted () {
+    this.invite_user_modal = new Modal(document.getElementById('invite-user-modal') as HTMLElement, {
+      backdrop: false
+    })
+    this.message_modal = new Modal(document.getElementById('message-modal') as HTMLElement, {
+      backdrop: false
+    })
+    this.confirm_modal = new Modal(document.getElementById('confirm-modal') as HTMLElement, {
+      backdrop: false
+    })
   }
 })
 </script>

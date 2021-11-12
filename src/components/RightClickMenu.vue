@@ -11,6 +11,7 @@ export default defineComponent({
   props: {
     display: Boolean
   },
+  emits: ['close'],
   data () {
     return {
       left: 0,
@@ -31,6 +32,7 @@ export default defineComponent({
       this.show = false
       this.left = 0
       this.top = 0
+      this.$emit('close')
     },
     open (evt: MouseEvent) {
       this.left = evt.pageX || evt.clientX

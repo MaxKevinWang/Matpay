@@ -1,19 +1,25 @@
 <template>
-  <img :src="this.avatar" alt="avatar" class="avatar">
-  <div class="about" @contextmenu="open_right_click_menu">
-    <div :class="['name', {'self_name': this.is_self }, {'admin': this.user_type === 'Admin'}]">{{ this.displayname }}</div>
-    <div class="status">{{ this.is_self ? 'Yourself, ' + this.user_type : this.user_type }}</div>
+  <div>
+    <img :src="this.avatar" alt="avatar" class="avatar">
+    <div class="about" @contextmenu="open_right_click_menu">
+      <div :class="['name', {'self_name': this.is_self }, {'admin': this.user_type === 'Admin'}]">{{
+          this.displayname
+        }}
+      </div>
+      <div class="status">{{ this.is_self ? 'Yourself, ' + this.user_type : this.user_type }}</div>
+    </div>
+    <!-- Right Click Menu -->
+    <RightClickMenu :display="show_right_click_menu" ref="menu" v-if="can_i_kick_user && !is_self">
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item" @click="on_context_click('kick')">Kick User</li>
+        <li class="list-group-item" @click="on_context_click('ban')">Ban User</li>
+      </ul>
+    </RightClickMenu>
   </div>
-  <!-- Right Click Menu -->
-  <RightClickMenu :display="show_right_click_menu" ref="menu">
-    <ul class="list-group list-group-flush">
-      <li class="list-group-item">Kick User</li>
-      <li class="list-group-item">Ban User</li>
-    </ul>
-  </RightClickMenu>
 </template>
 
 <script lang="ts">
+/* eslint-disable no-unused-expressions */
 import { defineComponent, PropType } from 'vue'
 import { DEFAULT_AVATAR } from '@/utils/consts'
 import { get_file_from_content_repository } from '@/utils/ContentRepository'
@@ -29,13 +35,18 @@ export default defineComponent({
       avatar_url: string | undefined,
       is_self: boolean,
       user_type: 'Member' | 'Moderator' | 'Admin'
-    }>
+    }>,
+    can_i_kick_user: Boolean as PropType<boolean>
   },
   computed: {
     ...mapGetters('auth', [
       'homeserver'
     ])
   },
+  emits: [
+    'on-kick',
+    'on-ban'
+  ],
   data () {
     return {
       user_id: '' as string,
@@ -69,8 +80,16 @@ export default defineComponent({
     },
     open_right_click_menu (e: MouseEvent) {
       e.preventDefault()
-      const menu_ref = this.$refs.menu as { open : (e: MouseEvent) => void }
-      menu_ref.open(e)
+      const menu_ref = this.$refs.menu as { open: (e: MouseEvent) => void } | null
+      menu_ref?.open(e)
+    },
+    on_context_click (operation: 'kick' | 'ban') {
+      this.show_right_click_menu = false
+      if (operation === 'kick') {
+        this.$emit('on-kick', this.user_id)
+      } else if (operation === 'ban') {
+        this.$emit('on-ban', this.user_id)
+      }
     }
   },
   watch: {
@@ -106,15 +125,18 @@ img {
   color: #999;
   font-size: 13px
 }
+
 .avatar {
   vertical-align: middle;
   width: 40px;
   height: 40px;
   border-radius: 50%;
 }
+
 .self_name {
   text-decoration: underline;
 }
+
 .admin {
   color: red
 }
