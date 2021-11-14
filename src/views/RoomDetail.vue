@@ -8,7 +8,8 @@
     </div>
     <div class="row clearfix">
       <div class="col-lg-3 chat-frame">
-        <MemberList :room_id="room_id" :member_list="member_list" @on-error="on_error" @on-user-change="on_user_change"/>
+        <MemberList :room_id="room_id" :member_list="member_list" @on-error="on_error"
+                    @on-user-change="on_user_change"/>
       </div>
       <div class="col-lg-9 chat-frame">
         <h4>Chat</h4>
@@ -55,30 +56,29 @@ export default defineComponent({
     ...mapActions('rooms', [
       'action_get_room_state_events'
     ]),
-    update_member_list () {
-      this.action_get_room_state_events({
+    async update_member_list () {
+      await this.action_get_room_state_events({
         room_id: this.room_id
       })
-        .then(() => {
-          const member_join_events : MatrixRoomMemberStateEvent[] = this.get_member_state_events_for_room(this.room_id)
-          if (member_join_events && member_join_events.length > 0) {
-            this.member_list = member_join_events
-              .filter(event => event.content.membership === 'join')
-              .map(event => {
-                return {
-                  user_id: event.state_key,
-                  displayname: event.content.displayname,
-                  avatar_url: event.content.avatar_url
-                }
-              })
-          }
+      try {
+        const member_join_events: MatrixRoomMemberStateEvent[] = this.get_member_state_events_for_room(this.room_id)
+        if (member_join_events && member_join_events.length > 0) {
+          this.member_list = member_join_events
+            .filter(event => event.content.membership === 'join')
+            .map(event => {
+              return {
+                user_id: event.state_key,
+                displayname: event.content.displayname,
+                avatar_url: event.content.avatar_url
+              }
+            })
+        }
+      } catch (e) {
+        alert('Room does not exist or you are not part of the room!')
+        this.$router.push({
+          name: 'rooms'
         })
-        .catch(() => {
-          alert('Room does not exist or you are not part of the room!')
-          this.$router.push({
-            name: 'rooms'
-          })
-        })
+      }
     },
     on_error (error: string) {
       this.error = error

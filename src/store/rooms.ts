@@ -16,7 +16,6 @@ type RoomState = {
   room_id: string,
   state_event: MatrixRoomStateEvent[]
 }
-type RoomStatePromise = Promise<RoomState>
 export const rooms_store = {
   namespaced: true,
   state (): State {
@@ -37,92 +36,62 @@ export const rooms_store = {
     }
   },
   actions: <ActionTree<State, any>>{
-    action_get_joined_rooms ({
+    async action_get_joined_rooms ({
       commit,
       rootGetters
     }): Promise<GETJoinedRoomsResponse> {
-      return new Promise((resolve, reject) => {
-        const homeserver = rootGetters['auth/homeserver']
-        axios.get<GETJoinedRoomsResponse>(`${homeserver}/_matrix/client/r0/joined_rooms`)
-          .then(response => {
-            commit('mutation_set_joined_rooms', { joined_rooms: response.data.joined_rooms })
-            resolve(response.data)
-          })
-          .catch(error => {
-            reject(error)
-          })
-      })
+      const homeserver = rootGetters['auth/homeserver']
+      const response = await axios.get<GETJoinedRoomsResponse>(`${homeserver}/_matrix/client/r0/joined_rooms`)
+      commit('mutation_set_joined_rooms', { joined_rooms: response.data.joined_rooms })
+      return response.data
     },
-    action_get_all_joined_room_state_events ({
+    async action_get_all_joined_room_state_events ({
       state,
       commit,
       rootGetters
     }) {
-      const promises: RoomStatePromise[] = []
+      const promises: Promise<RoomState>[] = []
       for (const room of Object.keys(state.joined_room_state_events)) {
-        promises.push(new Promise((resolve, reject) => {
+        promises.push(async function () {
           const homeserver = rootGetters['auth/homeserver']
-          axios.get<MatrixRoomStateEvent[]>(`${homeserver}/_matrix/client/r0/rooms/${room}/state`)
-            .then(response => {
-              commit('mutation_set_state_event_for_joined_room', {
-                room_id: room,
-                state_event: response.data
-              })
-              resolve({
-                room_id: room,
-                state_event: response.data
-              })
-            })
-            .catch(error => {
-              reject(error)
-            })
-        }))
+          const response = await axios.get<MatrixRoomStateEvent[]>(`${homeserver}/_matrix/client/r0/rooms/${room}/state`)
+          const result: RoomState = {
+            room_id: room,
+            state_event: response.data
+          }
+          commit('mutation_set_state_event_for_joined_room', result)
+          return result
+        }())
       }
       return Promise.all(promises)
     },
-    action_get_room_state_events ({
+    async action_get_room_state_events ({
       commit,
       rootGetters
     }, payload: { room_id: string }) {
-      return new Promise((resolve, reject) => {
-        const homeserver = rootGetters['auth/homeserver']
-        axios.get<MatrixRoomStateEvent[]>(`${homeserver}/_matrix/client/r0/rooms/${payload.room_id}/state`)
-          .then(response => {
-            commit('mutation_set_state_event_for_joined_room', {
-              room_id: payload.room_id,
-              state_event: response.data
-            })
-            resolve({
-              room_id: payload.room_id,
-              state_event: response.data
-            })
-          })
-          .catch(error => {
-            reject(error)
-          })
-      })
+      const homeserver = rootGetters['auth/homeserver']
+      const response = await axios.get<MatrixRoomStateEvent[]>(`${homeserver}/_matrix/client/r0/rooms/${payload.room_id}/state`)
+      const result = {
+        room_id: payload.room_id,
+        state_event: response.data
+      }
+      commit('mutation_set_state_event_for_joined_room', result)
+      return result
     },
-    action_change_user_membership_on_room ({
+    async action_change_user_membership_on_room ({
       dispatch,
       rootGetters
     }, payload: { room_id: string, user_id: string, action: 'invite' | 'kick' | 'ban' | 'unban' }) {
-      return new Promise((resolve, reject) => {
-        const homeserver = rootGetters['auth/homeserver']
-        axios.post<Record<string, never>>(`${homeserver}/_matrix/client/r0/rooms/${payload.room_id}/${payload.action}`, {
-          user_id: payload.user_id
-        }, { validateStatus: () => true })
-          .then(response => {
-            if (response.status === 200) {
-              dispatch('action_get_room_state_events', { room_id: payload.room_id }) // update state events
-              resolve(response.data)
-            } else {
-              throw new Error((response.data as unknown as MatrixError).error)
-            }
-          })
-          .catch(error => {
-            reject(error)
-          })
-      })
+      const homeserver = rootGetters['auth/homeserver']
+      const response = await axios.post<Record<string, never>>(`${homeserver}/_matrix/client/r0/rooms/${payload.room_id}/${payload.action}`, {
+        user_id: payload.user_id
+      }, { validateStatus: () => true })
+      if (response.status === 200) {
+        dispatch('action_get_room_state_events', { room_id: payload.room_id }) // update state events
+        return response.data
+      } else {
+        throw new Error((response.data as unknown as MatrixError).error)
+      }
     }
   },
   getters: <GetterTree<State, any>>{

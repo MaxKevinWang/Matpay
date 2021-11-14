@@ -208,7 +208,7 @@ export default defineComponent({
       }
       this.invite_user_modal?.toggle()
     },
-    on_invite () {
+    async on_invite () {
       if (!this.invite_user_id || this.invite_user_id === '') {
         this.dialog_message = 'The user ID cannot be blank!'
         this.message_modal?.toggle()
@@ -216,22 +216,21 @@ export default defineComponent({
         this.dialog_message = 'You cannot invite yourself!'
         this.message_modal?.toggle()
       } else {
-        this.action_change_user_membership_on_room({
-          room_id: this.room_id,
-          user_id: this.invite_user_id,
-          action: 'invite'
-        })
-          .then(() => {
-            this.invite_user_id = ''
-            this.dialog_message = 'An invitation has been sent.'
-            this.message_modal?.toggle()
-            this.invite_user_modal?.toggle()
+        try {
+          await this.action_change_user_membership_on_room({
+            room_id: this.room_id,
+            user_id: this.invite_user_id,
+            action: 'invite'
           })
-          .catch(error => {
-            this.dialog_message = error.message
-            this.message_modal?.toggle()
-            this.invite_user_modal?.toggle()
-          })
+          this.invite_user_id = ''
+          this.dialog_message = 'An invitation has been sent.'
+          this.message_modal?.toggle()
+          this.invite_user_modal?.toggle()
+        } catch (error) {
+          this.dialog_message = error.message
+          this.message_modal?.toggle()
+          this.invite_user_modal?.toggle()
+        }
       }
     },
     on_kick (user_id: string) {
@@ -246,21 +245,20 @@ export default defineComponent({
       this.confirm_message = 'Are you sure you want to ban user?'
       this.confirm_modal?.toggle()
     },
-    on_confirm () {
-      this.action_change_user_membership_on_room({
-        room_id: this.room_id,
-        user_id: this.current_operation_user_id,
-        action: this.current_operation
-      })
-        .then(() => {
-          this.confirm_modal?.toggle()
-          this.$emit('on-user-change')
+    async on_confirm () {
+      try {
+        await this.action_change_user_membership_on_room({
+          room_id: this.room_id,
+          user_id: this.current_operation_user_id,
+          action: this.current_operation
         })
-        .catch(error => {
-          this.dialog_message = error.message
-          this.message_modal?.toggle()
-          this.confirm_modal?.toggle()
-        })
+        this.confirm_modal?.toggle()
+        this.$emit('on-user-change')
+      } catch (error) {
+        this.dialog_message = error.message
+        this.message_modal?.toggle()
+        this.confirm_modal?.toggle()
+      }
     }
   },
   watch: {
