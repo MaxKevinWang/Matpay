@@ -36,6 +36,7 @@
 import { defineComponent } from 'vue'
 import { MatrixRoomMemberStateEvent, MatrixRoomStateEvent } from '@/interface/event.interface'
 import { mapActions, mapGetters } from 'vuex'
+import { GETJoinedRoomsResponse } from '@/interface/rooms.interface'
 
 interface RoomTableRow {
   room_id: string,
@@ -73,7 +74,7 @@ export default defineComponent({
     ]),
     update_room_table () {
       this.action_get_joined_rooms()
-        .then((response: { joined_rooms: [string] }) => {
+        .then((response: GETJoinedRoomsResponse) => {
           // first only list id
           this.rooms = response.joined_rooms.map(room => {
             return {
