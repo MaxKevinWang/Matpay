@@ -234,13 +234,13 @@ export default defineComponent({
           })
       }
     },
-    on_kick (event: Event, user_id: string) {
+    on_kick (user_id: string) {
       this.current_operation = 'kick'
       this.current_operation_user_id = user_id
       this.confirm_message = 'Are you sure you want to kick user?'
       this.confirm_modal?.toggle()
     },
-    on_ban (event: Event, user_id: string) {
+    on_ban (user_id: string) {
       this.current_operation = 'ban'
       this.current_operation_user_id = user_id
       this.confirm_message = 'Are you sure you want to ban user?'
@@ -249,21 +249,24 @@ export default defineComponent({
     on_confirm () {
       this.action_change_user_membership_on_room({
         room_id: this.room_id,
-        user_id: this.user_id,
+        user_id: this.current_operation_user_id,
         action: this.current_operation
       })
         .then(() => {
+          this.confirm_modal?.toggle()
           this.$emit('on-user-change')
         })
         .catch(error => {
           this.dialog_message = error.message
           this.message_modal?.toggle()
+          this.confirm_modal?.toggle()
         })
     }
   },
   watch: {
     member_list: {
       handler () {
+        this.members = []
         this.show_member_detail()
       },
       deep: true

@@ -113,7 +113,7 @@ export const rooms_store = {
         }, { validateStatus: () => true })
           .then(response => {
             if (response.status === 200) {
-              dispatch('room/action_get_room_state_events', { room_id: payload.room_id }) // update state events
+              dispatch('action_get_room_state_events', { room_id: payload.room_id }) // update state events
               resolve(response.data)
             } else {
               throw new Error((response.data as unknown as MatrixError).error)

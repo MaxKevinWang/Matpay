@@ -8,7 +8,7 @@
     </div>
     <div class="row clearfix">
       <div class="col-lg-3 chat-frame">
-        <MemberList :room_id="room_id" :member_list="member_list" @on-error="on_error"/>
+        <MemberList :room_id="room_id" :member_list="member_list" @on-error="on_error" @on-user-change="on_user_change"/>
       </div>
       <div class="col-lg-9 chat-frame">
         <h4>Chat</h4>
@@ -82,9 +82,12 @@ export default defineComponent({
     },
     on_error (error: string) {
       this.error = error
+    },
+    on_user_change () {
+      this.update_member_list()
     }
   },
-  created () {
+  mounted () {
     this.update_member_list()
   }
 })
