@@ -1,5 +1,5 @@
 <template>
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <nav class="navbar navbar-expand-md navbar-light bg-light">
     <div class="container-fluid">
       <a class="navbar-brand" href="#">MatPay</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
@@ -39,8 +39,7 @@
 </template>
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { mapGetters } from 'vuex'
-import axios from 'axios'
+import { mapActions, mapGetters } from 'vuex'
 
 export default defineComponent({
   name: 'App',
@@ -55,12 +54,12 @@ export default defineComponent({
     ])
   },
   methods: {
+    ...mapActions('auth', [
+      'action_logout'
+    ]),
     logout () {
-      axios.post(`${this.homeserver}/_matrix/client/r0/logout`)
-        .then(() => {
-          this.$store.commit('auth/mutation_logout')
-          this.$router.push('/login')
-        })
+      this.action_logout()
+      this.$router.push('/login')
     }
   }
 })

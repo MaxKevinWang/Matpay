@@ -28,9 +28,7 @@
 </template>
 <script lang="ts">
 import { defineComponent } from 'vue'
-import axios from 'axios'
-import { GETLoginResponse, POSTLoginResponse } from '@/interface/login.interface'
-import { mapGetters } from 'vuex'
+import { mapActions, mapGetters } from 'vuex'
 
 export default defineComponent({
   name: 'Login',
@@ -48,40 +46,28 @@ export default defineComponent({
     ])
   },
   methods: {
+    ...mapActions('sync', [
+      'action_sync_state'
+    ]),
+    ...mapActions('auth', [
+      'action_login'
+    ]),
     async login () {
       if (this.username === '' || this.homeserver === '' || this.password === '') {
         this.error = 'Field missing!'
         return
       }
       try {
-        const response_get = await axios.get<GETLoginResponse>(`${this.homeserver}/_matrix/client/r0/login`)
-        if (!response_get.data.flows.map(i => i.type).includes('m.login.password')) {
-          throw new Error('Homeserver does not support password authentication')
-        } else {
-          const response_post = await axios.post<POSTLoginResponse>(`${this.homeserver}/_matrix/client/r0/login`, {
-            type: 'm.login.password',
-            identifier: {
-              type: 'm.id.user',
-              user: this.username
-            },
-            password: this.password,
-            device_id: this.device_id
-          }, {
-            validateStatus: () => true // Always resolve unless we throw an error manually
-          })
-
-          if (response_post.status === 200) {
-            this.$store.commit('auth/mutation_login', {
-              user_id: response_post.data.user_id,
-              access_token: response_post.data.access_token,
-              device_id: response_post.data.device_id,
-              homeserver: this.homeserver
-            })
-            this.$router.push('/rooms')
-          } else {
-            throw new Error('Authentication failed!')
-          }
-        }
+        await this.action_login({
+          username: this.username,
+          homeserver: this.homeserver,
+          password: this.password
+        })
+        await this.$router.push('/rooms')
+        // start initial state sync
+        await this.action_sync_state({
+          continue_batch: false
+        })
       } catch (reason) {
         this.error = reason
       }

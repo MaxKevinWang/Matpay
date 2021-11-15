@@ -34,9 +34,9 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { MatrixRoomMemberStateEvent, MatrixRoomStateEvent } from '@/interface/event.interface'
+import { MatrixRoomMemberStateEvent, MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
 import { mapActions, mapGetters } from 'vuex'
-import { GETJoinedRoomsResponse } from '@/interface/rooms.interface'
+import { GETJoinedRoomsResponse } from '@/interface/rooms_api.interface'
 
 interface RoomTableRow {
   room_id: string,

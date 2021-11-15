@@ -8,14 +8,18 @@ export interface MatrixRoomEvent extends MatrixEvent {
   sender: string,
   origin_server_ts: number,
   event_id: string,
-  type: string,
 }
 
 export interface MatrixRoomStateEvent extends MatrixEvent {
   state_key: string,
   prev_content: Record<string, unknown>
 }
-
+export interface MatrixRoomStrippedEvent extends MatrixRoomStateEvent {
+  prev_content: never,
+  event_id: never,
+  origin_server_ts: never,
+  room_id: never
+}
 export interface MatrixRoomMemberStateEvent extends MatrixRoomStateEvent {
   type: 'm.room.member',
   content: {
