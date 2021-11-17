@@ -14,9 +14,9 @@ module.exports = {
   rules: {
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
-    'camelcase': 'off',
+    camelcase: 'off',
     '@typescript-eslint/camelcase': 'off',
-    'ignoreComments': 'off'
+    ignoreComments: 'off'
   },
   overrides: [
     {
@@ -25,7 +25,16 @@ module.exports = {
         '**/tests/unit/**/*.spec.{j,t}s?(x)'
       ],
       env: {
-        mocha: true
+        jest: true
+      }
+    },
+    {
+      files: [
+        '**/__tests__/*.{j,t}s?(x)',
+        '**/tests/unit/**/*.spec.{j,t}s?(x)'
+      ],
+      env: {
+        jest: true
       }
     }
   ]
