@@ -72,6 +72,9 @@ export default defineComponent({
       'action_get_all_joined_room_state_events',
       'action_get_joined_rooms'
     ]),
+    ...mapActions('sync', [
+      'action_sync_state'
+    ]),
     async update_room_table () {
       const response: GETJoinedRoomsResponse = await this.action_get_joined_rooms()
       // first only list id
@@ -124,6 +127,7 @@ export default defineComponent({
     }
   },
   created () {
+    this.action_sync_state({ continue_batch: true })
     this.update_room_table()
   }
 })
