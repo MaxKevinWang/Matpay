@@ -13,7 +13,7 @@
             </router-link>
           </li>
           <li class="nav-item">
-            <router-link to="/rooms" active-class="active" class="nav-link" aria-current="page">
+            <router-link to="/rooms" active-class="active" class="nav-link" aria-current="page" id="room-link">
               Rooms
             </router-link>
           </li>

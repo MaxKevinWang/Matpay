@@ -1,4 +1,4 @@
-import { ActionTree, GetterTree, MutationTree } from 'vuex'
+import { ActionTree, createStore, GetterTree, MutationTree, StoreOptions } from 'vuex'
 import axios from 'axios'
 import { GETLoginResponse, POSTLoginResponse } from '@/interface/login.interface'
 import { MatrixError } from '@/interface/MatrixError.interface'
@@ -96,4 +96,12 @@ export const auth_store = {
       return state.homeserver
     }
   }
+}
+
+// Testing
+export default {
+  state: auth_store.state,
+  mutations: auth_store.mutations,
+  actions: auth_store.actions,
+  getters: auth_store.getters
 }
