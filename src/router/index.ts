@@ -31,5 +31,12 @@ const router = createRouter({
   history: createWebHistory(),
   routes
 })
-
+router.beforeEach((to, from) => {
+  if (to.name === 'login' || to.name === 'home') {
+    return
+  }
+  if (!localStorage.getItem('access_token')) {
+    router.push({ name: 'login' })
+  }
+})
 export default router
