@@ -1,5 +1,6 @@
 import store from '@/store/auth'
 import { test_account1, test_homeserver } from '../../test_utils'
+import axios from 'axios'
 
 interface State {
   user_id: string
@@ -83,6 +84,49 @@ describe('Test Vuex Store auth', () => {
           homeserver: test_homeserver
         })).rejects.toThrowError()
       expect(result).toBeFalsy()
+    })
+    it('Test action logout', async () => {
+      const action_login = store.actions.action_login as (context: any, payload: any) => Promise<any>
+      const action_logout = store.actions.action_logout as (context: any, payload: any) => Promise<any>
+      let test_access_token = ''
+      // set up axios interceptor
+      axios.interceptors.request.use(function (config) {
+        if (test_access_token !== '') {
+          if (!config.headers) {
+            config.headers = {}
+          }
+          config.headers.Authorization = 'Bearer ' + test_access_token
+        }
+        return config
+      }, function (error) {
+        return Promise.reject(error)
+      })
+      const commit = (str: string, payload: {access_token: string}) => {
+        test_access_token = payload.access_token
+      }
+      // login
+      await action_login({
+        state: {
+          device_id: ''
+        },
+        commit: commit
+      }, {
+        username: test_account1.username,
+        password: test_account1.password,
+        homeserver: test_homeserver
+      })
+      expect(test_access_token).toBeTruthy()
+      // logout
+      await action_logout({
+        state: {
+          homeserver: test_homeserver,
+          device_id: ''
+        },
+        commit: jest.fn()
+      }, {})
+      await expect(
+        axios.get(`${test_homeserver}/_matrix/client/r0/sync`)
+      ).rejects.toThrowError()
     })
   })
 })
