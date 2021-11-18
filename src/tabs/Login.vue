@@ -20,7 +20,7 @@
         <input v-model="password" id="password" class="form-control" type="password" name="password"
                placeholder="Password">
       </div>
-      <input class="btn btn-primary" @click="login()" value="Login">
+      <input class="btn btn-primary" @click="login()" value="Login" id="login">
     </form>
 
     Don't have an account? <a href="#">Register here.</a>
