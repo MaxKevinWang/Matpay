@@ -7,6 +7,7 @@ import {
   MatrixRoomStateEvent
 } from '@/interface/rooms_event.interface'
 import { MatrixError } from '@/interface/MatrixError.interface'
+import { auth_store } from '@/store/auth'
 
 interface State {
   room_state_events: Record<string, MatrixRoomStateEvent[]>,
@@ -127,4 +128,12 @@ export const rooms_store = {
       return null
     }
   }
+}
+
+// Testing
+export default {
+  state: rooms_store.state,
+  mutations: rooms_store.mutations,
+  actions: rooms_store.actions,
+  getters: rooms_store.getters
 }
