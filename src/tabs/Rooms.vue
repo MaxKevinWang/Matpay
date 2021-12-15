@@ -25,10 +25,12 @@
         <td>{{ room.user_type }}</td>
         <td>
           <button class="btn btn-primary" @click="enter_room_detail(room.room_id)">Details</button>
+          <button class="btn btn-info" @click="enter_room_history(room.room_id)">History</button>
         </td>
       </tr>
       </tbody>
     </table>
+    <button class="btn btn-primary" @click="on_create_room_click()">Create New Room...</button>
   </div>
 </template>
 
@@ -124,6 +126,14 @@ export default defineComponent({
           room_id: room_id
         }
       })
+    },
+    enter_room_history (room_id: string) {
+      this.$router.push({
+        name: 'room_history',
+        params: {
+          room_id: room_id
+        }
+      })
     }
   },
   created () {
@@ -134,5 +144,7 @@ export default defineComponent({
 
 </script>
 <style scoped>
-
+.btn {
+  margin-right: 5px
+}
 </style>

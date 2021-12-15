@@ -3,6 +3,7 @@ import Home from '../tabs/Home.vue'
 import Login from '@/tabs/Login.vue'
 import Rooms from '@/tabs/Rooms.vue'
 import RoomDetail from '@/views/RoomDetail.vue'
+import RoomTxHistory from '@/views/RoomTxHistory.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -24,6 +25,11 @@ const routes: Array<RouteRecordRaw> = [
     path: '/room/:room_id',
     name: 'room_detail',
     component: RoomDetail
+  },
+  {
+    path: '/history/:room_id',
+    name: 'room_history',
+    component: RoomTxHistory
   }
 ]
 

@@ -9,11 +9,13 @@ export interface ChatMessage {
 
 export interface TxApprovedPlaceholder {
   type: 'approved',
+  timestamp: Date,
   grouped_tx: GroupedTransaction,
 }
 
 export interface TxPendingPlaceholder {
   type: 'pending',
+  timestamp: Date,
   approval: PendingApproval
 }
 

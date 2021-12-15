@@ -13,7 +13,7 @@
       </div>
       <div class="col-lg-9 chat-frame">
         <h4>Chat</h4>
-        <p>To be done.</p>
+        <ChatComponent />
       </div>
     </div>
   </div>
@@ -24,6 +24,7 @@ import { defineComponent } from 'vue'
 import MemberList from '@/components/MemberList.vue'
 import { mapActions, mapGetters } from 'vuex'
 import { MatrixRoomMemberStateEvent } from '@/interface/rooms_event.interface'
+import ChatComponent from '@/components/ChatComponent.vue'
 
 export default defineComponent({
   name: 'RoomDetail',
@@ -50,6 +51,7 @@ export default defineComponent({
     }
   },
   components: {
+    ChatComponent,
     MemberList
   },
   methods: {

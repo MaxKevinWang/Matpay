@@ -21,8 +21,9 @@ export interface GroupedTransaction {
 export interface PendingApproval {
   event_id: MatrixEventID,
   type: 'create' | 'modify',
-  grouped_tx? : GroupedTransaction, // if exists then modification, if doesn't then creation
+  group_id : GroupID,
   approvals: Record<MatrixUserID, boolean>,
+  from: User,
   description: string,
   timestamp: Date,
   txs: SimpleTransaction[]
