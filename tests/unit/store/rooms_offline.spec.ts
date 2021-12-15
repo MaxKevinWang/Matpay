@@ -1,4 +1,4 @@
-import { MatrixRoomStateEvent } from '@/interface/RoomsEvent.interface'
+import { MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
 import store from '@/store/rooms'
 import axios from 'axios'
 

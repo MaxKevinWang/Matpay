@@ -1,7 +1,7 @@
 import { ActionTree, createStore, GetterTree, MutationTree, StoreOptions } from 'vuex'
 import axios from 'axios'
 import { GETLoginResponse, POSTLoginResponse } from '@/interface/api.interface'
-import { MatrixError } from '@/interface/MatrixError.interface'
+import { MatrixError } from '@/interface/error.interface'
 
 interface State {
   user_id: string

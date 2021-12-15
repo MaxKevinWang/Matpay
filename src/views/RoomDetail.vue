@@ -23,7 +23,7 @@
 import { defineComponent } from 'vue'
 import MemberList from '@/components/MemberList.vue'
 import { mapActions, mapGetters } from 'vuex'
-import { MatrixRoomMemberStateEvent } from '@/interface/RoomsEvent.interface'
+import { MatrixRoomMemberStateEvent } from '@/interface/rooms_event.interface'
 
 export default defineComponent({
   name: 'RoomDetail',

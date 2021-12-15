@@ -3,7 +3,7 @@ import {
   MatrixRoomEvent,
   MatrixRoomStateEvent,
   MatrixRoomStrippedEvent
-} from '@/interface/RoomsEvent.interface'
+} from '@/interface/rooms_event.interface'
 
 export interface MatrixSyncRequestParam {
   filter?: string,

@@ -5,11 +5,12 @@ import {
   MatrixRoomMemberStateEvent,
   MatrixRoomPermissionConfiguration,
   MatrixRoomStateEvent
-} from '@/interface/RoomsEvent.interface'
-import { MatrixError } from '@/interface/MatrixError.interface'
+} from '@/interface/rooms_event.interface'
+import { MatrixError } from '@/interface/error.interface'
+import { MatrixRoomID } from '@/models/id.model'
 
 interface State {
-  room_state_events: Record<string, MatrixRoomStateEvent[]>,
+  room_state_events: Record<MatrixRoomID, MatrixRoomStateEvent[]>,
 }
 
 type RoomState = {
