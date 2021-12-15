@@ -9,3 +9,7 @@ export interface POSTLoginResponse {
   access_token: string,
   device_id: string
 }
+
+export interface GETJoinedRoomsResponse {
+  joined_rooms: [string]
+}

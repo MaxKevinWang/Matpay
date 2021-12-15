@@ -75,7 +75,7 @@
 import { defineComponent, PropType } from 'vue'
 import UserCard from '@/components/UserCard.vue'
 import { mapActions, mapGetters } from 'vuex'
-import { MatrixRoomPermissionConfiguration } from '@/interface/rooms_event.interface'
+import { MatrixRoomPermissionConfiguration } from '@/interface/RoomsEvent.interface'
 import { Modal } from 'bootstrap'
 
 export default defineComponent({

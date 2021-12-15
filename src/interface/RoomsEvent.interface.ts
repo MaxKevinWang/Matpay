@@ -1,13 +1,15 @@
+import { MatrixEventID, MatrixRoomID, MatrixUserID } from '@/models/id.model'
+
 export interface MatrixEvent {
   content: Record<string, unknown>,
   type: string
 }
 
 export interface MatrixRoomEvent extends MatrixEvent {
-  room_id: string,
-  sender: string,
+  room_id: MatrixRoomID,
+  sender: MatrixUserID,
   origin_server_ts: number,
-  event_id: string,
+  event_id: MatrixEventID,
 }
 
 export interface MatrixRoomStateEvent extends MatrixEvent {
@@ -34,12 +36,12 @@ export interface MatrixRoomMemberStateEvent extends MatrixRoomStateEvent {
 
 export interface MatrixRoomPermissionConfiguration extends Record<string, unknown> {
   ban: number,
-  events: Record<string, number>,
+  events: Record<MatrixEventID, number>,
   events_default: number,
   invite: number,
   kick: number,
   redact: number,
   state_default: number,
   users_default: number,
-  users: Record<string, number>
+  users: Record<MatrixUserID, number>
 }

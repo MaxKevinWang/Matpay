@@ -1,5 +1,5 @@
 import { ActionTree, GetterTree, MutationTree } from 'vuex'
-import { MatrixSyncResponse } from '@/interface/sync_api.interface'
+import { MatrixSyncResponse } from '@/interface/sync.interface'
 import axios from 'axios'
 
 interface State {

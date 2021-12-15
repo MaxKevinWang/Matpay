@@ -1,13 +1,12 @@
-import { GETJoinedRoomsResponse } from '@/interface/rooms_api.interface'
+import { GETJoinedRoomsResponse } from '@/interface/api.interface'
 import axios from 'axios'
 import { ActionTree, GetterTree, MutationTree } from 'vuex'
 import {
   MatrixRoomMemberStateEvent,
   MatrixRoomPermissionConfiguration,
   MatrixRoomStateEvent
-} from '@/interface/rooms_event.interface'
+} from '@/interface/RoomsEvent.interface'
 import { MatrixError } from '@/interface/MatrixError.interface'
-import { auth_store } from '@/store/auth'
 
 interface State {
   room_state_events: Record<string, MatrixRoomStateEvent[]>,
