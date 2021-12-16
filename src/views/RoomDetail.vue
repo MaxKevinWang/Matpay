@@ -4,7 +4,7 @@
       {{ error }}
     </div>
     <div class="row">
-      <h2>Room: {{ this.room_name }}</h2>
+      <h2>Room: {{ room_name }}</h2>
     </div>
     <div class="row clearfix">
       <div class="col-lg-3 chat-frame">
