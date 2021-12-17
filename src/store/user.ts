@@ -8,6 +8,7 @@ import {
   MatrixRoomStateEvent
 } from '@/interface/rooms_event.interface'
 import { deepcopy } from '@/utils/utils'
+import { MatrixError } from '@/interface/error.interface'
 
 interface State {
   users_info: Record<MatrixRoomID, Array<RoomUserInfo>>,
@@ -127,6 +128,20 @@ export const user_store = {
         users_info: users_info
       })
       return users_info
+    },
+    async action_change_user_membership_on_room ({
+      dispatch,
+      rootGetters
+    }, payload: { room_id: MatrixRoomID, user_id: MatrixUserID, action: 'invite' | 'kick' | 'ban' | 'unban' }) {
+      const homeserver = rootGetters['auth/homeserver']
+      const response = await axios.post<Record<string, never>>(`${homeserver}/_matrix/client/r0/rooms/${payload.room_id}/${payload.action}`, {
+        user_id: payload.user_id
+      }, { validateStatus: () => true })
+      if (response.status === 200) {
+        dispatch('rooms/action_get_room_state_events', { room_id: payload.room_id }, { root: true }) // update state events
+      } else {
+        throw new Error((response.data as unknown as MatrixError).error)
+      }
     }
   },
   getters: <GetterTree<State, any>>{
