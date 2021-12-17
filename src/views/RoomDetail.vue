@@ -42,6 +42,9 @@ export default defineComponent({
       'get_permission_event_for_room',
       'get_room_name'
     ]),
+    ...mapGetters('user', [
+      'get_users_info_for_room'
+    ]),
     room_id (): string {
       return this.$route.params.room_id as string
     }
@@ -54,23 +57,13 @@ export default defineComponent({
     ...mapActions('rooms', [
       'action_get_room_state_events'
     ]),
-    ...mapActions('user', [
-      'action_parse_member_events_for_room'
-    ]),
     async update_member_list () {
-      await this.action_get_room_state_events({
-        room_id: this.room_id
-      })
-      this.room_name = this.get_room_name(this.room_id)
       try {
-        const member_join_events: MatrixRoomMemberStateEvent[] = this.get_member_state_events_for_room(this.room_id)
-        if (member_join_events && member_join_events.length > 0) {
-          this.users_info = await this.action_parse_member_events_for_room({
-            room_id: this.room_id,
-            member_events: member_join_events,
-            permission_event: this.get_permission_event_for_room(this.room_id)
-          })
-        }
+        await this.action_get_room_state_events({
+          room_id: this.room_id
+        })
+        this.room_name = this.get_room_name(this.room_id)
+        this.users_info = this.get_users_info_for_room(this.room_id)
       } catch (e) {
         alert('Room does not exist or you are not part of the room!')
         this.$router.push({
