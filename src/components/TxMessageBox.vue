@@ -16,21 +16,30 @@
 import { defineComponent } from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 import { DEFAULT_AVATAR } from '@/utils/consts'
+import TxDetail from '@/components/TxDetail.vue'
+import { User } from '@/models/user.model'
+import { GroupID, MatrixEventID, MatrixUserID, TxID } from '@/models/id.model'
+import { PendingApproval, SimpleTransaction } from '@/models/transaction.model'
 
 export default defineComponent({
   name: 'TxMessageBox',
   data () {
     return {
-      amount: 0 as number,
-      user_From: '' as string,
-      user_To: '' as string,
-      timestamp: Date,
-      description: '' as string
+      to: {} as User,
+      from: {} as User,
+      amount: {} as number,
+      description: '' as string,
+      timestamp: {} as Date
     }
   },
   computed: {
+    ...mapGetters('tx', [
+      'transaction'
+    ])
   },
   components: {
+    // eslint-disable-next-line vue/no-unused-components
+    TxDetail
   },
   methods: {
   }
