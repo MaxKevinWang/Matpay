@@ -1,11 +1,7 @@
 import { GETJoinedRoomsResponse } from '@/interface/api.interface'
 import axios from 'axios'
 import { ActionTree, GetterTree, MutationTree } from 'vuex'
-import {
-  MatrixRoomMemberStateEvent,
-  MatrixRoomPermissionConfiguration,
-  MatrixRoomStateEvent
-} from '@/interface/rooms_event.interface'
+import { MatrixRoomMemberStateEvent, MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
 import { MatrixError } from '@/interface/error.interface'
 import { MatrixRoomID, MatrixUserID } from '@/models/id.model'
 import { Room } from '@/models/room.model'
@@ -75,6 +71,7 @@ export const rooms_store = {
       state,
       commit,
       dispatch,
+      getters,
       rootGetters
     }) {
       type RoomState = {
@@ -86,7 +83,7 @@ export const rooms_store = {
         promises.push(async function () {
           const homeserver = rootGetters['auth/homeserver']
           const response = await axios.get<MatrixRoomStateEvent[]>(`${homeserver}/_matrix/client/r0/rooms/${room.room_id}/state`)
-          const result : RoomState = {
+          const result: RoomState = {
             room_id: room.room_id,
             state_events: response.data
           }
@@ -99,6 +96,12 @@ export const rooms_store = {
               name: name_event[0].content.name
             })
           }
+          // dispatch member parsing
+          dispatch('user/action_parse_member_events_for_room', {
+            room_id: room.room_id,
+            member_events: getters.get_member_state_events_for_room(room.room_id),
+            permission_event: getters.get_permission_event_for_room(room.room_id)
+          }, { root: true })
         }())
       }
       return Promise.all(promises)
@@ -106,6 +109,7 @@ export const rooms_store = {
     async action_get_room_state_events ({
       commit,
       dispatch,
+      getters,
       rootGetters
     }, payload: { room_id: MatrixRoomID }) {
       const homeserver = rootGetters['auth/homeserver']
@@ -123,6 +127,12 @@ export const rooms_store = {
           name: name_event[0].content.name
         })
       }
+      // dispatch member parsing
+      dispatch('user/action_parse_member_events_for_room', {
+        room_id: payload.room_id,
+        member_events: getters.get_member_state_events_for_room(payload.room_id),
+        permission_event: getters.get_permission_event_for_room(payload.room_id)
+      }, { root: true })
     },
     async action_change_user_membership_on_room ({
       dispatch,
