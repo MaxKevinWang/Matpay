@@ -21,8 +21,10 @@ export const tx_store = {
   actions: <ActionTree<State, any>>{},
   getters: <GetterTree<State, any>>{
     get_grouped_transactions_for_room: (state: State) => (room_id: MatrixRoomID): GroupedTransaction[] => {
+      return []
     },
     get_pending_approvals_for_room: (state: State) => (room_id: MatrixRoomID) : PendingApproval[] => {
+      return []
     }
   }
 }

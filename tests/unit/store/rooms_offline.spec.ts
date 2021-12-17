@@ -98,13 +98,13 @@ describe('Test rooms Vuex store', () => {
       const state: State = {
         room_state_events: {}
       }
-      store.mutations.mutation_set_joined_rooms(state, { joined_rooms: rooms_1 })
+      store.mutations.mutation_init_joined_rooms(state, { joined_rooms: rooms_1 })
       expect(state.room_state_events).toEqual({
         aaa: [],
         bbb: []
       })
       const rooms_2 = ['ccc', 'ddd']
-      store.mutations.mutation_set_joined_rooms(state, { joined_rooms: rooms_2 })
+      store.mutations.mutation_init_joined_rooms(state, { joined_rooms: rooms_2 })
       expect(state.room_state_events).toEqual({ // test overwrite
         ccc: [],
         ddd: []
