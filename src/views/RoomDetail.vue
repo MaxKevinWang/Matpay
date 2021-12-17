@@ -8,7 +8,7 @@
     </div>
     <div class="row clearfix">
       <div class="col-lg-3 chat-frame">
-        <MemberList :room_id="room_id" :member_list="member_list" @on-error="on_error"
+        <MemberList :room_id="room_id" :users_info="users_info" @on-error="on_error"
                     @on-user-change="on_user_change"/>
       </div>
       <div class="col-lg-9 chat-frame">
@@ -25,29 +25,28 @@ import MemberList from '@/components/MemberList.vue'
 import { mapActions, mapGetters } from 'vuex'
 import { MatrixRoomMemberStateEvent } from '@/interface/rooms_event.interface'
 import ChatComponent from '@/components/ChatComponent.vue'
+import { RoomUserInfo } from '@/models/user.model'
 
 export default defineComponent({
   name: 'RoomDetail',
   data () {
     return {
-      member_list: [] as Array<{
-        user_id: string,
-        displayname: string | null,
-        avatar_url: string | undefined,
-      }>,
+      users_info: [] as Array<RoomUserInfo>,
+      room_name: '' as string,
       error: '' as string
     }
   },
   computed: {
     ...mapGetters('rooms', [
       'get_member_state_events_for_room',
+      'get_permission_event_for_room',
       'get_room_name'
+    ]),
+    ...mapGetters('user', [
+      'get_users_info_for_room'
     ]),
     room_id (): string {
       return this.$route.params.room_id as string
-    },
-    room_name (): string {
-      return this.get_room_name(this.room_id)
     }
   },
   components: {
@@ -59,22 +58,12 @@ export default defineComponent({
       'action_get_room_state_events'
     ]),
     async update_member_list () {
-      await this.action_get_room_state_events({
-        room_id: this.room_id
-      })
       try {
-        const member_join_events: MatrixRoomMemberStateEvent[] = this.get_member_state_events_for_room(this.room_id)
-        if (member_join_events && member_join_events.length > 0) {
-          this.member_list = member_join_events
-            .filter(event => event.content.membership === 'join')
-            .map(event => {
-              return {
-                user_id: event.state_key,
-                displayname: event.content.displayname,
-                avatar_url: event.content.avatar_url
-              }
-            })
-        }
+        await this.action_get_room_state_events({
+          room_id: this.room_id
+        })
+        this.room_name = this.get_room_name(this.room_id)
+        this.users_info = this.get_users_info_for_room(this.room_id)
       } catch (e) {
         alert('Room does not exist or you are not part of the room!')
         this.$router.push({

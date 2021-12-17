@@ -25,17 +25,12 @@ import { DEFAULT_AVATAR } from '@/utils/consts'
 import { get_file_from_content_repository } from '@/utils/ContentRepository'
 import { mapGetters } from 'vuex'
 import RightClickMenu from '@/components/RightClickMenu.vue'
+import { RoomUserInfo } from '@/models/user.model'
 
 export default defineComponent({
   name: 'UserCard',
   props: {
-    member_prop: Object as PropType<{
-      user_id: string,
-      displayname: string,
-      avatar_url: string | undefined,
-      is_self: boolean,
-      user_type: 'Member' | 'Moderator' | 'Admin'
-    }>,
+    user_prop: Object as PropType<RoomUserInfo>,
     can_i_kick_user: Boolean as PropType<boolean>
   },
   computed: {
@@ -59,13 +54,13 @@ export default defineComponent({
   },
   methods: {
     update_user_card () {
-      if (this.member_prop) {
-        this.user_id = this.member_prop.user_id
-        this.displayname = this.member_prop.displayname
-        this.is_self = this.member_prop.is_self
-        this.user_type = this.member_prop.user_type
-        if (this.member_prop.avatar_url) {
-          get_file_from_content_repository(this.homeserver, this.member_prop.avatar_url)
+      if (this.user_prop) {
+        this.user_id = this.user_prop.user.user_id
+        this.displayname = this.user_prop.displayname
+        this.is_self = this.user_prop.is_self
+        this.user_type = this.user_prop.user_type
+        if (this.user_prop.avatar_url) {
+          get_file_from_content_repository(this.homeserver, this.user_prop.avatar_url)
             .then(response => {
               const fr = new FileReader()
               fr.onloadend = () => {
@@ -93,7 +88,7 @@ export default defineComponent({
     }
   },
   watch: {
-    member_prop: {
+    user_prop: {
       handler: 'update_user_card',
       immediate: true
     }
