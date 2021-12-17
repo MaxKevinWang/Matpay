@@ -1,4 +1,5 @@
 <template>
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
   <div class="flex">
       <div class="input-group mb-3">
           <input type="text" class="form-control" placeholder="Send a message" aria-describedby="button-addon2">
@@ -6,6 +7,21 @@
           <button class="btn btn-primary" type="button">History</button>
           <button class="btn btn-primary" type="button">Send</button>
       </div>
+  </div>
+  // test here
+  <div class="transaction">
+    <div class="panel panel-primary">
+      <div class="panel-heading">
+        <h3 class="panel-title">transation</h3>
+      </div>
+      <div class="panel-body">
+        To call the real transaction
+      </div>
+      <i class="fa fa-file-text-o fa-4x"></i>
+      <div>
+        <button class="btn btn-primary" type="button">Details</button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -39,8 +55,31 @@ export default defineComponent({
 </script>
 <style scoped>
   .flex {
+    background: white;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    top: 500px;
+    position:relative;
+  }
+  .transaction {
+    background: #ccc;
+    height: 105px;
+    width: 625px;
+    right: 25px;
+    top: 200px;
+    position:relative;
+  }
+  .transaction button{
+    position:relative;
+    left: 500px;
+    height: 80px;
+    width: 100px;
+    top: -115px;
+  }
+  .transaction i{
+    position:relative;;
+    left: 250px;
+    top: -30px;
   }
 </style>

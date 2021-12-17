@@ -1,13 +1,17 @@
 <template>
-  <div>
-    <button class="btn btn-primary" >Details</button>
-  </div>
-  <div class="panel panel-primary">
-    <div class="panel-heading">
-      <h3 class="panel-title">transation</h3>
-    </div>
-    <div class="panel-body">
-      To call the real transaction
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <div class="transaction">
+    <div class="panel panel-primary">
+      <div class="panel-heading">
+        <h3 class="panel-title">transation</h3>
+      </div>
+      <div class="panel-body">
+        To call the real transaction
+      </div>
+      <i class="fa fa-file-text-o fa-4x"></i>
+      <div>
+        <button class="btn btn-primary" type="button">Details</button>
+      </div>
     </div>
   </div>
 </template>
@@ -33,9 +37,10 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters('tx', [
-      'transaction'
-    ])
+    ...mapGetters('tx', ['get_grouped_transactions_for_room', 'YVcDePcjikPMmUjRtZ:dsn.tm.kit.edu'])
+    //  ...mapGetters('tx', [
+    //    'transaction'
+    //  ])
   },
   components: {
     // eslint-disable-next-line vue/no-unused-components
@@ -46,5 +51,26 @@ export default defineComponent({
 })
 </script>
 <style scoped>
+
+.transaction {
+  background: #ccc;
+  height: 105px;
+  width: 625px;
+  right: 25px;
+  top: 200px;
+  position:relative;
+}
+.transaction button{
+  position:relative;
+  left: 500px;
+  height: 80px;
+  width: 100px;
+  top: -115px;
+}
+.transaction i{
+  position:relative;;
+  left: 250px;
+  top: -30px;
+}
 
 </style>

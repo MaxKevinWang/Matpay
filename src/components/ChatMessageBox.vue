@@ -6,6 +6,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { mapActions, mapGetters } from 'vuex'
+import { chat_store } from '@/store/chat'
 
 export default defineComponent({
   name: 'ChatMessageBox',
@@ -20,10 +21,13 @@ export default defineComponent({
   components: {
   },
   methods: {
-    ...mapGetters('chat', [
-      'chatmessage'
-    ])
+    ...mapGetters('chat', ['chat_store.getters', 'YVcDePcjikPMmUjRtZ:dsn.tm.kit.edu']),
+    ...mapGetters('chatlog', ['get_chat_log_for_room', 'YVcDePcjikPMmUjRtZ:dsn.tm.kit.edu'])
+    // ...mapGetters('chat', [
+    //   'chatmessage'
+    // ])
   }
+
 })
 </script>
 <style scoped>
