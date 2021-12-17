@@ -15,6 +15,8 @@ import { defineComponent } from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 import { ChatLog } from '@/models/chat.model'
 import { GroupedTransaction } from '@/models/transaction.model'
+import TxMessageBox from '@/components/TxMessageBox.vue'
+import ChatMessageBox from '@/components/ChatMessageBox.vue'
 
 export default defineComponent({
   name: 'ChatComponent',
@@ -26,12 +28,28 @@ export default defineComponent({
     }
   },
   computed: {
+    ...mapGetters('rooms', [
+      'get_member_state_events_for_room',
+      'get_room_name'
+    ]),
     ...mapGetters('tx', [
-      'transaction'
+      'get_grouped_transactions_for_room',
+      'YVcDePcjikPMmUjRtZ:dsn.tm.kit.edu'
+    ]),
+    ...mapGetters('tx', [
+      'get_pending_approvals_for_room',
+      'YVcDePcjikPMmUjRtZ:dsn.tm.kit.edu'
+    ]),
+    ...mapGetters('chat_log', [
+      'get_chat_log_for_room',
+      'YVcDePcjikPMmUjRtZ:dsn.tm.kit.edu'
     ])
   },
   components: {
-
+    // eslint-disable-next-line vue/no-unused-components
+    TxMessageBox,
+    // eslint-disable-next-line vue/no-unused-components
+    ChatMessageBox
   },
   methods: {
   }
