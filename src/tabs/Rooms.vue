@@ -98,6 +98,7 @@ export default defineComponent({
       await this.action_get_all_joined_room_state_events()
       const rooms : Room[] = this.get_all_joined_rooms()
       for (const room of rooms) {
+        // TODO: identify unsuitable rooms here. THey cannot be used for MatPay.
         const current_room = this.rooms.filter(i => i.room_id === room.room_id)[0]
         // get room name: state event 'm.room.name'
         const name_event: MatrixRoomStateEvent = room.state_events.filter(

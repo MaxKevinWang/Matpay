@@ -7,7 +7,8 @@ interface State {
   user_id: string
   homeserver: string
   access_token: string
-  device_id?: string
+  device_id?: string,
+  event_txn_id: number
 }
 
 export const auth_store = {
@@ -17,7 +18,10 @@ export const auth_store = {
       user_id: localStorage.getItem('user_id') || '',
       homeserver: localStorage.getItem('homeserver') || '',
       access_token: localStorage.getItem('access_token') || '',
-      device_id: localStorage.getItem('device_id') || ''
+      device_id: localStorage.getItem('device_id') || '',
+      event_txn_id: localStorage.getItem('event_txn_id')
+        ? parseInt(localStorage.getItem('event_txn_id') as string)
+        : 0
     }
   },
   mutations: <MutationTree<State>>{
@@ -30,11 +34,17 @@ export const auth_store = {
       localStorage.setItem('access_token', state.access_token)
       localStorage.setItem('device_id', state.device_id!)
       localStorage.setItem('homeserver', state.homeserver)
+      localStorage.setItem('event_txn_id', state.event_txn_id.toString())
     },
     mutation_logout (state: State): void {
       state.access_token = ''
       localStorage.removeItem('access_token')
       localStorage.removeItem('user_id')
+      localStorage.removeItem('event_txn_id')
+    },
+    mutation_increment_event_txn_id (state: State) {
+      state.event_txn_id++
+      localStorage.setItem('event_txn_id', state.event_txn_id.toString())
     }
   },
   actions: <ActionTree<State, any>>{
@@ -66,7 +76,8 @@ export const auth_store = {
             user_id: response_post.data.user_id,
             access_token: response_post.data.access_token,
             device_id: response_post.data.device_id,
-            homeserver: payload.homeserver
+            homeserver: payload.homeserver,
+            event_txn_id: '0'
           })
         } else {
           const error = response_post.data as unknown as MatrixError
@@ -80,6 +91,14 @@ export const auth_store = {
     }) {
       await axios.post(`${state.homeserver}/_matrix/client/r0/logout`)
       commit('mutation_logout')
+    },
+    action_get_next_event_txn_id ({
+      state,
+      commit
+    }) : number {
+      const result = state.event_txn_id
+      commit('mutation_increment_event_txn_id')
+      return result
     }
   },
   getters: <GetterTree<State, any>>{
