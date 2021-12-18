@@ -9,20 +9,6 @@
       </div>
   </div>
   // test here
-  <div class="transaction">
-    <div class="panel panel-primary">
-      <div class="panel-heading">
-        <h3 class="panel-title">transation</h3>
-      </div>
-      <div class="panel-body">
-        To call the real transaction
-      </div>
-      <i class="fa fa-file-text-o fa-4x"></i>
-      <div>
-        <button class="btn btn-primary" type="button">Details</button>
-      </div>
-    </div>
-  </div>
 </template>
 
 <script lang="ts">
@@ -79,25 +65,5 @@ export default defineComponent({
     justify-content: space-between;
     top: 500px;
     position:relative;
-  }
-  .transaction {
-    background: #ccc;
-    height: 105px;
-    width: 625px;
-    right: 25px;
-    top: 200px;
-    position:relative;
-  }
-  .transaction button{
-    position:relative;
-    left: 500px;
-    height: 80px;
-    width: 100px;
-    top: -115px;
-  }
-  .transaction i{
-    position:relative;;
-    left: 250px;
-    top: -30px;
   }
 </style>

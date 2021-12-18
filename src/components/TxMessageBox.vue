@@ -6,7 +6,6 @@
         <h3 class="panel-title">transation</h3>
       </div>
       <div class="panel-body">
-        To call the real transaction
       </div>
       <i class="fa fa-file-text-o fa-4x"></i>
       <div>
@@ -17,16 +16,25 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, PropType } from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 import { DEFAULT_AVATAR } from '@/utils/consts'
 import TxDetail from '@/components/TxDetail.vue'
 import { User } from '@/models/user.model'
-import { GroupID, MatrixEventID, MatrixUserID, TxID } from '@/models/id.model'
+import { GroupID, MatrixEventID, MatrixRoomID, MatrixUserID, TxID } from '@/models/id.model'
 import { PendingApproval, SimpleTransaction } from '@/models/transaction.model'
+import { TxPlaceholder } from '@/models/chat.model'
 
 export default defineComponent({
   name: 'TxMessageBox',
+  props: {
+    reference: {
+      type: Object as PropType<TxPlaceholder>
+    },
+    room_id: {
+      type: String as PropType<MatrixRoomID>
+    }
+  },
   data () {
     return {
       to: {} as User,
@@ -37,7 +45,9 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters('tx', ['get_grouped_transactions_for_room', 'YVcDePcjikPMmUjRtZ:dsn.tm.kit.edu'])
+    ...mapGetters('tx', [
+      'get_grouped_transactions_for_room'
+    ])
     //  ...mapGetters('tx', [
     //    'transaction'
     //  ])
