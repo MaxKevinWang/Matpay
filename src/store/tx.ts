@@ -1,7 +1,11 @@
 import { ActionTree, GetterTree, MutationTree } from 'vuex'
 import { GroupedTransaction, PendingApproval, TxGraph } from '@/models/transaction.model'
-import { MatrixRoomID } from '@/models/id.model'
+import { GroupID, MatrixRoomID, MatrixUserID, TxID } from '@/models/id.model'
 import { RoomUserInfo } from '@/models/user.model'
+import { uuidgen } from '@/utils/utils'
+import { TxCreateEvent } from '@/interface/tx_event.interface'
+import axios from 'axios'
+import { MatrixError } from '@/interface/error.interface'
 
 interface State {
   transactions: Record<MatrixRoomID, {
@@ -80,6 +84,7 @@ export const tx_store = {
     async action_create_tx_for_room ({
       state,
       commit,
+      dispatch,
       rootGetters
     }, payload: {
       room_id: MatrixRoomID
@@ -98,7 +103,8 @@ export const tx_store = {
         throw new Error('Implementation Error: no pending approvals, especially not itself!')
       }
       const room_users = (rootGetters['user/get_users_info_for_room'](room_id) as Array<RoomUserInfo>).map(i => i.user)
-      const participating_users = tx.txs.map(t => t.to).concat([tx.from])
+      const targets = tx.txs.map(t => t.to)
+      const participating_users = targets.concat([tx.from])
       for (const u of participating_users) {
         if (!room_users.includes(u)) {
           throw new Error('Implementation Error: user not in room!')
@@ -108,6 +114,9 @@ export const tx_store = {
       if (!participating_users_id.includes(rootGetters['auth/user_id'])) {
         throw new Error('Error: current user not part of the transaction!')
       }
+      if (new Set(targets).size !== targets.length) {
+        throw new Error('Error: duplicate transaction target detected!')
+      }
       for (const a of tx.txs.map(i => i.amount)) {
         if (a <= 0) {
           throw new Error('Error: all amounts after splitting must be positive!')
@@ -116,7 +125,58 @@ export const tx_store = {
       if (tx.description === '') {
         throw new Error('Error: description must be non-empty!')
       }
-      // TODO: construct & send event
+      // Construct & send event
+      const create_event = {
+        from: tx.from.user_id,
+        txs: tx.txs.map(i => {
+          return {
+            to: i.to.user_id,
+            amount: i.amount,
+            tx_id: ''
+          }
+        }),
+        group_id: '',
+        description: tx.description
+      }
+      // 1. Generate non-repeating UUIDs
+      const existing_txs : GroupedTransaction[] = rootGetters['tx/get_grouped_transactions_for_room'](room_id)
+      const existing_pending_approvals : PendingApproval[] = rootGetters['tx/get_pending_approvals_for_room'](room_id)
+      const existing_group_ids = new Set([
+        ...(existing_txs.map(t => t.group_id)),
+        ...(existing_pending_approvals.map(t => t.group_id))
+      ])
+      const existing_tx_ids = new Set([
+        ...(existing_txs.reduce((a: string[], b) => {
+          return a.concat(b.txs.map(t => t.tx_id))
+        }, [])),
+        ...(existing_pending_approvals.reduce((a: string[], b) => {
+          return a.concat(b.txs.map(t => t.tx_id))
+        }, []))
+      ])
+      // UUID generation
+      let group_id : GroupID = ''
+      do {
+        group_id = uuidgen()
+      } while (existing_group_ids.has(group_id))
+      create_event.group_id = group_id
+      for (let i = 0;i < tx.txs.length; i++) {
+        let tx_id : TxID = ''
+        do {
+          tx_id = uuidgen()
+        } while (existing_tx_ids.has(group_id))
+        create_event.txs[i].tx_id = tx_id
+      }
+      // Send the event
+      const homeserver : string = rootGetters['auth/homeserver']
+      const event_txn_id : number = await dispatch('auth/action_get_next_event_txn_id', null, { root: true })
+      const response = await axios.put(`${homeserver}/_matrix/client/r0/rooms/${room_id}/send/com.matpay.create/${event_txn_id}`,
+        create_event,
+        { validateStatus: () => true }
+      )
+      if (response.status !== 200) {
+        throw new Error((response.data as MatrixError).error)
+      }
+      // TODO: notify other stores
     }
   },
   getters: <GetterTree<State, any>>{
