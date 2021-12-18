@@ -2,8 +2,10 @@
   <div class="LeftHxView">
     <h3>{{ room_name }}</h3>
     <h3>Your balance: </h3>
-    <div class="row" v-if="grouped_transactions.size >= 1">
-      <TxList></TxList>
+    <div class="row" v-if="tx_list.length >= 1">
+      <div class="col-4">
+        <TxList :tx_list="tx_list" />
+      </div>
     </div>
   </div>
 </template>
@@ -20,10 +22,7 @@ export default defineComponent({
   data () {
     return {
       room_name: '' as string,
-      from: '' as string,
-      amount: 0 as number,
-      tx_list: [] as Array<GroupedTransaction>,
-      time: '' as string
+      tx_list: [] as Array<GroupedTransaction>
     }
   },
   computed: {
@@ -37,25 +36,12 @@ export default defineComponent({
       'get_grouped_transactions_for_room'
     ])
   },
-  components: {
-    TxList,
-    TxDetail
-  },
+  components: { TxList },
   methods: {
-    set_up () {
-      this.room_name = this.get_room_name(this.room_id)
-      this.tx_list = this.get_grouped_transactions_for_room(this.room_id)
-    },
-    make_tx_list (grouped_transaction: GroupedTransaction) {
-      this.from = grouped_transaction.from.displayname
-      this.time = grouped_transaction.timestamp.getDay + ' ' + this.tx_list[0].timestamp.getMonth
-    },
-    calc_amount (grouped_transaction: GroupedTransaction) {
-      grouped_transaction.txs.forEach(txs => {
-        this.amount += txs.amount
-      })
-      return this.amount
-    }
+  },
+  created () {
+    this.room_name = this.get_room_name(this.room_id)
+    this.tx_list = this.get_grouped_transactions_for_room(this.room_id)
   }
 })
 </script>
