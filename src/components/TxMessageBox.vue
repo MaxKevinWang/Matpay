@@ -7,7 +7,7 @@
       </div>
       <div class="panel-body">
       </div>
-      <i class="fa fa-file-text-o fa-4x"></i>
+      <h1>TxMessageBox</h1>
       <div>
         <button class="btn btn-primary" type="button">Details</button>
       </div>
