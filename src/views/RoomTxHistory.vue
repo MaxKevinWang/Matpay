@@ -3,11 +3,7 @@
     <h3>{{ room_name }}</h3>
     <h3>Your balance: </h3>
     <div class="row" v-if="grouped_transactions.size >= 1">
-      <div class="col-4">
-        <div class="list-group" id="list-tab" role="tablist">
-          <a class="list-group-item list-group-item-action active" id="list-home-list" data-bs-toggle="list" href="#list-home" role="tab" aria-controls="list-home" v-for="grouped_transaction in grouped_transactions" :key="grouped_transaction.timestamp">{{ time }} Description: {{ from }} paid {{ amount }}</a>
-        </div>
-      </div>
+      <TxList></TxList>
     </div>
   </div>
 </template>
@@ -16,6 +12,8 @@
 import { GroupedTransaction } from '@/models/transaction.model'
 import { defineComponent } from 'vue'
 import { mapActions, mapGetters } from 'vuex'
+import TxList from '@/components/TxList.vue'
+import TxDetail from '@/components/TxDetail.vue'
 
 export default defineComponent({
   name: 'RoomTxHistory',
@@ -24,7 +22,7 @@ export default defineComponent({
       room_name: '' as string,
       from: '' as string,
       amount: 0 as number,
-      grouped_transactions: [] as Array<GroupedTransaction>,
+      tx_list: [] as Array<GroupedTransaction>,
       time: '' as string
     }
   },
@@ -40,15 +38,17 @@ export default defineComponent({
     ])
   },
   components: {
+    TxList,
+    TxDetail
   },
   methods: {
     set_up () {
       this.room_name = this.get_room_name(this.room_id)
-      this.grouped_transactions = this.get_grouped_transactions_for_room(this.room_id)
+      this.tx_list = this.get_grouped_transactions_for_room(this.room_id)
     },
     make_tx_list (grouped_transaction: GroupedTransaction) {
       this.from = grouped_transaction.from.displayname
-      this.time = grouped_transaction.timestamp.getDay + ' ' + this.grouped_transactions[0].timestamp.getMonth
+      this.time = grouped_transaction.timestamp.getDay + ' ' + this.tx_list[0].timestamp.getMonth
     },
     calc_amount (grouped_transaction: GroupedTransaction) {
       grouped_transaction.txs.forEach(txs => {
