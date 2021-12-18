@@ -1,5 +1,4 @@
 <template>
-  <link href="//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
   <div class="flex">
       <div class="input-group mb-3">
           <input type="text" class="form-control" placeholder="Send a message" aria-describedby="button-addon2">
@@ -38,9 +37,7 @@ export default defineComponent({
   name: 'ChatComponent',
   data () {
     return {
-      chat_log: {} as ChatLog,
-      grouped_txs: {} as GroupedTransaction,
-      users: {} as User
+      chat_log: {} as ChatLog
     }
   },
   computed: {
@@ -48,18 +45,12 @@ export default defineComponent({
       'get_member_state_events_for_room',
       'get_room_name'
     ]),
-    ...mapGetters('tx', [
-      'get_grouped_transactions_for_room',
-      'YVcDePcjikPMmUjRtZ:dsn.tm.kit.edu'
+    ...mapGetters('chat', [
+      'get_chat_log_for_room'
     ]),
-    ...mapGetters('tx', [
-      'get_pending_approvals_for_room',
-      'YVcDePcjikPMmUjRtZ:dsn.tm.kit.edu'
-    ]),
-    ...mapGetters('chat_log', [
-      'get_chat_log_for_room',
-      'YVcDePcjikPMmUjRtZ:dsn.tm.kit.edu'
-    ])
+    room_id (): string {
+      return this.$route.params.room_id as string
+    }
   },
   components: {
     // eslint-disable-next-line vue/no-unused-components
