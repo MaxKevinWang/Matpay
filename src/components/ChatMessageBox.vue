@@ -1,5 +1,6 @@
 <template>
   <div>
+      <h1>ChatMessageBox</h1>
   </div>
 </template>
 

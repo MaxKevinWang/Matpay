@@ -1,12 +1,17 @@
 <template>
-  <link href="//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
   <div class="flex">
-      <div class="input-group mb-3">
-          <input type="text" class="form-control" placeholder="Send a message" aria-describedby="button-addon2">
-          <button class="btn btn-primary" type="button">TX</button>
-          <button class="btn btn-primary" type="button">History</button>
-          <button class="btn btn-primary" type="button">Send</button>
+    <div>
+      <div v-for="message in chat_log.messages" :key="message.timestamp">
+        <component v-if="message.type" :is="TxMessageBox" :reference="message" :room_id="room_id"/>
+        <component v-if="message.content" :is="ChatMessageBox" :chat_message="message" :room_id="room_id"/>
       </div>
+    </div>
+    <div class="input-group mb-3">
+        <input type="text" class="form-control" placeholder="Send a message" aria-describedby="button-addon2">
+        <button class="btn btn-primary" type="button">TX</button>
+        <button class="btn btn-primary" type="button">History</button>
+        <button class="btn btn-primary" type="button">Send</button>
+    </div>
   </div>
   // test here
 </template>
@@ -16,17 +21,17 @@ import { User } from '@/models/user.model'
 import { defineComponent } from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 import { ChatLog } from '@/models/chat.model'
-import { GroupedTransaction } from '@/models/transaction.model'
 import TxMessageBox from '@/components/TxMessageBox.vue'
 import ChatMessageBox from '@/components/ChatMessageBox.vue'
+import { Popover } from 'bootstrap'
 
 export default defineComponent({
   name: 'ChatComponent',
   data () {
     return {
       chat_log: {} as ChatLog,
-      grouped_txs: {} as GroupedTransaction,
-      users: {} as User
+      TxMessageBox: 'TxMessageBox' as string,
+      ChatMessageBox: 'ChatMessageBox' as string
     }
   },
   computed: {
@@ -34,18 +39,12 @@ export default defineComponent({
       'get_member_state_events_for_room',
       'get_room_name'
     ]),
-    ...mapGetters('tx', [
-      'get_grouped_transactions_for_room',
-      'YVcDePcjikPMmUjRtZ:dsn.tm.kit.edu'
+    ...mapGetters('chat', [
+      'get_chat_log_for_room'
     ]),
-    ...mapGetters('tx', [
-      'get_pending_approvals_for_room',
-      'YVcDePcjikPMmUjRtZ:dsn.tm.kit.edu'
-    ]),
-    ...mapGetters('chat_log', [
-      'get_chat_log_for_room',
-      'YVcDePcjikPMmUjRtZ:dsn.tm.kit.edu'
-    ])
+    room_id (): string {
+      return this.$route.params.room_id as string
+    }
   },
   components: {
     // eslint-disable-next-line vue/no-unused-components
@@ -54,6 +53,13 @@ export default defineComponent({
     ChatMessageBox
   },
   methods: {
+  },
+  created () {
+    this.chat_log = {
+      messages: (this.get_chat_log_for_room(this.room_id) as ChatLog).messages.sort((a, b) => {
+        return a.timestamp.getTime() - b.timestamp.getTime()
+      })
+    }
   }
 })
 </script>
@@ -63,7 +69,6 @@ export default defineComponent({
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    top: 500px;
     position:relative;
   }
 </style>
