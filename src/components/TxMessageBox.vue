@@ -1,11 +1,11 @@
 <template>
   <div class="card">
-    <div class="card-header">
-      Transaction
-    </div>
     <div class="card-body">
       <h5 class="card-title"></h5>
       <p class="card-text"></p>
+      <p>{{this.reference.timestamp.toLocaleDateString()}}</p>
+      <p>{{this.reference.grouped_tx.description}}</p>
+      <p>{{this.reference.grouped_tx.from.displayname + " paid " + this.calc_amount(this.reference.grouped_tx)+"$"}}</p>
       <a href="#" class="btn btn-primary">details</a>
     </div>
   </div>
@@ -18,7 +18,7 @@ import { DEFAULT_AVATAR } from '@/utils/consts'
 import TxDetail from '@/components/TxDetail.vue'
 import { User } from '@/models/user.model'
 import { GroupID, MatrixEventID, MatrixRoomID, MatrixUserID, TxID } from '@/models/id.model'
-import { PendingApproval, SimpleTransaction } from '@/models/transaction.model'
+import { GroupedTransaction, PendingApproval, SimpleTransaction } from '@/models/transaction.model'
 import { TxPlaceholder } from '@/models/chat.model'
 
 export default defineComponent({
@@ -34,7 +34,7 @@ export default defineComponent({
   data () {
     return {
       from: {} as User,
-      amount: {} as number,
+      amount: 0 as number,
       description: '' as string,
       timestamp: {} as Date
     }
@@ -52,6 +52,13 @@ export default defineComponent({
     TxDetail
   },
   methods: {
+    calc_amount (tx: GroupedTransaction) : number {
+      let amount = 0
+      tx.txs.forEach(txs => {
+        amount += txs.amount
+      })
+      return amount
+    }
   }
 })
 </script>
@@ -59,6 +66,8 @@ export default defineComponent({
 
 .card {
   position: relative;
+  background: darkgrey;
+  margin-bottom: 30px;
 }
 
 </style>
