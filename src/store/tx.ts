@@ -1,6 +1,6 @@
 import { ActionTree, GetterTree, MutationTree } from 'vuex'
 import { GroupedTransaction, PendingApproval, TxGraph } from '@/models/transaction.model'
-import { GroupID, MatrixRoomID, MatrixUserID, TxID } from '@/models/id.model'
+import { GroupID, MatrixEventID, MatrixRoomID, MatrixUserID, TxID } from '@/models/id.model'
 import { RoomUserInfo } from '@/models/user.model'
 import { uuidgen } from '@/utils/utils'
 import { TxCreateEvent } from '@/interface/tx_event.interface'
@@ -13,17 +13,22 @@ interface State {
     pending_approvals: PendingApproval[],
     graph: TxGraph
     is_graph_dirty: boolean // is the graph updated to the basic
-  }>
+  }>,
+  processed_events: Set<MatrixEventID>
 }
 
 export const tx_store = {
   namespaced: true,
   state (): State {
     return {
-      transactions: {}
+      transactions: {},
+      processed_events: new Set()
     }
   },
   mutations: <MutationTree<State>>{
+    mutation_add_processed_event (state: State, payload: MatrixEventID) {
+      state.processed_events.add(payload)
+    },
     mutation_init_tx_structure_for_room (state: State, payload: MatrixRoomID) {
       if (!state.transactions[payload]) {
         state.transactions[payload] = {
@@ -159,7 +164,7 @@ export const tx_store = {
         group_id = uuidgen()
       } while (existing_group_ids.has(group_id))
       create_event.group_id = group_id
-      for (let i = 0;i < tx.txs.length; i++) {
+      for (let i = 0; i < tx.txs.length; i++) {
         let tx_id : TxID = ''
         do {
           tx_id = uuidgen()
@@ -177,6 +182,17 @@ export const tx_store = {
         throw new Error((response.data as MatrixError).error)
       }
       // TODO: notify other stores
+    },
+    async action_get_and_parse_all_tx_for_room ({
+      state,
+      commit,
+      dispatch,
+      rootGetters
+    }, payload: {
+      room_id: MatrixRoomID
+    }) {
+      const room_id = payload.room_id
+      commit('mutation_init_tx_structure_for_room', room_id)
     }
   },
   getters: <GetterTree<State, any>>{

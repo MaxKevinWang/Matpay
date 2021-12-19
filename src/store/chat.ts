@@ -1,20 +1,25 @@
 import axios from 'axios'
 import { ActionTree, GetterTree, MutationTree } from 'vuex'
-import { MatrixRoomID } from '@/models/id.model'
+import { MatrixEventID, MatrixRoomID } from '@/models/id.model'
 import { ChatLog, ChatMessage } from '@/models/chat.model'
 import { User } from '@/models/user.model'
 interface State {
-  chat_log: Record<MatrixRoomID, ChatLog>
+  chat_log: Record<MatrixRoomID, ChatLog>,
+  processed_events: Set<MatrixEventID>
 }
 
 export const chat_store = {
   namespaced: true,
   state (): State {
     return {
-      chat_log: {}
+      chat_log: {},
+      processed_events: new Set()
     }
   },
   mutations: <MutationTree<State>>{
+    mutation_add_processed_event (state: State, payload: MatrixEventID) {
+      state.processed_events.add(payload)
+    }
   },
   actions: <ActionTree<State, any>>{
   },
