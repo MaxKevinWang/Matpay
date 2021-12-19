@@ -1,7 +1,7 @@
 <template>
   <div class="list-group" id="list-tab" role="tablist" v-for="tx in tx_list" :key="tx.timestamp.toLocaleDateString()">
     <div>
-      <a class="list-group-item list-group-item-action" id="list-home-list" data-bs-toggle="list" role="tab" aria-controls="list-home">{{ tx.timestamp.toLocaleDateString() }} Description: {{ tx.from.displayname }} paid {{ this.calc_amount(tx) }}</a>
+      <a class="list-group-item list-group-item-action" data-bs-toggle="list">{{ tx.timestamp.toLocaleDateString() }} Description: {{ tx.from.displayname }} paid {{ calc_amount(tx) }}</a>
     </div>
   </div>
 </template>
@@ -25,7 +25,7 @@ export default defineComponent({
   computed: {
   },
   methods: {
-    calc_amount (tx: GroupedTransaction) {
+    calc_amount (tx: GroupedTransaction) : number {
       let amount = 0
       tx.txs.forEach(txs => {
         amount += txs.amount
