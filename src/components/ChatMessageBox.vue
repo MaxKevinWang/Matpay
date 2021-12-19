@@ -1,10 +1,10 @@
 <template>
-  <div>
-    <div class="d-flex flex-row justify-content-start mb-4">
-      <p>{{this.chat_message.sender.displayname}}</p>
-      <div class="p-3 ms-3" style="border-radius: 15px; background-color: rgba(57, 192, 237,.2);">
-        <p class="small mb-0">{{this.chat_message.content}}</p>
-      </div>
+  <div
+    :class="[this.user_id !== this.chat_message.sender.user_id ? 'd-flex flex-row justify-content-start mb-4': 'd-flex flex-row justify-content-end mb-4']">
+    <p>{{ this.chat_message.sender.displayname }}</p>
+    <div :class="[this.user_id !== this.chat_message.sender.user_id ? 'p-3 ms-3' : 'p-3 me-3 border']"
+         :style="[this.user_id !== this.chat_message.sender.user_id ? 'border-radius: 15px; background-color: rgba(57, 192, 237,.2);' : 'border-radius: 15px; background-color: #fbfbfb;']">
+      <p class="small mb-0">{{ this.chat_message.content }}</p>
     </div>
   </div>
 </template>
@@ -20,7 +20,6 @@ export default defineComponent({
   name: 'ChatMessageBox',
   data () {
     return {
-      user_id: '' as string,
       displayname: '' as string
     }
   },

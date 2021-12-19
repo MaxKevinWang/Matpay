@@ -18,6 +18,10 @@ const user_C: User = {
   user_id: 'CCCC',
   displayname: 'User C'
 }
+const user_1: User = {
+  user_id: '@test-1:dsn.tm.kit.edu',
+  displayname: 'User 1'
+}
 const chat1 : ChatMessage = {
   sender: user_A,
   timestamp: new Date(2021, 12, 1, 19, 45, 0),
@@ -32,6 +36,11 @@ const chat3 : ChatMessage = {
   sender: user_B,
   timestamp: new Date(2021, 12, 1, 17, 35, 0),
   content: 'Hello!!!!! from B'
+}
+const chat4 : ChatMessage = {
+  sender: user_1,
+  timestamp: new Date(2021, 12, 1, 17, 36, 0),
+  content: 'Test class binding'
 }
 interface State {
   chat_log: Record<MatrixRoomID, ChatLog>
@@ -56,6 +65,7 @@ export const chat_store = {
             chat1,
             chat2,
             chat3,
+            chat4,
             {
               type: 'approved',
               timestamp: tx1.timestamp,

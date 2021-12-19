@@ -1,19 +1,18 @@
 <template>
-  <div class="flex">
-    <div>
-      <div v-for="message in chat_log.messages" :key="message.timestamp">
-        <component v-if="message.type" :is="TxMessageBox" :reference="message" :room_id="room_id"/>
-        <component v-if="message.content" :is="ChatMessageBox" :chat_message="message" :room_id="room_id"/>
-      </div>
-    </div>
-    <div class="input-group mb-3">
-        <input type="text" class="form-control" placeholder="Send a message" aria-describedby="button-addon2">
-        <button class="btn btn-primary" type="button">TX</button>
-        <button class="btn btn-primary" type="button">History</button>
-        <button class="btn btn-primary" type="button">Send</button>
+  <div>
+    <div v-for="message in chat_log.messages" :key="message.timestamp">
+      <component v-if="message.type" :is="TxMessageBox" :reference="message" :room_id="room_id"/>
+      <component v-if="message.content" :is="ChatMessageBox" :chat_message="message" :room_id="room_id"/>
     </div>
   </div>
-  // test here
+  <div>
+    <div class="input-group mb-3">
+      <input type="text" class="form-control" placeholder="Send a message" aria-describedby="button-addon2">
+      <button class="btn btn-primary" type="button">TX</button>
+      <button class="btn btn-primary" type="button">History</button>
+      <button class="btn btn-primary" type="button">Send</button>
+    </div>
+  </div>
 </template>
 
 <script lang="ts">
