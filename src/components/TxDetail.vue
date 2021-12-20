@@ -1,19 +1,20 @@
 <template>
-  <div class="col-8">
-    <div class="tab-content" id="nav-tabContent">
-      <div class="tab-pane" role="tabpanel">
-        <div class="card text-center">
-          <div class="card-header">
-            <h3 style="text-align:center">Details</h3>
-          </div>
-          <div class="card-body">
-            <p>{{ tx.timestamp.toLocaleDateString() }} Description: {{ tx.from.displayname }} paid {{ calc_amount(tx) }}</p>
-          </div>
-          <div class="card-footer">
-            2 days ago
-          </div>
-        </div>
+  <div class="tab-pane" id="#" role="tabpanel">
+     <div class="card text-center">
+       <div class="card-header">
+         <h3 style="text-align:center">Details</h3>
       </div>
+      <div class="card-body" v-if="tx !== undefined">
+        <p>Description: {{ calc_amount(tx) }} From {{ tx.from.displayname }} at {{ tx.timestamp.toLocaleDateString() }}</p>
+      </div>
+      <div class="card-body" v-for="simple_transaction in tx?.txs" :key="simple_transaction.tx_id">
+        <p>{{ simple_transaction.to.displayname }} owes {{ simple_transaction.amount }}</p>
+       </div>
+    <div class="card text-center">
+      <div class="card-body">
+        <button type="button">Modify</button>
+      </div>
+    </div>
     </div>
   </div>
 </template>
@@ -37,6 +38,13 @@ export default defineComponent({
   components: {
   },
   methods: {
+    calc_amount (tx: GroupedTransaction) : number {
+      let amount = 0
+      tx.txs.forEach(txs => {
+        amount += txs.amount
+      })
+      return amount
+    }
   }
 })
 </script>

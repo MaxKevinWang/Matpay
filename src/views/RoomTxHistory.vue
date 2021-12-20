@@ -4,7 +4,12 @@
     <h3>Your balance: </h3>
     <div class="row" v-if="tx_list.length >= 1">
       <div class="col-4">
-        <TxList :tx_list="tx_list" />
+        <TxList :tx_list="tx_list" @on-click="on_click"/>
+      </div>
+      <div class="col-8">
+        <div class="tab-content" id="nav-tabContent">
+         <TxDetail :tx="tx"/>
+        </div>
       </div>
     </div>
   </div>
@@ -22,7 +27,8 @@ export default defineComponent({
   data () {
     return {
       room_name: '' as string,
-      tx_list: [] as Array<GroupedTransaction>
+      tx_list: [] as Array<GroupedTransaction>,
+      tx: {} as GroupedTransaction
     }
   },
   computed: {
@@ -36,8 +42,11 @@ export default defineComponent({
       'get_grouped_transactions_for_room'
     ])
   },
-  components: { TxList },
+  components: { TxList, TxDetail },
   methods: {
+    on_click (tx: GroupedTransaction) {
+      this.tx = tx
+    }
   },
   created () {
     this.room_name = this.get_room_name(this.room_id)

@@ -1,7 +1,7 @@
 <template>
   <div class="list-group" id="list-tab" role="tablist" v-for="tx in tx_list" :key="tx.timestamp.toLocaleDateString()">
     <div>
-      <a class="list-group-item list-group-item-action" data-bs-toggle="list">{{ tx.timestamp.toLocaleDateString() }} Description: {{ tx.from.displayname }} paid {{ calc_amount(tx) }}</a>
+      <a class="list-group-item list-group-item-action" data-bs-toggle="list"  href="#" role="tab" @click="on_click_event(tx)">{{ tx.timestamp.toLocaleDateString() }} Description: {{ tx.from.displayname }} paid {{ calc_amount(tx) }}</a>
     </div>
   </div>
 </template>
@@ -9,9 +9,15 @@
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
 import { GroupedTransaction } from '@/models/transaction.model'
+import { GroupID } from '@/models/id.model'
 
 export default defineComponent({
   name: 'TxList',
+  emits: {
+    'on-click': (tx: GroupedTransaction) => {
+      return tx
+    }
+  },
   props: {
     tx_list: {
       type: Object as PropType<Array<GroupedTransaction>>
@@ -19,7 +25,6 @@ export default defineComponent({
   },
   data () {
     return {
-      amount: 0 as number
     }
   },
   computed: {
@@ -31,6 +36,9 @@ export default defineComponent({
         amount += txs.amount
       })
       return amount
+    },
+    on_click_event (tx: GroupedTransaction) {
+      this.$emit('on-click', tx)
     }
   }
 })
