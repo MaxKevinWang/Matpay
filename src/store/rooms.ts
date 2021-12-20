@@ -5,6 +5,7 @@ import { MatrixRoomMemberStateEvent, MatrixRoomStateEvent } from '@/interface/ro
 import { MatrixError } from '@/interface/error.interface'
 import { MatrixEventID, MatrixRoomID, MatrixUserID } from '@/models/id.model'
 import { Room } from '@/models/room.model'
+import { TxRejectedEvent } from '@/interface/tx_event.interface'
 
 interface State {
   joined_rooms: Room[],
@@ -159,6 +160,14 @@ export const rooms_store = {
       }
       const events = rooms[0].state_events
       return events.filter(event => event.type === 'm.room.power_levels')[0] as MatrixRoomStateEvent
+    },
+    get_rejected_events_for_room: (state: State) => (room_id: MatrixRoomID): TxRejectedEvent[] => {
+      const rooms = state.joined_rooms.filter(r => r.room_id === room_id)
+      if (rooms.length !== 1) {
+        throw new Error('Room does not exist!')
+      }
+      const events = rooms[0].state_events
+      return events.filter(event => event.type === 'com.matpay.rejected')[0] as unknown as TxRejectedEvent[]
     },
     get_room_name: (state: State) => (room_id: string): string | null => {
       const rooms = state.joined_rooms.filter(r => r.room_id === room_id)

@@ -58,9 +58,12 @@ export const sync_store = {
       })
       commit('mutation_set_next_batch', { next_batch: response.data.next_batch })
       commit('mutation_set_current_response', response.data)
-      // push changes to other stores here.
+      // TODO: push changes to other stores here.
     }
   },
   getters: <GetterTree<State, any>>{
+    get_next_batch_id (state: State) : string {
+      return state.next_batch
+    }
   }
 }

@@ -1,7 +1,7 @@
 import store from '@/store/tx'
 import axios from 'axios'
 import { test_account1, test_homeserver } from '../../test_utils'
-import { room_yv_room_id, room_yv_user_info } from '../mocks/mocked_user'
+import { room_01_room_id, room_01_user_info } from '../mocks/mocked_user'
 import { tx1 } from '../mocks/mocked_tx'
 import { deepcopy } from '@/utils/utils'
 
@@ -22,7 +22,7 @@ describe('Test transaction Vuex store', () => {
       it('Test sending tx creation', async () => {
         const action = store.actions.action_create_tx_for_room as (context: any, payload: any) => Promise<any>
         const rootGetters = {
-          'user/get_users_info_for_room': () => room_yv_user_info,
+          'user/get_users_info_for_room': () => room_01_user_info,
           'tx/get_grouped_transactions_for_room': () => [],
           'tx/get_pending_approvals_for_room': () => [],
           'auth/user_id': test_account1.username,
@@ -43,7 +43,7 @@ describe('Test transaction Vuex store', () => {
           dispatch: dispatch,
           rootGetters: rootGetters
         }, {
-          room_id: room_yv_room_id,
+          room_id: room_01_room_id,
           tx: tx1
         })
       })
