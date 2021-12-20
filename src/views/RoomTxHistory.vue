@@ -6,11 +6,13 @@
       <div class="col-4">
         <TxList :tx_list="tx_list" @on-click="on_click"/>
       </div>
-      <div class="col-8">
-        <div class="tab-content" id="nav-tabContent">
-         <TxDetail :tx="tx"/>
+      <b-modal ref="show_detail">
+        <div class="col-8" v-if="show_detail === true">
+          <div class="tab-content" id="nav-tabContent">
+            <TxDetail :tx="tx"/>
+          </div>
         </div>
-      </div>
+      </b-modal>
     </div>
   </div>
 </template>
@@ -28,7 +30,8 @@ export default defineComponent({
     return {
       room_name: '' as string,
       tx_list: [] as Array<GroupedTransaction>,
-      tx: {} as GroupedTransaction
+      tx: {} as GroupedTransaction,
+      show_detail: false as boolean
     }
   },
   computed: {
@@ -46,6 +49,8 @@ export default defineComponent({
   methods: {
     on_click (tx: GroupedTransaction) {
       this.tx = tx
+      this.show_detail = true
+      this.$refs.show_detail.show()
     }
   },
   created () {
