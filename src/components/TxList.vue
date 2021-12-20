@@ -1,8 +1,6 @@
 <template>
   <div class="list-group" id="list-tab" role="tablist" v-for="tx in tx_list" :key="tx.timestamp.toLocaleDateString()">
-    <div>
-      <a class="list-group-item list-group-item-action" data-bs-toggle="list"  href="#" role="tab" @click="on_click_event(tx)">{{ tx.timestamp.toLocaleDateString() }} Description: {{ tx.from.displayname }} paid {{ calc_amount(tx) }}</a>
-    </div>
+    <a class="list-group-item list-group-item-action" data-bs-toggle="list"  href="#" role="tab" aria-controls="list" @click="on_click_event(tx)">{{ tx.timestamp.toLocaleDateString() }} Description: {{ tx.from.displayname }} paid {{ calc_amount(tx) }}</a>
   </div>
 </template>
 
