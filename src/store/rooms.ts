@@ -1,4 +1,4 @@
-import { GETJoinedRoomsResponse } from '@/interface/api.interface'
+import { GETJoinedRoomsResponse, POSTRoomCreateResponse } from '@/interface/api.interface'
 import axios from 'axios'
 import { ActionTree, GetterTree, MutationTree } from 'vuex'
 import { MatrixRoomMemberStateEvent, MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
@@ -139,6 +139,39 @@ export const rooms_store = {
         member_events: getters.get_member_state_events_for_room(payload.room_id),
         permission_event: getters.get_permission_event_for_room(payload.room_id)
       }, { root: true })
+    },
+    // Room creation action
+    // This action does not create store structures for the room, nor fetches events after creation.
+    async action_create_room ({
+      state,
+      commit,
+      dispatch,
+      getters,
+      rootGetters
+    }, payload: {
+      room_name: string
+    }) : Promise<MatrixRoomID> {
+      if (!payload.room_name) {
+        throw new Error('Room name cannot be empty!')
+      }
+      const homeserver = rootGetters['auth/homeserver']
+      const response = await axios.post<POSTRoomCreateResponse>(`${homeserver}/_matrix/client/r0/createRoom`, {
+        preset: 'private_chat',
+        name: payload.room_name,
+        initial_state: [
+          {
+            type: 'm.room.guest_access',
+            state_key: '',
+            content: {
+              guest_access: 'forbidden'
+            }
+          }
+        ]
+      }, { validateStatus: () => true })
+      if (response.status !== 200) {
+        throw new Error((response.data as unknown as MatrixError).error)
+      }
+      return response.data.room_id
     }
   },
   getters: <GetterTree<State, any>>{

@@ -28,7 +28,7 @@ export const tx2: GroupedTransaction = {
       amount: 15000
     },
     {
-      to: user_2,
+      to: user_3,
       tx_id: 'f32c725b-cfa5-4f05-824a-ff65c73c11e9',
       amount: 12000
     }

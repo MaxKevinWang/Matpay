@@ -141,6 +141,8 @@ export default defineComponent({
           room_id: room_id
         }
       })
+    },
+    on_create_room_click () {
     }
   },
   created () {
