@@ -47,15 +47,27 @@ export default defineComponent({
   },
   components: { TxList, TxDetail },
   methods: {
+    ...mapActions('tx', [
+      'action_create_mock_tx'
+    ]),
+    ...mapActions('chat', [
+      'action_create_mock_chat'
+    ]),
     on_click (tx: GroupedTransaction) {
       this.tx = tx
       this.show_detail = true
       this.$refs.show_detail.show()
     }
   },
-  created () {
+  async created () {
     this.room_name = this.get_room_name(this.room_id)
     this.tx_list = this.get_grouped_transactions_for_room(this.room_id)
+    await this.action_create_mock_tx({
+      room_id: this.room_id
+    })
+    await this.action_create_mock_chat({
+      room_id: this.room_id
+    })
   }
 })
 </script>
