@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { ActionTree, GetterTree, MutationTree } from 'vuex'
-import { MatrixRoomID, MatrixUserID } from '@/models/id.model'
+import { MatrixEventID, MatrixRoomID, MatrixUserID } from '@/models/id.model'
 import { RoomUserInfo, User } from '@/models/user.model'
 import {
   MatrixRoomMemberStateEvent,
@@ -12,7 +12,8 @@ import { MatrixError } from '@/interface/error.interface'
 
 interface State {
   users_info: Record<MatrixRoomID, Array<RoomUserInfo>>,
-  permissions: Record<MatrixRoomID, MatrixRoomPermissionConfiguration>
+  permissions: Record<MatrixRoomID, MatrixRoomPermissionConfiguration>,
+  processed_events: Set<MatrixEventID>
 }
 
 export const user_store = {
@@ -20,7 +21,8 @@ export const user_store = {
   state (): State {
     return {
       users_info: {},
-      permissions: {}
+      permissions: {},
+      processed_events: new Set()
     }
   },
   mutations: <MutationTree<State>>{
@@ -35,6 +37,12 @@ export const user_store = {
       permission: MatrixRoomPermissionConfiguration
     }) {
       state.permissions[payload.room_id] = deepcopy(payload.permission)
+    },
+    mutation_add_processed_event (state: State, payload: MatrixEventID) {
+      state.processed_events.add(payload)
+    },
+    mutation_add_processed_events (state: State, payload: MatrixEventID[]) {
+      payload.forEach(state.processed_events.add, state.processed_events)
     }
   },
   actions: <ActionTree<State, any>> {
@@ -57,6 +65,7 @@ export const user_store = {
       // extract users list from member events
       if (payload.member_events && payload.member_events.length > 0) {
         users_info_tmp = payload.member_events
+          .filter(event => !state.processed_events.has(event.event_id))
           .filter(event => event.content.membership === 'join')
           .map(event => {
             return {
@@ -127,6 +136,7 @@ export const user_store = {
         room_id: payload.room_id,
         users_info: users_info
       })
+      commit('mutation_add_processed_events', payload.member_events.map(i => i.event_id))
       return users_info
     },
     async action_change_user_membership_on_room ({

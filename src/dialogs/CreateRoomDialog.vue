@@ -1,17 +1,19 @@
 <template>
-  <div class="modal fade" id="<...>-modal" tabindex="-1" aria-labelledby="<...>-label" aria-hidden="true">
+  <div class="modal fade" id="room-create-modal" tabindex="-1" aria-labelledby="room-create-label" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="<...>-label">Some title here</h5>
+          <h5 class="modal-title" id="room-create-label">Create Room</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <!-- Content of dialog here -->
+          <label for="room-name">Room Name</label>
+          <input v-model="room_name" data-bs-toggle="popover" type="text" class="form-control" id="room-name-input"
+                 placeholder="New Room">
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary">OK</button>
+          <button type="button" class="btn btn-primary" @click="on_create()">Create</button>
         </div>
       </div>
     </div>
@@ -26,20 +28,19 @@ import { Modal, Popover } from 'bootstrap'
 
 export default defineComponent({
   name: 'CreateRoomDialog',
-  props: {
-    room_id: {
-      type: String as PropType<string>
-    }
-  },
   data () {
     return {
       modal_control: null as Modal | null,
-      is_shown: false as boolean
+      is_shown: false as boolean,
+      room_name: null as string | null
     }
   },
   computed: {
   },
   components: {
+  },
+  emits: {
+    'on-create': null
   },
   methods: {
     show () {
@@ -49,10 +50,26 @@ export default defineComponent({
     hide () {
       this.modal_control?.hide()
       this.is_shown = false
+    },
+    popover_hint (content: string) {
+      const popover = new Popover('#room-name-input', {
+        content: content,
+        container: 'body'
+      })
+      popover.show()
+      setTimeout(() => popover.hide(), 4000)
+    },
+    on_create () {
+      if (!this.room_name) {
+        this.popover_hint('The room name cannot be blank!')
+      } else {
+        this.$emit('on-create', this.room_name)
+        this.hide()
+      }
     }
   },
   mounted () {
-    this.modal_control = new Modal(document.getElementById('<...>-modal') as HTMLElement, {
+    this.modal_control = new Modal(document.getElementById('room-create-modal') as HTMLElement, {
       backdrop: false
     })
   }

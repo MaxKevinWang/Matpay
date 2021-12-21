@@ -57,6 +57,12 @@ export default defineComponent({
     ...mapActions('rooms', [
       'action_get_room_state_events'
     ]),
+    ...mapActions('tx', [
+      'action_create_mock_tx'
+    ]),
+    ...mapActions('chat', [
+      'action_create_mock_chat'
+    ]),
     async update_member_list () {
       try {
         await this.action_get_room_state_events({
@@ -78,8 +84,14 @@ export default defineComponent({
       this.update_member_list()
     }
   },
-  mounted () {
-    this.update_member_list()
+  async mounted () {
+    await this.update_member_list()
+    await this.action_create_mock_tx({
+      room_id: this.room_id
+    })
+    await this.action_create_mock_chat({
+      room_id: this.room_id
+    })
   }
 })
 </script>

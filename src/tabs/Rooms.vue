@@ -31,6 +31,7 @@
       </tbody>
     </table>
     <button class="btn btn-primary" @click="on_create_room_click()">Create New Room...</button>
+    <CreateRoomDialog ref="create_dialog" @on-create="on_create" />
   </div>
 </template>
 
@@ -41,7 +42,7 @@ import { mapActions, mapGetters } from 'vuex'
 import { GETJoinedRoomsResponse } from '@/interface/api.interface'
 import { Room } from '@/models/room.model'
 import { MatrixRoomID } from '@/models/id.model'
-
+import CreateRoomDialog from '@/dialogs/CreateRoomDialog.vue'
 interface RoomTableRow {
   room_id: string,
   room_id_display: string,
@@ -63,6 +64,9 @@ export default defineComponent({
       is_loading: true
     }
   },
+  components: {
+    CreateRoomDialog
+  },
   computed: {
     room_exists (): boolean {
       return !!this.rooms && this.rooms.length > 0
@@ -77,7 +81,8 @@ export default defineComponent({
   methods: {
     ...mapActions('rooms', [
       'action_get_all_joined_room_state_events',
-      'action_get_joined_rooms'
+      'action_get_joined_rooms',
+      'action_create_room'
     ]),
     ...mapActions('sync', [
       'action_sync_state'
@@ -98,6 +103,7 @@ export default defineComponent({
       await this.action_get_all_joined_room_state_events()
       const rooms : Room[] = this.get_all_joined_rooms()
       for (const room of rooms) {
+        // TODO: identify unsuitable rooms here. THey cannot be used for MatPay.
         const current_room = this.rooms.filter(i => i.room_id === room.room_id)[0]
         // get room name: state event 'm.room.name'
         const name_event: MatrixRoomStateEvent = room.state_events.filter(
@@ -140,10 +146,28 @@ export default defineComponent({
           room_id: room_id
         }
       })
+    },
+    on_create_room_click () {
+      this.$refs.create_dialog.show()
+    },
+    async on_create (room_name: string) {
+      try {
+        const room_id = await this.action_create_room({
+          room_name: room_name
+        })
+        this.$router.push({
+          name: 'room_detail',
+          params: {
+            room_id: room_id
+          }
+        })
+      } catch (e) {
+        console.log(e)
+      }
     }
   },
   created () {
-    this.action_sync_state({ continue_batch: true })
+    this.action_sync_state({ continue_batch: false })
     this.update_room_table()
   }
 })
