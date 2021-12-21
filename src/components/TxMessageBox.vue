@@ -4,8 +4,10 @@
       <h5 class="card-title"></h5>
       <p class="card-text"></p>
       <p>{{this.reference.timestamp.toLocaleDateString()}}</p>
+      <!--
       <p>{{this.reference.grouped_tx.description}}</p>
       <p>{{this.reference.grouped_tx.from.displayname + " paid " + this.calc_amount(this.reference.grouped_tx)+"$"}}</p>
+      -->
       <a href="#" class="btn btn-primary">details</a>
     </div>
   </div>
