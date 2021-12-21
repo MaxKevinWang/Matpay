@@ -1,10 +1,10 @@
 <template>
-  <div class="card  text-center">
+  <div class="card  text-center" v-if="tx !== undefined">
     <div class="card-header">
       <h3>Details</h3>
     </div>
-    <div class="card-body" v-if="tx !== undefined">
-      <p>Description: {{ calc_amount(tx) }} From {{ tx.from.displayname }} at {{ tx.timestamp.toLocaleDateString() }}</p>
+    <div class="card-body">
+      <p>{{ tx.description }}: {{ calc_amount(tx) }}$ from {{ tx.from.displayname }} at {{ tx.timestamp.toLocaleDateString() }}</p>
     </div>
     <div class="card-body" v-for="simple_transaction in tx?.txs" :key="simple_transaction.tx_id">
       <p>{{ simple_transaction.to.displayname }} owes {{ simple_transaction.amount }}</p>

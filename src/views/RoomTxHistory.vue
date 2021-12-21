@@ -1,18 +1,14 @@
 <template>
-  <div class="LeftHxView">
-    <h3>{{ room_name }}</h3>
-    <h3>Your balance: </h3>
-    <div class="row" v-if="tx_list.length >= 1">
-      <div class="col-4">
+  <div class="Container TxWindowView">
+    <div class="row">
+      <h4>{{ room_name }}</h4>
+      <h4>Your balance: </h4>
+      <div class="col-sm-6" v-if="tx_list.length >= 1">
         <TxList :tx_list="tx_list" @on-click="on_click"/>
       </div>
-      <b-modal ref="show_detail">
-        <div class="col-8" v-if="show_detail === true">
-          <div class="tab-content" id="nav-tabContent">
-            <TxDetail :tx="tx"/>
-          </div>
-        </div>
-      </b-modal>
+      <div class="col" v-if="show_detail === true">
+        <TxDetail :tx="tx"/>
+      </div>
     </div>
   </div>
 </template>
@@ -57,9 +53,12 @@ export default defineComponent({
       'action_get_room_state_events'
     ]),
     on_click (tx: GroupedTransaction) {
-      this.tx = tx
-      this.show_detail = true
-      this.$refs.show_detail.show()
+      if (JSON.stringify(this.tx) === JSON.stringify(tx) && this.show_detail) {
+        this.show_detail = false
+      } else {
+        this.tx = tx
+        this.show_detail = true
+      }
     }
   },
   async created () {
@@ -78,7 +77,7 @@ export default defineComponent({
 })
 </script>
 <style scoped>
-.LeftHxView {
+.TxWindowView {
   left: 0;
   top: 0;
   padding: 20px;
