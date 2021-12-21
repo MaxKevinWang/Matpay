@@ -23,12 +23,12 @@ import { ChatLog } from '@/models/chat.model'
 import TxMessageBox from '@/components/TxMessageBox.vue'
 import ChatMessageBox from '@/components/ChatMessageBox.vue'
 import { Popover } from 'bootstrap'
+import { deepcopy } from '@/utils/utils'
 
 export default defineComponent({
   name: 'ChatComponent',
   data () {
     return {
-      chat_log: {} as ChatLog,
       TxMessageBox: 'TxMessageBox' as string,
       ChatMessageBox: 'ChatMessageBox' as string
     }
@@ -43,6 +43,14 @@ export default defineComponent({
     ]),
     room_id (): string {
       return this.$route.params.room_id as string
+    },
+    chat_log () : ChatLog {
+      const messages = (this.get_chat_log_for_room(this.room_id) as ChatLog).messages
+      return {
+        messages: [...messages].sort((a, b) => {
+          return a.timestamp.getTime() - b.timestamp.getTime()
+        })
+      }
     }
   },
   components: {
@@ -52,13 +60,6 @@ export default defineComponent({
     ChatMessageBox
   },
   methods: {
-  },
-  created () {
-    this.chat_log = {
-      messages: (this.get_chat_log_for_room(this.room_id) as ChatLog).messages.sort((a, b) => {
-        return a.timestamp.getTime() - b.timestamp.getTime()
-      })
-    }
   }
 })
 </script>
