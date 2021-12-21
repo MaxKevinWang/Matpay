@@ -7,8 +7,8 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <label for="room-name">User ID</label>
-          <input v-model="room_name" data-bs-toggle="popover" type="text" class="form-control" id="room-name"
+          <label for="room-name">Room Name</label>
+          <input v-model="room_name" data-bs-toggle="popover" type="text" class="form-control" id="room-name-input"
                  placeholder="New Room">
         </div>
         <div class="modal-footer">
@@ -39,6 +39,9 @@ export default defineComponent({
   },
   components: {
   },
+  emits: {
+    'on-create': null
+  },
   methods: {
     show () {
       this.modal_control?.show()
@@ -48,12 +51,25 @@ export default defineComponent({
       this.modal_control?.hide()
       this.is_shown = false
     },
+    popover_hint (content: string) {
+      const popover = new Popover('#room-name-input', {
+        content: content,
+        container: 'body'
+      })
+      popover.show()
+      setTimeout(() => popover.hide(), 4000)
+    },
     on_create () {
-
+      if (!this.room_name) {
+        this.popover_hint('The room name cannot be blank!')
+      } else {
+        this.$emit('on-create', this.room_name)
+        this.hide()
+      }
     }
   },
   mounted () {
-    this.modal_control = new Modal(document.getElementById('<...>-modal') as HTMLElement, {
+    this.modal_control = new Modal(document.getElementById('room-create-modal') as HTMLElement, {
       backdrop: false
     })
   }
