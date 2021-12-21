@@ -36,9 +36,7 @@ export const chat_store = {
   },
   getters: <GetterTree<State, any>>{
     get_chat_log_for_room: (state: State) => (room_id: MatrixRoomID): ChatLog => {
-      return {
-        messages: []
-      }
+      return state.chat_log[room_id]
     }
   }
 }
