@@ -19,6 +19,17 @@ export const chat_store = {
   mutations: <MutationTree<State>>{
     mutation_add_processed_event (state: State, payload: MatrixEventID) {
       state.processed_events.add(payload)
+    },
+    mutation_init_chat_log_for_room (state: State, payload: MatrixRoomID) {
+      state.chat_log[payload] = {
+        messages: []
+      }
+    },
+    mutation_add_chat_log_for_room (state: State, payload: {
+      room_id: MatrixRoomID,
+      chat_log: ChatLog
+    }) {
+      state.chat_log[payload.room_id].messages = state.chat_log[payload.room_id].messages.concat(payload.chat_log.messages)
     }
   },
   actions: <ActionTree<State, any>>{
