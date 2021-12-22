@@ -3,10 +3,10 @@
     <div class="row">
       <h4>{{ room_name }}</h4>
       <h4>Your balance: </h4>
-      <div class="col-sm-6" v-if="tx_list.length >= 1">
+      <div class="col-4" v-if="tx_list.length >= 1">
         <TxList :tx_list="tx_list" @on-click="on_click"/>
       </div>
-      <div class="col" v-if="show_detail === true">
+      <div class="col-8" v-if="show_detail === true">
         <TxDetail :tx="tx"/>
       </div>
     </div>

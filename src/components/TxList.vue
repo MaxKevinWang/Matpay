@@ -1,6 +1,6 @@
 <template>
   <div class="list-group" id="list-tab" role="tablist" v-for="tx in tx_list" :key="tx.timestamp.toLocaleDateString()">
-    <button type="button" class="list-group-item list-group-item-action btn btn-primary" @click="on_click_event(tx)">{{ tx.timestamp.toLocaleDateString() }} {{ tx.description }}: {{ tx.from.displayname }} paid {{ calc_amount(tx) }}$</button>
+    <button type="button" class="list-group-item list-group-item-action btn btn-primary" @click="on_click_event(tx)">{{ tx.timestamp.toLocaleDateString() }} {{ tx.description }}: {{ tx.from.displayname }} paid {{ calc_amount(tx) }}€</button>
   </div>
 </template>
 
@@ -32,7 +32,7 @@ export default defineComponent({
       tx.txs.forEach(txs => {
         amount += txs.amount
       })
-      return amount
+      return amount / 100
     },
     on_click_event (tx: GroupedTransaction) {
       this.$emit('on-click', tx)

@@ -4,13 +4,13 @@
       <h3>Details</h3>
     </div>
     <div class="card-body">
-      <p>{{ tx.description }}: {{ calc_amount(tx) }}$ from {{ tx.from.displayname }} at {{ tx.timestamp.toLocaleDateString() }}</p>
+      <p>{{ tx.description }}: {{ calc_amount(tx) }}€ from {{ tx.from.displayname }} at {{ tx.timestamp.toLocaleDateString() }}</p>
     </div>
     <div class="card-body" v-for="simple_transaction in tx?.txs" :key="simple_transaction.tx_id">
-      <p>{{ simple_transaction.to.displayname }} owes {{ simple_transaction.amount }}</p>
+      <p>{{ simple_transaction.to.displayname }} owes {{ simple_transaction.amount / 100 }}€</p>
     </div>
     <div class="card-body">
-      <button type="button">Modify</button>
+      <button class="btn btn-primary" type="button">Modify</button>
     </div>
   </div>
 </template>
@@ -39,7 +39,7 @@ export default defineComponent({
       tx.txs.forEach(txs => {
         amount += txs.amount
       })
-      return amount
+      return amount / 100
     }
   }
 })
