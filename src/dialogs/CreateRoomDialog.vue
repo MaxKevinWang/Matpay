@@ -33,6 +33,7 @@ export default defineComponent({
       modal_control: null as Modal | null,
       is_shown: false as boolean,
       room_name: null as string | null
+
     }
   },
   computed: {

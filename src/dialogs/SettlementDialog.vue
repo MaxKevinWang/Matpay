@@ -1,13 +1,16 @@
 <template>
-  <div class="modal fade" id="<...>-modal" tabindex="-1" aria-labelledby="<...>-label" aria-hidden="true">
+  <div class="modal fade" id="settlement-modal" tabindex="-1" aria-labelledby="settlement-label" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="<...>-label">Some title here</h5>
+          <h5 class="modal-title" id="settlement-label">Settlement</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <!-- Content of dialog here -->
+          <p>{{homeUser.displayname}}</p>
+          <p>{{"asshole"}}</p>
+          <h3>{{"0$"}}</h3>
+          <button type="button" class="btn btn-primary">settle</button>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -23,6 +26,7 @@
 import { defineComponent, PropType } from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 import { Modal, Popover } from 'bootstrap'
+import { User } from '@/models/user.model'
 
 export default defineComponent({
   name: 'SettlementDialog',
@@ -34,10 +38,15 @@ export default defineComponent({
   data () {
     return {
       modal_control: null as Modal | null,
-      is_shown: false as boolean
+      is_shown: false as boolean,
+      homeUser: {} as User,
+      amount: 0 as number
     }
   },
   computed: {
+    ...mapGetters('auth', [
+      'user_id'
+    ])
   },
   components: {
   },
@@ -52,12 +61,14 @@ export default defineComponent({
     }
   },
   mounted () {
-    this.modal_control = new Modal(document.getElementById('<...>-modal') as HTMLElement, {
+    this.modal_control = new Modal(document.getElementById('settlement-modal') as HTMLElement, {
       backdrop: false
     })
   }
 })
 </script>
 <style scoped>
-
+.modal-body h3 {
+  color: greenyellow;
+}
 </style>
