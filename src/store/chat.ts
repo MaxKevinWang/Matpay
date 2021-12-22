@@ -65,7 +65,7 @@ export const chat_store = {
           timestamp: new Date(2022, 0, 1, 20, 30)
         }
         const tx : Array<GroupedTransaction> = rootGetters['tx/get_grouped_transactions_for_room'](payload.room_id)
-        const pd : Array<PendingApproval> = rootGetters['tx/get_grouped_transactions_for_room'](payload.room_id)
+        const pd : Array<PendingApproval> = rootGetters['tx/get_pending_approvals_for_room'](payload.room_id)
         const msg4 : TxApprovedPlaceholder = {
           type: 'approved',
           timestamp: tx[0].timestamp,
