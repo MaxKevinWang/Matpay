@@ -1,5 +1,8 @@
 <template>
   <div :id="'usercard_' + user_id" @click="on_user_card_click()">
+    <div>
+      <SettlementDialog :user_clicked="user_prop" />
+    </div>
     <img :src="this.avatar" alt="avatar" class="avatar">
     <div class="about" @contextmenu="open_right_click_menu">
       <div :class="['name', {'self_name': this.is_self }, {'admin': this.user_type === 'Admin'}]">{{

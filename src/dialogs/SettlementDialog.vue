@@ -1,4 +1,6 @@
 <template>
+  <div>
+  </div>
   <div class="modal fade" id="settlement-modal" tabindex="-1" aria-labelledby="settlement-label" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
@@ -7,8 +9,8 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <p>{{homeUser.displayname}}</p>
-          <p>{{"asshole"}}</p>
+          <p>{{user_clicked.displayname}}</p>
+          <p>{{}}</p>
           <h3>{{"0$"}}</h3>
           <button type="button" class="btn btn-primary">settle</button>
         </div>
@@ -26,13 +28,16 @@
 import { defineComponent, PropType } from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 import { Modal, Popover } from 'bootstrap'
-import { User } from '@/models/user.model'
+import { RoomUserInfo, User } from '@/models/user.model'
 
 export default defineComponent({
   name: 'SettlementDialog',
   props: {
     room_id: {
       type: String as PropType<string>
+    },
+    user_clicked: {
+      type: Object as PropType<RoomUserInfo>
     }
   },
   data () {
