@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div :id="'usercard_' + user_id" @click="on_user_card_click()">
     <img :src="this.avatar" alt="avatar" class="avatar">
     <div class="about" @contextmenu="open_right_click_menu">
       <div :class="['name', {'self_name': this.is_self }, {'admin': this.user_type === 'Admin'}]">{{
@@ -85,6 +85,9 @@ export default defineComponent({
       } else if (operation === 'ban') {
         this.$emit('on-ban', this.user_id)
       }
+    },
+    on_user_card_click () {
+      console.log('test')
     }
   },
   watch: {
