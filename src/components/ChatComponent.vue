@@ -6,7 +6,7 @@
     </div>
   </div>
   <div>
-    <div class="input-group mb-3">
+    <div class="fixed-bottom input-group mb-3">
       <input type="text" class="form-control" placeholder="Send a message" aria-describedby="button-addon2">
       <button class="btn btn-primary" type="button">TX</button>
       <button class="btn btn-primary" type="button">History</button>
