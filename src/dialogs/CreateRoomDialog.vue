@@ -7,7 +7,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <label for="room-name">Room Name</label>
+          <label for="room-name-input">Room Name</label>
           <input v-model="room_name" data-bs-toggle="popover" type="text" class="form-control" id="room-name-input"
                  placeholder="New Room">
         </div>
