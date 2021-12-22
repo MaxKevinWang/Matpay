@@ -1,7 +1,8 @@
 <template>
   <div>
     <div v-for="message in chat_log.messages" :key="message.timestamp">
-      <component v-if="message.type" :is="TxMessageBox" :reference="message" :room_id="room_id"/>
+      <component v-if="message.grouped_tx" :is="TxApprovedMessageBox" :reference="message" :room_id="room_id"/>
+      <component v-if="message.approval" :is="TxPendingMessageBox" :reference="message" :room_id="room_id"/>
       <component v-if="message.content" :is="ChatMessageBox" :chat_message="message" :room_id="room_id"/>
     </div>
   </div>
@@ -20,16 +21,18 @@ import { User } from '@/models/user.model'
 import { defineComponent } from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 import { ChatLog } from '@/models/chat.model'
-import TxMessageBox from '@/components/TxMessageBox.vue'
 import ChatMessageBox from '@/components/ChatMessageBox.vue'
 import { Popover } from 'bootstrap'
 import { deepcopy } from '@/utils/utils'
+import TxApprovedMessageBox from '@/components/TxApprovedMessageBox.vue'
+import TxPendingMessageBox from '@/components/TxPendingMessageBox.vue'
 
 export default defineComponent({
   name: 'ChatComponent',
   data () {
     return {
-      TxMessageBox: 'TxMessageBox' as string,
+      TxApprovedMessageBox: 'TxApprovedMessageBox' as string,
+      TxPendingMessageBox: 'TxPendingMessageBox' as string,
       ChatMessageBox: 'ChatMessageBox' as string
     }
   },
@@ -54,9 +57,8 @@ export default defineComponent({
     }
   },
   components: {
-    // eslint-disable-next-line vue/no-unused-components
-    TxMessageBox,
-    // eslint-disable-next-line vue/no-unused-components
+    TxApprovedMessageBox,
+    TxPendingMessageBox,
     ChatMessageBox
   },
   methods: {

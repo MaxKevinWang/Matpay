@@ -1,6 +1,5 @@
 <template>
-  <div class="card" v-if="this.reference.type === 'approved'"
-       :style="['background-color: rgba(105, 105, 105,.5)']">
+  <div class="card" style="background-color: rgba(105, 105, 105,.5)">
     <div class="card-body">
       <div class="row">
         <div class="col">
@@ -18,26 +17,6 @@
       </div>
     </div>
   </div>
-  <div class="card" v-if="this.reference.type === 'pending'"
-       :style="['background-color: rgba(255, 193, 193,.5)']">
-    <div class="card-body">
-      <div class="row">
-        <div class="col">
-          <p>{{this.reference.timestamp.toLocaleDateString()}}</p>
-        </div>
-        <div class="col">
-          <p>{{this.reference.approval.description}}</p>
-        </div>
-        <div class="col">
-          <p>{{this.reference.approval.from.displayname + " paid " + this.calc_amount2(this.reference.approval)+"$"}}</p>
-        </div>
-        <div class="col">D
-          <p href="#" class="btn btn-primary" @click="approval_click()">details</p>
-        </div>
-      </div>
-    </div>
-    <ApprovalDialog ref="create_dialog"/>
-  </div>
 </template>
 
 <script lang="ts">
@@ -48,15 +27,15 @@ import TxDetail from '@/components/TxDetail.vue'
 import { User } from '@/models/user.model'
 import { GroupID, MatrixEventID, MatrixRoomID, MatrixUserID, TxID } from '@/models/id.model'
 import { GroupedTransaction, PendingApproval, SimpleTransaction } from '@/models/transaction.model'
-import { TxPlaceholder } from '@/models/chat.model'
+import { TxApprovedPlaceholder, TxPlaceholder } from '@/models/chat.model'
 import CreateRoomDialog from '@/dialogs/CreateRoomDialog.vue'
 import ApprovalDialog from '@/dialogs/ApprovalDialog.vue'
 
 export default defineComponent({
-  name: 'TxMessageBox',
+  name: 'TxApprovedMessageBox',
   props: {
     reference: {
-      type: Object as PropType<TxPlaceholder>
+      type: Object as PropType<TxApprovedPlaceholder>
     },
     room_id: {
       type: String as PropType<MatrixRoomID>
@@ -78,11 +57,7 @@ export default defineComponent({
     //    'transaction'
     //  ])
   },
-  components: {
-    ApprovalDialog,
-    // eslint-disable-next-line vue/no-unused-components
-    TxDetail
-  },
+  components: {},
   methods: {
     calc_amount (tx: GroupedTransaction) : number {
       let amount = 0
@@ -97,9 +72,6 @@ export default defineComponent({
         amount += simple_tx.amount
       }
       return amount
-    },
-    approval_click () {
-      this.$refs.create_dialog.show()
     }
   }
 })

@@ -35,7 +35,7 @@
 import { defineComponent, PropType } from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 import { Modal, Popover } from 'bootstrap'
-import { TxPlaceholder } from '@/models/chat.model'
+import { TxPendingPlaceholder, TxPlaceholder } from '@/models/chat.model'
 import { PendingApproval } from '@/models/transaction.model'
 
 export default defineComponent({
@@ -45,7 +45,7 @@ export default defineComponent({
       type: String as PropType<string>
     },
     reference: {
-      type: Object as PropType<TxPlaceholder>
+      type: Object as PropType<TxPendingPlaceholder>
     }
   },
   data () {
