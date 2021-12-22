@@ -31,11 +31,12 @@
         <div class="col">
           <p>{{this.reference.approval.from.displayname + " paid " + this.calc_amount2(this.reference.approval)+"$"}}</p>
         </div>
-        <div class="col">
-          <a href="#" class="btn btn-primary">details</a>
+        <div class="col">D
+          <p href="#" class="btn btn-primary" @click="approval_click()">details</p>
         </div>
       </div>
     </div>
+    <ApprovalDialog ref="create_dialog"/>
   </div>
 </template>
 
@@ -48,6 +49,8 @@ import { User } from '@/models/user.model'
 import { GroupID, MatrixEventID, MatrixRoomID, MatrixUserID, TxID } from '@/models/id.model'
 import { GroupedTransaction, PendingApproval, SimpleTransaction } from '@/models/transaction.model'
 import { TxPlaceholder } from '@/models/chat.model'
+import CreateRoomDialog from '@/dialogs/CreateRoomDialog.vue'
+import ApprovalDialog from '@/dialogs/ApprovalDialog.vue'
 
 export default defineComponent({
   name: 'TxMessageBox',
@@ -76,6 +79,7 @@ export default defineComponent({
     //  ])
   },
   components: {
+    ApprovalDialog,
     // eslint-disable-next-line vue/no-unused-components
     TxDetail
   },
@@ -93,6 +97,9 @@ export default defineComponent({
         amount += simple_tx.amount
       }
       return amount
+    },
+    approval_click () {
+      this.$refs.create_dialog.show()
     }
   }
 })
