@@ -11,12 +11,12 @@
         <div class="col">
           <p>{{this.reference.approval.from.displayname + " paid " + this.calc_amount2(this.reference.approval)+"$"}}</p>
         </div>
-        <div class="col">D
-          <p href="#" class="btn btn-primary" @click="approval_click()">details</p>
+        <div class="col">
+          <button href="#" class="btn btn-primary" @click="approval_click()">details</button>
         </div>
       </div>
     </div>
-    <ApprovalDialog ref="create_dialog" />
+    <ApprovalDialog ref="create_dialog" :reference="reference"/>
   </div>
 </template>
 

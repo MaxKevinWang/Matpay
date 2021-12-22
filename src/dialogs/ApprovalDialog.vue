@@ -1,9 +1,9 @@
 <template>
-  <div class="modal fade" id="<...>-modal" tabindex="-1" aria-labelledby="<...>-label" aria-hidden="true">
+  <div class="modal fade" id="ApprovalDialog-modal" tabindex="-1" aria-labelledby="ApprovalDialog-label" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="<...>-label">Details</h5>
+          <h5 class="modal-title" id="ApprovalDialog-label">Details</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click="hide()"></button>
         </div>
         <div class="modal-body">
@@ -13,7 +13,7 @@
             </div>
             <div class="col-4">
               <p>{{this.reference.approval.description}}</p>
-              <p>{{sum_amount(this.reference.approval) + "€" }}</p>
+              <p>{{this.calc_amount2(this.reference.approval) + "€" }}</p>
             </div>
             <div class="col-6">
               <p>{{"From" + this.reference.approval.from.displayname + "at" + this.reference.timestamp.getDay()}}</p>
@@ -66,10 +66,17 @@ export default defineComponent({
     hide () {
       this.modal_control?.hide()
       this.is_shown = false
+    },
+    calc_amount2 (tx: PendingApproval) : number {
+      let amount = 0
+      for (const simple_tx of tx.txs) {
+        amount += simple_tx.amount
+      }
+      return amount
     }
   },
   mounted () {
-    this.modal_control = new Modal(document.getElementById('<...>-modal') as HTMLElement, {
+    this.modal_control = new Modal(document.getElementById('ApprovalDialog-modal') as HTMLElement, {
       backdrop: false
     })
   }
