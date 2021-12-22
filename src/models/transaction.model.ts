@@ -32,3 +32,7 @@ export interface PendingApproval {
 export interface TxGraph {
   graph: Record<MatrixUserID, Array<[MatrixUserID, number]>>
 }
+
+export function sum_amount (item: GroupedTransaction | PendingApproval) : number {
+  return item.txs.reduce((sum, tx) => sum + tx.amount, 0)
+}
