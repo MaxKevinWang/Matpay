@@ -3,14 +3,13 @@ import axios from 'axios'
 import { ActionTree, GetterTree, MutationTree } from 'vuex'
 import { MatrixRoomMemberStateEvent, MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
 import { MatrixError } from '@/interface/error.interface'
-import { MatrixEventID, MatrixRoomID, MatrixUserID } from '@/models/id.model'
+import { MatrixRoomID, MatrixUserID } from '@/models/id.model'
 import { Room } from '@/models/room.model'
 import { TxRejectedEvent } from '@/interface/tx_event.interface'
 
 interface State {
   joined_rooms: Room[],
-  invited_rooms: Room[],
-  processed_events: Set<MatrixEventID>
+  invited_rooms: Room[]
 }
 
 export const rooms_store = {
@@ -18,8 +17,7 @@ export const rooms_store = {
   state (): State {
     return {
       joined_rooms: [],
-      invited_rooms: [],
-      processed_events: new Set()
+      invited_rooms: []
     }
   },
   mutations: <MutationTree<State>>{
@@ -58,9 +56,6 @@ export const rooms_store = {
       } else {
         rooms[0].name = payload.name
       }
-    },
-    mutation_add_processed_event (state: State, payload: MatrixEventID) {
-      state.processed_events.add(payload)
     }
   },
   actions: <ActionTree<State, any>>{

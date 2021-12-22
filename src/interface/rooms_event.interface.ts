@@ -12,7 +12,7 @@ export interface MatrixRoomEvent extends MatrixEvent {
   event_id: MatrixEventID,
 }
 
-export interface MatrixRoomStateEvent extends MatrixRoomEvent {
+export interface MatrixRoomStateEvent extends MatrixEvent {
   state_key: string,
   prev_content?: Record<string, unknown>
 }

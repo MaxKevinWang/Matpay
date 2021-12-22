@@ -16,22 +16,17 @@ interface State {
     graph: TxGraph
     is_graph_dirty: boolean // is the graph updated to the basic
     rejected: Record<MatrixEventID, Set<MatrixUserID>>,
-  }>,
-  processed_events: Set<MatrixEventID>
+  }>
 }
 
 export const tx_store = {
   namespaced: true,
   state (): State {
     return {
-      transactions: {},
-      processed_events: new Set()
+      transactions: {}
     }
   },
   mutations: <MutationTree<State>>{
-    mutation_add_processed_event (state: State, payload: MatrixEventID) {
-      state.processed_events.add(payload)
-    },
     mutation_init_tx_structure_for_room (state: State, payload: MatrixRoomID) {
       if (!state.transactions[payload]) {
         state.transactions[payload] = {
@@ -201,12 +196,6 @@ export const tx_store = {
       const room_member_ids : MatrixUserID[] = (rootGetters['rooms/get_users_info_for_room'](room_id) as RoomUserInfo[]).map(u => u.user.user_id)
       for (const rejected_event of rejected_events) {
         const array : Array<[MatrixEventID, MatrixUserID]> = []
-        // parse reject event when event not processed and state_key = one user id in room
-        if (!state.processed_events.has(rejected_event.event_id) && room_member_ids.includes(rejected_event.state_key)) {
-          for (const event_id of rejected_event.content.events) {
-            array.push([event_id, rejected_event.state_key])
-          }
-        }
         commit('mutation_add_rejected_events_for_room', {
           room_id: room_id,
           rejected_events: array
@@ -255,10 +244,6 @@ export const tx_store = {
         }
         // Event processing loop starts here
         for (const tx_event of current_batch_tx_events) {
-          // check if already parsed
-          if (state.processed_events.has(tx_event.event_id)) {
-            continue
-          }
           // check if rejected
           // note: this implementation currently does not check if the user can reject it
           // that is, this allows a user to reject a tx he/she is not participating

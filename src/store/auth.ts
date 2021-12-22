@@ -67,7 +67,7 @@ export const auth_store = {
             user: payload.username
           },
           password: payload.password,
-          device_id: state.device_id === '' ? undefined : state.device_id
+          device_id: state.device_id
         }, {
           validateStatus: () => true // Always resolve unless we throw an error manually
         })

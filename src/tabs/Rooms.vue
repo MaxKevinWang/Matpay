@@ -167,7 +167,7 @@ export default defineComponent({
     }
   },
   created () {
-    this.action_sync_state({ continue_batch: false })
+    this.action_sync_state({ continue_batch: true })
     this.update_room_table()
   }
 })
