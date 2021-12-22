@@ -21,6 +21,14 @@ export const rooms_store = {
     }
   },
   mutations: <MutationTree<State>>{
+    mutation_init_joined_room (state: State, payload: MatrixRoomID) {
+      const new_room: Room = {
+        room_id: payload,
+        name: '',
+        state_events: []
+      }
+      state.joined_rooms.push(new_room)
+    },
     mutation_init_joined_rooms (state: State, payload: { joined_rooms_id: MatrixRoomID[] }) {
       state.joined_rooms = [] // reset to clean state
       for (const room_id of payload.joined_rooms_id) {
@@ -32,108 +40,41 @@ export const rooms_store = {
         state.joined_rooms.push(new_room)
       }
     },
-    mutation_set_state_event_for_joined_room (state: State,
-      payload: { room_id: MatrixRoomID, state_events: MatrixRoomStateEvent[] }) {
-      const rooms = state.joined_rooms.filter(r => r.room_id === payload.room_id)
-      if (rooms.length === 0) {
-        state.joined_rooms.push({
-          room_id: payload.room_id,
-          name: '',
-          state_events: payload.state_events
-        })
-      } else {
-        rooms[0].state_events = payload.state_events
-      }
+    mutation_add_state_event_for_joined_room (state: State,
+      payload: { room_id: MatrixRoomID, state_event: MatrixRoomStateEvent }) {
+      const room = state.joined_rooms.filter(r => r.room_id === payload.room_id)[0]
+      room.state_events = room.state_events.filter(
+        i => i.state_key !== payload.state_event.state_key || i.type !== payload.state_event.type
+      )
+      room.state_events.push(payload.state_event)
     },
     mutation_set_name_for_joined_room (state: State, payload: { room_id: MatrixRoomID, name: string }) {
       const rooms = state.joined_rooms.filter(r => r.room_id === payload.room_id)
-      if (rooms.length === 0) {
-        state.joined_rooms.push({
-          room_id: payload.room_id,
-          name: payload.name,
-          state_events: []
-        })
-      } else {
-        rooms[0].name = payload.name
-      }
+      rooms[0].name = payload.name
     }
   },
   actions: <ActionTree<State, any>>{
-    async action_get_joined_rooms ({
-      commit,
-      rootGetters
-    }): Promise<MatrixRoomID[]> {
-      const homeserver = rootGetters['auth/homeserver']
-      const response = await axios.get<GETJoinedRoomsResponse>(`${homeserver}/_matrix/client/r0/joined_rooms`)
-      commit('mutation_init_joined_rooms', { joined_rooms_id: response.data.joined_rooms })
-      return response.data.joined_rooms
-    },
-    async action_get_all_joined_room_state_events ({
+    async action_parse_state_events_for_all_rooms ({
       state,
       commit,
       dispatch,
       getters,
       rootGetters
     }) {
-      type RoomState = {
-        room_id: MatrixRoomID,
-        state_events: MatrixRoomStateEvent[]
-      }
-      const promises: Promise<void>[] = []
       for (const room of state.joined_rooms) {
-        promises.push(async function () {
-          const homeserver = rootGetters['auth/homeserver']
-          const response = await axios.get<MatrixRoomStateEvent[]>(`${homeserver}/_matrix/client/r0/rooms/${room.room_id}/state`)
-          const result: RoomState = {
+        const name_event = getters.get_name_event_for_room(room.room_id)
+        if (name_event) {
+          commit('mutation_set_name_for_joined_room', {
             room_id: room.room_id,
-            state_events: response.data
-          }
-          commit('mutation_set_state_event_for_joined_room', result)
-          // set name for every room
-          const name_event = response.data.filter(e => e.type === 'm.room.name')
-          if (name_event.length > 0) {
-            commit('mutation_set_name_for_joined_room', {
-              room_id: room.room_id,
-              name: name_event[0].content.name
-            })
-          }
-          // dispatch member parsing
-          dispatch('user/action_parse_member_events_for_room', {
-            room_id: room.room_id,
-            member_events: getters.get_member_state_events_for_room(room.room_id),
-            permission_event: getters.get_permission_event_for_room(room.room_id)
-          }, { root: true })
-        }())
+            name: name_event.content.name
+          })
+        }
+        dispatch('user/action_parse_member_events_for_room', {
+          room_id: room.room_id,
+          member_events: getters.get_member_state_events_for_room(room.room_id),
+          permission_event: getters.get_permission_event_for_room(room.room_id)
+        }, { root: true })
       }
-      return Promise.all(promises)
-    },
-    async action_get_room_state_events ({
-      commit,
-      dispatch,
-      getters,
-      rootGetters
-    }, payload: { room_id: MatrixRoomID }) {
-      const homeserver = rootGetters['auth/homeserver']
-      const response = await axios.get<MatrixRoomStateEvent[]>(`${homeserver}/_matrix/client/r0/rooms/${payload.room_id}/state`)
-      const result = {
-        room_id: payload.room_id,
-        state_events: response.data
-      }
-      commit('mutation_set_state_event_for_joined_room', result)
-      // set name for every room
-      const name_event = response.data.filter(e => e.type === 'm.room.name')
-      if (name_event.length > 0) {
-        commit('mutation_set_name_for_joined_room', {
-          room_id: payload.room_id,
-          name: name_event[0].content.name
-        })
-      }
-      // dispatch member parsing
-      dispatch('user/action_parse_member_events_for_room', {
-        room_id: payload.room_id,
-        member_events: getters.get_member_state_events_for_room(payload.room_id),
-        permission_event: getters.get_permission_event_for_room(payload.room_id)
-      }, { root: true })
     },
     // Room creation action
     // This action does not create store structures for the room, nor fetches events after creation.
@@ -187,7 +128,15 @@ export const rooms_store = {
         throw new Error('Room does not exist!')
       }
       const events = rooms[0].state_events
-      return events.filter(event => event.type === 'm.room.power_levels')[0] as MatrixRoomStateEvent
+      return events.filter(event => event.type === 'm.room.power_levels')[0]
+    },
+    get_name_event_for_room: (state: State) => (room_id: MatrixRoomID): MatrixRoomStateEvent | undefined => {
+      const rooms = state.joined_rooms.filter(r => r.room_id === room_id)
+      if (rooms.length !== 1) {
+        throw new Error('Room does not exist!')
+      }
+      const events = rooms[0].state_events
+      return events.filter(event => event.type === 'm.room.name')[0] || undefined
     },
     get_rejected_events_for_room: (state: State) => (room_id: MatrixRoomID): TxRejectedEvent[] => {
       const rooms = state.joined_rooms.filter(r => r.room_id === room_id)

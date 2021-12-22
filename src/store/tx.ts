@@ -27,7 +27,7 @@ export const tx_store = {
     }
   },
   mutations: <MutationTree<State>>{
-    mutation_init_tx_structure_for_room (state: State, payload: MatrixRoomID) {
+    mutation_init_joined_room (state: State, payload: MatrixRoomID) {
       if (!state.transactions[payload]) {
         state.transactions[payload] = {
           basic: [],

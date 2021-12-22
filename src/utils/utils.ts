@@ -7,3 +7,14 @@ export function deepcopy<T> (i: T): T {
 export function uuidgen (): string {
   return uuidv4()
 }
+
+const CHARS = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
+export function txnid (length: number): string {
+  const array: string[] = []
+  while (length--) {
+    const char = CHARS[(Math.random() * CHARS.length) | 0]
+    array.push(char)
+  }
+  return array.join('')
+}

@@ -76,33 +76,29 @@ export default defineComponent({
     ]),
     ...mapGetters('rooms', [
       'get_all_joined_rooms'
+    ]),
+    ...mapGetters('sync', [
+      'is_initial_sync_complete'
     ])
   },
   methods: {
     ...mapActions('rooms', [
-      'action_get_all_joined_room_state_events',
-      'action_get_joined_rooms',
       'action_create_room'
     ]),
     ...mapActions('sync', [
-      'action_sync_state'
+      'action_sync_initial_state'
     ]),
     async update_room_table () {
-      const response: MatrixRoomID[] = await this.action_get_joined_rooms()
-      // first only list id
-      this.rooms = response.map(room => {
-        return {
-          room_id: room,
-          room_id_display: room.split(':')[0].substring(1),
+      // get room details
+      const rooms : Room[] = this.get_all_joined_rooms()
+      for (const room of rooms) {
+        this.rooms.push({
+          room_id: room.room_id,
+          room_id_display: room.room_id.split(':')[0].substring(1),
           name: '',
           member_count: 0,
           user_type: ''
-        }
-      })
-      // then get room details
-      await this.action_get_all_joined_room_state_events()
-      const rooms : Room[] = this.get_all_joined_rooms()
-      for (const room of rooms) {
+        })
         // TODO: identify unsuitable rooms here. THey cannot be used for MatPay.
         const current_room = this.rooms.filter(i => i.room_id === room.room_id)[0]
         // get room name: state event 'm.room.name'
@@ -167,8 +163,9 @@ export default defineComponent({
     }
   },
   created () {
-    this.action_sync_state({ continue_batch: true })
-    this.update_room_table()
+    this.action_sync_initial_state().then(() => {
+      this.update_room_table()
+    })
   }
 })
 

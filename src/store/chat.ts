@@ -15,7 +15,7 @@ export const chat_store = {
     }
   },
   mutations: <MutationTree<State>>{
-    mutation_init_chat_log_for_room (state: State, payload: MatrixRoomID) {
+    mutation_init_joined_room (state: State, payload: MatrixRoomID) {
       state.chat_log[payload] = {
         messages: []
       }

@@ -24,6 +24,9 @@ export const user_store = {
     }
   },
   mutations: <MutationTree<State>>{
+    mutation_init_joined_room (state: State, payload: MatrixRoomID) {
+      state.users_info[payload] = []
+    },
     mutation_set_users_for_room (state: State, payload: {
       room_id: MatrixRoomID,
       users_info: Array<RoomUserInfo>
@@ -47,6 +50,7 @@ export const user_store = {
       member_events: MatrixRoomMemberStateEvent[],
       permission_event: MatrixRoomStateEvent
     }) : Promise<Array<RoomUserInfo>> {
+      console.log(payload.member_events)
       const displayname_table : Record<string, string[]> = {}
       // set permission event
       commit('mutation_set_permission_for_room', {

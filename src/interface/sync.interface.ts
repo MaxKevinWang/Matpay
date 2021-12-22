@@ -29,8 +29,10 @@ export interface MatrixSyncAccountData {
   events: MatrixEvent[]
 }
 export interface MatrixSyncInvitedRooms {
-  invite_state: {
-    events: MatrixRoomStrippedEvent[]
+  [roomId: string]: {
+    invite_state: {
+      events: MatrixRoomStrippedEvent[]
+    }
   }
 }
 export interface MatrixSyncJoinedRooms {
@@ -45,11 +47,13 @@ export interface MatrixSyncJoinedRooms {
   }
 }
 export interface MatrixSyncLeftRooms {
-  state: {
-    events: MatrixRoomStateEvent[]
-  },
-  timeline: MatrixSyncTimeline,
-  account_data: MatrixSyncAccountData
+  [roomId: string]: {
+    state: {
+      events: MatrixRoomStateEvent[]
+    },
+    timeline: MatrixSyncTimeline,
+    account_data: MatrixSyncAccountData
+  }
 }
 export interface MatrixSyncPresence {
   events: MatrixEvent[]
