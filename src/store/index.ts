@@ -6,7 +6,8 @@ import { user_store } from '@/store/user'
 import { chat_store } from '@/store/chat'
 import { tx_store } from '@/store/tx'
 import { MatrixRoomID } from '@/models/id.model'
-import { MatrixRoomChatMessageEvent, MatrixRoomEvent, MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
+import { MatrixRoomEvent, MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
+import { TxMessageEvent } from '@/interface/tx_event.interface'
 
 const normal_stores = ['rooms', 'user', 'tx', 'chat']
 export default createStore({
@@ -47,7 +48,7 @@ export default createStore({
             }
             if (['m.room.message'].includes(room_event.type)) {
               if (room_event.content.msgtype === 'm.text') {
-                store.dispatch('chat/parse_single_chat_message_event_for_room', {
+                store.dispatch('chat/action_parse_single_chat_message_event_for_room', {
                   room_id: room_id,
                   message_event: room_event
                 })
@@ -58,6 +59,22 @@ export default createStore({
           }
           case 'sync/mutation_init_state_complete': {
             store.dispatch('rooms/action_parse_state_events_for_all_rooms')
+            break
+          }
+          case 'sync/mutation_room_sync_state_complete': {
+            const room_id = mutation.payload as MatrixRoomID
+            const tx_message_events = (store.state.sync.room_events[room_id] as Array<MatrixRoomEvent>)
+              .filter(e => new Set([
+                'com.matpay.create',
+                'com.matpay.modify',
+                'com.matpay.approve',
+                'com.matpay.settle'
+              ]).has(e.type)) as Array<TxMessageEvent>
+            store.dispatch('tx/action_parse_all_tx_events_for_room', {
+              room_id: room_id,
+              tx_events: tx_message_events
+            })
+            break
           }
         }
       })

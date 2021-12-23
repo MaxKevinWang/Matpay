@@ -1,9 +1,10 @@
 import axios from 'axios'
 import { ActionTree, GetterTree, MutationTree } from 'vuex'
 import { MatrixEventID, MatrixRoomID } from '@/models/id.model'
-import { ChatLog, ChatMessage, TxPlaceholder } from '@/models/chat.model'
+import { ChatLog, ChatMessage, TxPendingPlaceholder, TxPlaceholder } from '@/models/chat.model'
 import { RoomUserInfo, User } from '@/models/user.model'
 import { MatrixRoomChatMessageEvent } from '@/interface/rooms_event.interface'
+import { PendingApproval } from '@/models/transaction.model'
 interface State {
   chat_log: Record<MatrixRoomID, ChatLog>,
 }
@@ -23,15 +24,21 @@ export const chat_store = {
     },
     mutation_add_single_message_for_room (state: State, payload: {
       room_id: MatrixRoomID,
-      message: ChatMessage | TxPlaceholder,
-      location?: number
+      msg: ChatMessage | TxPlaceholder
     }) {
-      const location = payload.location || 0
-      state.chat_log[payload.room_id].messages.splice(location, 0, payload.message)
+      const messages = state.chat_log[payload.room_id].messages
+      // Insertion sort
+      let index = 0
+      for (let i = 0; i < messages.length; i++) {
+        if (messages[i].timestamp.getTime() >= payload.msg.timestamp.getTime()) {
+          index = i
+        }
+      }
+      state.chat_log[payload.room_id].messages.splice(index, 0, payload.msg)
     }
   },
   actions: <ActionTree<State, any>>{
-    parse_single_chat_message_event_for_room ({
+    action_parse_single_chat_message_event_for_room ({
       state,
       commit,
       dispatch,
@@ -47,18 +54,30 @@ export const chat_store = {
         timestamp: new Date(payload.message_event.origin_server_ts),
         content: payload.message_event.content.body
       }
-      const messages = state.chat_log[room_id].messages
-      // Insertion sort
-      let index = 0
-      for (let i = 0; i < messages.length; i++) {
-        if (messages[i].timestamp.getTime() >= msg.timestamp.getTime()) {
-          index = i
-        }
+      commit('mutation_add_single_message_for_room', {
+        room_id: room_id,
+        msg: msg
+      })
+    },
+    action_parse_single_pending_approval_for_room ({
+      state,
+      commit,
+      dispatch,
+      rootGetters
+    }, payload: {
+      room_id: MatrixRoomID,
+      pending_approval: PendingApproval
+    }) {
+      const room_id = payload.room_id
+      const pending_approval = payload.pending_approval
+      const approval_msg : TxPendingPlaceholder = {
+        type: 'pending',
+        timestamp: pending_approval.timestamp,
+        approval: pending_approval
       }
       commit('mutation_add_single_message_for_room', {
         room_id: room_id,
-        message: msg,
-        location: index
+        msg: approval_msg
       })
     }
   },

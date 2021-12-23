@@ -141,7 +141,7 @@ export const user_store = {
         user_id: payload.user_id
       }, { validateStatus: () => true })
       if (response.status === 200) {
-        dispatch('rooms/action_get_room_state_events', { room_id: payload.room_id }, { root: true }) // update state events
+        dispatch('sync/action_update_state', null, { root: true }) // update state events
       } else {
         throw new Error((response.data as unknown as MatrixError).error)
       }

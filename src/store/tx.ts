@@ -1,7 +1,7 @@
 import { ActionTree, GetterTree, MutationTree } from 'vuex'
-import { GroupedTransaction, PendingApproval, TxGraph } from '@/models/transaction.model'
+import { GroupedTransaction, PendingApproval, SimpleTransaction, TxGraph } from '@/models/transaction.model'
 import { GroupID, MatrixEventID, MatrixRoomID, MatrixUserID, TxID } from '@/models/id.model'
-import { RoomUserInfo } from '@/models/user.model'
+import { RoomUserInfo, User } from '@/models/user.model'
 import { uuidgen } from '@/utils/utils'
 import { TxCreateEvent, TxMessageEvent, TxRejectedEvent } from '@/interface/tx_event.interface'
 import axios from 'axios'
@@ -50,19 +50,6 @@ export const tx_store = {
         }
         state.transactions[payload.room_id].rejected[rejected_tuple[0]].add(rejected_tuple[1])
       }
-    },
-    mutation_set_grouped_transactions_for_room (state: State, payload: {
-      room_id: MatrixRoomID,
-      grouped_txs: GroupedTransaction[]
-    }) {
-      state.transactions[payload.room_id].basic = payload.grouped_txs
-      state.transactions[payload.room_id].is_graph_dirty = true
-    },
-    mutation_set_pending_approvals_for_room (state: State, payload: {
-      room_id: MatrixRoomID,
-      pending_approvals: PendingApproval[]
-    }) {
-      state.transactions[payload.room_id].pending_approvals = payload.pending_approvals
     },
     mutation_add_approved_grouped_transaction_for_room (state: State, payload: {
       room_id: MatrixRoomID,
@@ -203,84 +190,117 @@ export const tx_store = {
         commit('mutation_add_processed_event', rejected_event.event_id)
       }
     },
-    async action_get_and_parse_all_tx_for_room ({
+    async action_parse_all_tx_events_for_room ({
       state,
       commit,
       getters,
       dispatch,
       rootGetters
     }, payload: {
-      room_id: MatrixRoomID
+      room_id: MatrixRoomID,
+      tx_events: TxMessageEvent[]
     }) {
-      const room_id = payload.room_id
-      commit('mutation_init_tx_structure_for_room', room_id)
-      const homeserver = rootGetters['auth/homeserver']
-      let next_batch : string = rootGetters['sync/get_next_batch_id']
-      const only_tx_event_filter : RoomEventFilter = {
-        types: [
-          'com.matpay.create',
-          'com.matpay.approve',
-          'com.matpay.modify',
-          'com.matpay.settle'
-        ]
-      }
-      const limit = 10
-      let current_batch_tx_events : TxMessageEvent[] = []
-      do {
-        const response = await axios.get<GETRoomEventsResponse>(`${homeserver}/_matrix/client/r0/rooms/${room_id}/messages`, {
-          params: {
-            from: next_batch,
-            dir: 'f',
-            limit: limit,
-            filter: JSON.stringify(only_tx_event_filter)
-          },
-          validateStatus: () => true
+      for (const tx_event of payload.tx_events) {
+        await dispatch('action_parse_single_tx_for_room', {
+          room_id: payload.room_id,
+          tx_event: tx_event
         })
-        if (response.status !== 200) {
-          throw new Error((response.data as unknown as MatrixError).error)
-        }
-        if (response.data.chunk.length !== 0) {
-          current_batch_tx_events = response.data.chunk as TxMessageEvent[]
-        }
-        // Event processing loop starts here
-        for (const tx_event of current_batch_tx_events) {
-          // check if rejected
-          // note: this implementation currently does not check if the user can reject it
-          // that is, this allows a user to reject a tx he/she is not participating
-          if (Object.keys(state.transactions[room_id].rejected).includes(tx_event.event_id)) {
-            continue
+      }
+    },
+    async action_parse_single_tx_for_room ({
+      state,
+      commit,
+      getters,
+      dispatch,
+      rootGetters
+    }, payload: {
+      room_id: MatrixRoomID,
+      tx_event: TxMessageEvent
+    }) {
+      debugger
+      const room_id = payload.room_id
+      const tx_event = payload.tx_event
+      // check if rejected
+      // note: this implementation currently does not check if the user can reject it
+      // that is, this allows a user to reject a tx he/she is not participating
+      if (Object.keys(state.transactions[room_id].rejected).includes(tx_event.event_id)) {
+        return
+      }
+      // parse based on event types
+      switch (tx_event.type) {
+        case 'com.matpay.create': {
+          const tx_event_create = tx_event as TxCreateEvent
+          // no previous tx with the same group id
+          const existing_group_ids : Set<GroupID> = getters.get_existing_group_ids_for_room(room_id)
+          if (existing_group_ids.has(tx_event_create.content.group_id)) {
+            return
           }
-          // parse based on event types
-          switch (tx_event.type) {
-            case 'com.matpay.create': {
-              const tx_event_create = tx_event as TxCreateEvent
-              // no previous tx with the same group id
-              const existing_group_ids : Set<GroupID> = getters.get_existing_group_ids_for_room(room_id)
-              if (existing_group_ids.has(tx_event_create.content.group_id)) {
-                continue
-              }
-              // no previous tx with the same tx id
-              const existing_tx_ids : Set<TxID> = getters.get_existing_tx_ids_for_room(room_id)
-              const intersect = new Set(
-                tx_event_create.content.txs.map(i => i.tx_id).filter(x => existing_tx_ids.has(x))
-              )
-              if (intersect.size > 0) {
-                continue
-              }
-              // all amounts non negative
-              if (tx_event_create.content.txs.map(i => i.amount).filter(i => i < 0).length > 0) {
-                continue
-              }
-              // description not blank
-              if (!tx_event_create.content.description) {
-                continue
-              }
+          // no previous tx with the same tx id
+          const existing_tx_ids : Set<TxID> = getters.get_existing_tx_ids_for_room(room_id)
+          const intersect = new Set(
+            tx_event_create.content.txs.map(i => i.tx_id).filter(x => existing_tx_ids.has(x))
+          )
+          if (intersect.size > 0) {
+            return
+          }
+          // all amounts non negative
+          if (tx_event_create.content.txs.map(i => i.amount).filter(i => i < 0).length > 0) {
+            return
+          }
+          // description not blank
+          if (!tx_event_create.content.description) {
+            return
+          }
+          const room_users : Array<User> = (rootGetters['user/get_users_info_for_room'](room_id) as Array<RoomUserInfo>)
+            .map(u => u.user)
+          // all participants in room
+          const targets = tx_event_create.content.txs.map(t => t.to)
+          const participating_users = targets.concat([tx_event_create.content.from])
+          for (const u of participating_users) {
+            if (!room_users.map(i => i.user_id).includes(u)) {
+              return
             }
           }
+          // sender must participate
+          if (!participating_users.includes(tx_event_create.sender)) {
+            return
+          }
+          // duplicate target
+          if (new Set(targets).size !== targets.length) {
+            return
+          }
+          // construct pending approval
+          const txs = tx_event_create.content.txs.map<SimpleTransaction>(i => {
+            return {
+              amount: i.amount,
+              tx_id: i.tx_id,
+              to: room_users.filter(j => j.user_id === i.to)[0]
+            }
+          })
+          const new_pending_approval : PendingApproval = {
+            event_id: tx_event_create.event_id,
+            type: 'create',
+            group_id: tx_event_create.content.group_id,
+            description: tx_event_create.content.description,
+            from: room_users.filter(i => i.user_id === tx_event_create.content.from)[0],
+            timestamp: new Date(tx_event_create.origin_server_ts),
+            txs: txs,
+            approvals: tx_event_create.content.txs.reduce((prev : Record<MatrixRoomID, boolean>, cur) => {
+              prev[cur.to] = false
+              return prev
+            }, {} as Record<MatrixUserID, boolean>)
+          }
+          commit('mutation_add_pending_approval_for_room', {
+            room_id: room_id,
+            pending_approval: new_pending_approval
+          })
+          dispatch('chat/action_parse_single_pending_approval_for_room', {
+            room_id: room_id,
+            pending_approval: new_pending_approval
+          }, { root: true })
+          // TODO: notify other stores
         }
-        // Event processing loop ends here
-        next_batch = response.data.end
-      } while (current_batch_tx_events.length !== 0)
+      }
     }
   },
   getters: <GetterTree<State, any>>{
