@@ -1,8 +1,6 @@
 <template>
+  <SettlementDialog ref="settle_dialog" :user_clicked="user_prop" />
   <div :id="'usercard_' + user_id" @click="on_user_card_click()">
-    <div>
-      <SettlementDialog :user_clicked="user_prop" />
-    </div>
     <img :src="this.avatar" alt="avatar" class="avatar">
     <div class="about" @contextmenu="open_right_click_menu">
       <div :class="['name', {'self_name': this.is_self }, {'admin': this.user_type === 'Admin'}]">{{
@@ -19,7 +17,6 @@
       </ul>
     </RightClickMenu>
   </div>
-  <SettlementDialog ref="settle_dialog"/>
 </template>
 
 <script lang="ts">
@@ -36,8 +33,12 @@ import { TxPlaceholder } from '@/models/chat.model'
 export default defineComponent({
   name: 'UserCard',
   props: {
-    user_prop: Object as PropType<RoomUserInfo>,
-    can_i_kick_user: Boolean as PropType<boolean>
+    user_prop: {
+      type: Object as PropType<RoomUserInfo>
+    },
+    can_i_kick_user: {
+      type: Boolean as PropType<boolean>
+    }
   },
   computed: {
     ...mapGetters('auth', [

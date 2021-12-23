@@ -1,7 +1,6 @@
 <template>
-  <div>
-  </div>
-  <div class="modal fade" id="settlement-modal" tabindex="-1" aria-labelledby="settlement-label" aria-hidden="true">
+  <div class="modal fade" :id="'settlement-modal_' + this.user_clicked.user.user_id" tabindex="-1"
+       aria-labelledby="settlement-label" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
@@ -9,9 +8,9 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <p>{{user_clicked.displayname}}</p>
+          <p>{{ user_clicked.displayname }}</p>
           <p>{{}}</p>
-          <h3>{{"0$"}}</h3>
+          <h3>{{ '0$' }}</h3>
           <button type="button" class="btn btn-primary">settle</button>
         </div>
         <div class="modal-footer">
@@ -44,7 +43,6 @@ export default defineComponent({
     return {
       modal_control: null as Modal | null,
       is_shown: false as boolean,
-      homeUser: {} as User,
       amount: 0 as number
     }
   },
@@ -66,7 +64,8 @@ export default defineComponent({
     }
   },
   mounted () {
-    this.modal_control = new Modal(document.getElementById('settlement-modal') as HTMLElement, {
+    const id = 'settlement-modal_' + this.user_clicked?.user.user_id
+    this.modal_control = new Modal(document.getElementById(id) as HTMLElement, {
       backdrop: false
     })
   }
