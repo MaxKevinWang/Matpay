@@ -13,7 +13,7 @@
             </div>
             <div class="col-4">
               <p>{{this.reference.approval.description}}</p>
-              <p>{{this.calc_amount2(this.reference.approval) + "€" }}</p>
+              <p>{{calc_amount2(this.reference.approval) + "€" }}</p>
             </div>
             <div class="col-6">
               <p>{{"From" + this.reference.approval.from.displayname + "at" + this.reference.timestamp.getDay()}}</p>
