@@ -13,6 +13,14 @@
       </div>
       <div class="col-lg-9 chat-frame">
         <h4>Chat</h4>
+        <div class="row">
+        <button v-if="!is_fully_loaded" class="btn btn-primary spinner" type="button" disabled>
+          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          Loading further messages...
+          <br>
+          Transaction data won't be available before all messages are downloaded.
+        </button>
+        </div>
         <ChatComponent />
       </div>
     </div>
@@ -33,7 +41,8 @@ export default defineComponent({
     return {
       users_info: [] as Array<RoomUserInfo>,
       room_name: '' as string,
-      error: '' as string
+      error: '' as string,
+      is_fully_loaded: false
     }
   },
   computed: {
@@ -78,9 +87,11 @@ export default defineComponent({
   },
   async mounted () {
     await this.action_sync_initial_state()
-    await this.action_sync_full_events_for_room({
+    this.action_sync_full_events_for_room({
       room_id: this.room_id,
       tx_only: false
+    }).then(() => {
+      this.is_fully_loaded = true
     })
     this.update_member_list()
   }
@@ -99,5 +110,8 @@ export default defineComponent({
   -o-transition: .5s;
   -webkit-transition: .5s;
   transition: .5s
+}
+.spinner {
+  margin: 5px;
 }
 </style>
