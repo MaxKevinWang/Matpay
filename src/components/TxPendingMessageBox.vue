@@ -1,15 +1,22 @@
 <template>
-  <div class="card">
+  <div class="card" style="background-color: rgba(255, 193, 193,.5)">
     <div class="card-body">
-      <h5 class="card-title"></h5>
-      <p class="card-text"></p>
-      <p>{{this.reference.timestamp.toLocaleDateString()}}</p>
-      <!--
-      <p>{{this.reference.grouped_tx.description}}</p>
-      <p>{{this.reference.grouped_tx.from.displayname + " paid " + this.calc_amount(this.reference.grouped_tx)+"$"}}</p>
-      -->
-      <a href="#" class="btn btn-primary">details</a>
+      <div class="row">
+        <div class="col">
+          <p>{{this.reference.timestamp.toLocaleDateString()}}</p>
+        </div>
+        <div class="col">
+          <p>{{this.reference.approval.description}}</p>
+        </div>
+        <div class="col">
+          <p>{{this.reference.approval.from.displayname + " paid " + this.calc_amount2(this.reference.approval)+"$"}}</p>
+        </div>
+        <div class="col">
+          <button href="#" class="btn btn-primary" @click="approval_click()">details</button>
+        </div>
+      </div>
     </div>
+    <ApprovalDialog ref="create_dialog" :reference="reference"/>
   </div>
 </template>
 
@@ -22,9 +29,11 @@ import { User } from '@/models/user.model'
 import { GroupID, MatrixEventID, MatrixRoomID, MatrixUserID, TxID } from '@/models/id.model'
 import { GroupedTransaction, PendingApproval, SimpleTransaction } from '@/models/transaction.model'
 import { TxPlaceholder } from '@/models/chat.model'
+import CreateRoomDialog from '@/dialogs/CreateRoomDialog.vue'
+import ApprovalDialog from '@/dialogs/ApprovalDialog.vue'
 
 export default defineComponent({
-  name: 'TxMessageBox',
+  name: 'TxPendingMessageBox',
   props: {
     reference: {
       type: Object as PropType<TxPlaceholder>
@@ -50,16 +59,27 @@ export default defineComponent({
     //  ])
   },
   components: {
+    ApprovalDialog,
     // eslint-disable-next-line vue/no-unused-components
     TxDetail
   },
   methods: {
     calc_amount (tx: GroupedTransaction) : number {
       let amount = 0
-      tx.txs.forEach(txs => {
-        amount += txs.amount
-      })
+      for (const simple_tx of tx.txs) {
+        amount += simple_tx.amount
+      }
       return amount
+    },
+    calc_amount2 (tx: PendingApproval) : number {
+      let amount = 0
+      for (const simple_tx of tx.txs) {
+        amount += simple_tx.amount
+      }
+      return amount
+    },
+    approval_click () {
+      this.$refs.create_dialog.show()
     }
   }
 })
@@ -68,7 +88,6 @@ export default defineComponent({
 
 .card {
   position: relative;
-  background: darkgrey;
   margin-bottom: 30px;
 }
 

@@ -102,7 +102,6 @@ export default defineComponent({
   left: 0;
   top: 0;
   padding: 20px;
-  z-index: 7
 }
 
 .chat-frame {

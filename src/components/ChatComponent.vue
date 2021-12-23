@@ -1,18 +1,20 @@
 <template>
   <div>
     <div v-for="message in chat_log.messages" :key="message.timestamp">
-      <component v-if="message.type" :is="TxMessageBox" :reference="message" :room_id="room_id"/>
+      <component v-if="message.grouped_tx" :is="TxApprovedMessageBox" :reference="message" :room_id="room_id"/>
+      <component v-if="message.approval" :is="TxPendingMessageBox" :reference="message" :room_id="room_id"/>
       <component v-if="message.content" :is="ChatMessageBox" :chat_message="message" :room_id="room_id"/>
     </div>
   </div>
   <div>
-    <div class="input-group mb-3">
+    <div class="fixed-bottom input-group mb-3">
       <input type="text" class="form-control" placeholder="Send a message" aria-describedby="button-addon2">
-      <button class="btn btn-primary" type="button">TX</button>
+      <button class="btn btn-primary" type="button" @click="on_tx_clicked()">TX</button>
       <button class="btn btn-primary" type="button">History</button>
       <button class="btn btn-primary" type="button">Send</button>
     </div>
   </div>
+  <CreateTxDialog ref="create_tx_dialog" :room_id="room_id" :room_name="room_name"/>
 </template>
 
 <script lang="ts">
@@ -20,17 +22,21 @@ import { User } from '@/models/user.model'
 import { defineComponent } from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 import { ChatLog } from '@/models/chat.model'
-import TxMessageBox from '@/components/TxMessageBox.vue'
 import ChatMessageBox from '@/components/ChatMessageBox.vue'
 import { Popover } from 'bootstrap'
 import { deepcopy } from '@/utils/utils'
+import TxApprovedMessageBox from '@/components/TxApprovedMessageBox.vue'
+import TxPendingMessageBox from '@/components/TxPendingMessageBox.vue'
+import CreateTxDialog from '@/dialogs/CreateTxDialog.vue'
 
 export default defineComponent({
   name: 'ChatComponent',
   data () {
     return {
-      TxMessageBox: 'TxMessageBox' as string,
-      ChatMessageBox: 'ChatMessageBox' as string
+      TxApprovedMessageBox: 'TxApprovedMessageBox' as string,
+      TxPendingMessageBox: 'TxPendingMessageBox' as string,
+      ChatMessageBox: 'ChatMessageBox' as string,
+      room_name: '' as string
     }
   },
   computed: {
@@ -54,12 +60,16 @@ export default defineComponent({
     }
   },
   components: {
-    // eslint-disable-next-line vue/no-unused-components
-    TxMessageBox,
-    // eslint-disable-next-line vue/no-unused-components
-    ChatMessageBox
+    TxApprovedMessageBox,
+    TxPendingMessageBox,
+    ChatMessageBox,
+    CreateTxDialog
   },
   methods: {
+    on_tx_clicked () {
+      this.room_name = this.get_room_name(this.room_id)
+      this.$refs.create_tx_dialog.show()
+    }
   }
 })
 </script>

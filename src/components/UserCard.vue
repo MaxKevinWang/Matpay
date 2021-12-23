@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <SettlementDialog ref="settle_dialog" :user_clicked="user_prop" />
+  <div :id="'usercard_' + user_id" @click="on_user_card_click()">
     <img :src="this.avatar" alt="avatar" class="avatar">
     <div class="about" @contextmenu="open_right_click_menu">
       <div :class="['name', {'self_name': this.is_self }, {'admin': this.user_type === 'Admin'}]">{{
@@ -25,13 +26,19 @@ import { DEFAULT_AVATAR } from '@/utils/consts'
 import { get_file_from_content_repository } from '@/utils/ContentRepository'
 import { mapGetters } from 'vuex'
 import RightClickMenu from '@/components/RightClickMenu.vue'
+import SettlementDialog from '@/dialogs/SettlementDialog.vue'
 import { RoomUserInfo } from '@/models/user.model'
+import { TxPlaceholder } from '@/models/chat.model'
 
 export default defineComponent({
   name: 'UserCard',
   props: {
-    user_prop: Object as PropType<RoomUserInfo>,
-    can_i_kick_user: Boolean as PropType<boolean>
+    user_prop: {
+      type: Object as PropType<RoomUserInfo>
+    },
+    can_i_kick_user: {
+      type: Boolean as PropType<boolean>
+    }
   },
   computed: {
     ...mapGetters('auth', [
@@ -85,6 +92,9 @@ export default defineComponent({
       } else if (operation === 'ban') {
         this.$emit('on-ban', this.user_id)
       }
+    },
+    on_user_card_click () {
+      this.$refs.settle_dialog.show()
     }
   },
   watch: {
@@ -94,7 +104,8 @@ export default defineComponent({
     }
   },
   components: {
-    RightClickMenu
+    RightClickMenu,
+    SettlementDialog
   }
 })
 
