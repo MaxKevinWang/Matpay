@@ -9,11 +9,12 @@
   <div>
     <div class="fixed-bottom input-group mb-3">
       <input type="text" class="form-control" placeholder="Send a message" aria-describedby="button-addon2">
-      <button class="btn btn-primary" type="button">TX</button>
+      <button class="btn btn-primary" type="button" @click="on_tx_clicked()">TX</button>
       <button class="btn btn-primary" type="button">History</button>
       <button class="btn btn-primary" type="button">Send</button>
     </div>
   </div>
+  <CreateTxDialog ref="create_tx_dialog" :room_id="room_id" :room_name="room_name"/>
 </template>
 
 <script lang="ts">
@@ -26,6 +27,7 @@ import { Popover } from 'bootstrap'
 import { deepcopy } from '@/utils/utils'
 import TxApprovedMessageBox from '@/components/TxApprovedMessageBox.vue'
 import TxPendingMessageBox from '@/components/TxPendingMessageBox.vue'
+import CreateTxDialog from '@/dialogs/CreateTxDialog.vue'
 
 export default defineComponent({
   name: 'ChatComponent',
@@ -33,7 +35,8 @@ export default defineComponent({
     return {
       TxApprovedMessageBox: 'TxApprovedMessageBox' as string,
       TxPendingMessageBox: 'TxPendingMessageBox' as string,
-      ChatMessageBox: 'ChatMessageBox' as string
+      ChatMessageBox: 'ChatMessageBox' as string,
+      room_name: '' as string
     }
   },
   computed: {
@@ -59,9 +62,14 @@ export default defineComponent({
   components: {
     TxApprovedMessageBox,
     TxPendingMessageBox,
-    ChatMessageBox
+    ChatMessageBox,
+    CreateTxDialog
   },
   methods: {
+    on_tx_clicked () {
+      this.room_name = this.get_room_name(this.room_id)
+      this.$refs.create_tx_dialog.show()
+    }
   }
 })
 </script>
