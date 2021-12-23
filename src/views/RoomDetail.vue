@@ -54,14 +54,12 @@ export default defineComponent({
     MemberList
   },
   methods: {
-    ...mapActions('rooms', [
-      'action_get_room_state_events'
+    ...mapActions('sync', [
+      'action_sync_initial_state',
+      'action_sync_full_events_for_room'
     ]),
-    async update_member_list () {
+    update_member_list () {
       try {
-        await this.action_get_room_state_events({
-          room_id: this.room_id
-        })
         this.room_name = this.get_room_name(this.room_id)
         this.users_info = this.get_users_info_for_room(this.room_id)
       } catch (e) {
@@ -78,7 +76,12 @@ export default defineComponent({
       this.update_member_list()
     }
   },
-  mounted () {
+  async mounted () {
+    await this.action_sync_initial_state()
+    await this.action_sync_full_events_for_room({
+      room_id: this.room_id,
+      tx_only: false
+    })
     this.update_member_list()
   }
 })

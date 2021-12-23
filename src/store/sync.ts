@@ -3,6 +3,10 @@ import { MatrixSyncResponse } from '@/interface/sync.interface'
 import axios from 'axios'
 import { MatrixEventID, MatrixRoomID } from '@/models/id.model'
 import { MatrixRoomEvent, MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
+import { RoomEventFilter } from '@/interface/filter.interface'
+import { TxMessageEvent } from '@/interface/tx_event.interface'
+import { GETRoomEventsResponse } from '@/interface/api.interface'
+import { MatrixError } from '@/interface/error.interface'
 
 interface State {
   next_batch: string,
@@ -94,15 +98,11 @@ export const sync_store = {
             commit('mutation_create_new_room', room_id)
           }
           // 2. Parse existing events
-          for (const [room_id, room_data] of Object.entries(response.data.rooms.join)) {
-            const timeline = room_data.timeline
-            commit('mutation_set_room_prev_batch', {
-              room_id: room_id,
-              prev_batch: timeline.prev_batch
-            })
+          for (const room_id of Object.keys(response.data.rooms.join)) {
             // state events first
             // this ensures that when init is marked true, basic room information can be displayed.
-            for (const event of room_data.state.events) {
+            const state_response = await axios.get<MatrixRoomStateEvent[]>(`${homeserver}/_matrix/client/r0/rooms/${room_id}/state`)
+            for (const event of state_response.data) {
               if (!state.processed_events_id.has(event.event_id)) {
                 commit('mutation_process_event', {
                   room_id: room_id,
@@ -110,6 +110,16 @@ export const sync_store = {
                 })
               }
             }
+          }
+          // TODO: process invited rooms
+          commit('mutation_init_state_complete')
+          // Then pass single events
+          for (const [room_id, room_data] of Object.entries(response.data.rooms.join)) {
+            const timeline = room_data.timeline
+            commit('mutation_set_room_prev_batch', {
+              room_id: room_id,
+              prev_batch: timeline.prev_batch
+            })
             // then all events
             for (const event of timeline.events) {
               if (!state.processed_events_id.has(event.event_id)) {
@@ -121,19 +131,74 @@ export const sync_store = {
             }
           }
         }
-        // TODO: process invited rooms
-        commit('mutation_init_state_complete')
       }
     },
-    async action_sync_full_state_for_room ({
+    /**
+     * This function attempts to pull full events for a room.
+     * It starts from the prev batch ID of the initial sync and repeatedly calls message APIs until nothing returns.
+     * Since tx events must be parsed in a forward direction, this function cannot start event processing until all events are fetched.
+     * Therefore, this action consumes heavy resources and should NOT be frequently called, normally once per room.
+     * A boolean toggle is used to switch off getting chat messages, so save resource in chatty rooms.
+     */
+    async action_sync_full_events_for_room ({
       state,
       commit,
       dispatch,
       rootGetters
     }, payload: {
-      room_id: MatrixRoomID
+      room_id: MatrixRoomID,
+      tx_only: boolean
     }) {
-      console.log()
+      const room_id = payload.room_id
+      if (state.init_state_complete && !state.room_sync_complete[room_id]) {
+        const homeserver = rootGetters['auth/homeserver']
+        let filter_tx_only: RoomEventFilter | undefined
+        if (payload.tx_only) {
+          filter_tx_only = {
+            types: [
+              'com.matpay.*'
+            ]
+          }
+        }
+        let prev_batch = state.room_prev_batch_id[room_id]
+        const events: MatrixRoomEvent[] = []
+        let current_length = 0
+        // repeatedly polling message API for earlier events
+        do {
+          const response = await axios.get<GETRoomEventsResponse>(`${homeserver}/_matrix/client/r0/rooms/${room_id}/messages`, {
+            params: {
+              from: prev_batch,
+              dir: 'b',
+              filter: filter_tx_only ? JSON.stringify(filter_tx_only) : undefined
+            },
+            validateStatus: () => true
+          })
+          if (response.status !== 200) {
+            throw new Error((response.data as unknown as MatrixError).error)
+          }
+          if (response.data.chunk.length > 0) {
+            current_length = response.data.chunk.length
+            prev_batch = response.data.end
+            for (const event of response.data.chunk) {
+              events.push(event)
+            }
+          } else {
+            current_length = 0
+          }
+        } while (current_length !== 0)
+        // reverse, event processing
+        events.reverse()
+        for (const event of events) {
+          if (!state.processed_events_id.has(event.event_id)) {
+            commit('mutation_process_event', {
+              room_id: room_id,
+              event: event
+            })
+          }
+        }
+        // mark as complete
+        commit('mutation_room_sync_state_complete', room_id)
+      }
     },
     async action_update_state ({
       state,

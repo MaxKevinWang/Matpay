@@ -6,7 +6,7 @@ import { user_store } from '@/store/user'
 import { chat_store } from '@/store/chat'
 import { tx_store } from '@/store/tx'
 import { MatrixRoomID } from '@/models/id.model'
-import { MatrixRoomEvent, MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
+import { MatrixRoomChatMessageEvent, MatrixRoomEvent, MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
 
 const normal_stores = ['rooms', 'user', 'tx', 'chat']
 export default createStore({
@@ -44,6 +44,14 @@ export default createStore({
                 room_id: room_id,
                 state_event: room_event as MatrixRoomStateEvent
               })
+            }
+            if (['m.room.message'].includes(room_event.type)) {
+              if (room_event.content.msgtype === 'm.text') {
+                store.dispatch('chat/parse_single_chat_message_event_for_room', {
+                  room_id: room_id,
+                  message_event: room_event
+                })
+              }
             }
             // more here
             break

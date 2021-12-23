@@ -29,17 +29,6 @@ export const rooms_store = {
       }
       state.joined_rooms.push(new_room)
     },
-    mutation_init_joined_rooms (state: State, payload: { joined_rooms_id: MatrixRoomID[] }) {
-      state.joined_rooms = [] // reset to clean state
-      for (const room_id of payload.joined_rooms_id) {
-        const new_room: Room = {
-          room_id: room_id,
-          name: '',
-          state_events: []
-        }
-        state.joined_rooms.push(new_room)
-      }
-    },
     mutation_add_state_event_for_joined_room (state: State,
       payload: { room_id: MatrixRoomID, state_event: MatrixRoomStateEvent }) {
       const room = state.joined_rooms.filter(r => r.room_id === payload.room_id)[0]

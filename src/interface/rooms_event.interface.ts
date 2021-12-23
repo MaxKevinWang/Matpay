@@ -45,3 +45,13 @@ export interface MatrixRoomPermissionConfiguration extends Record<string, unknow
   users_default: number,
   users: Record<MatrixUserID, number>
 }
+
+export interface MatrixRoomChatMessageEvent extends MatrixRoomEvent {
+  type: 'm.room.message',
+  content: {
+    msgtype: 'm.text'
+    body: string,
+    format?: string,
+    formatted_body?: string
+  }
+}

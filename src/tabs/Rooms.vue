@@ -162,10 +162,9 @@ export default defineComponent({
       }
     }
   },
-  created () {
-    this.action_sync_initial_state().then(() => {
-      this.update_room_table()
-    })
+  async created () {
+    await this.action_sync_initial_state()
+    await this.update_room_table()
   }
 })
 

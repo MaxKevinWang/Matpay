@@ -50,7 +50,6 @@ export const user_store = {
       member_events: MatrixRoomMemberStateEvent[],
       permission_event: MatrixRoomStateEvent
     }) : Promise<Array<RoomUserInfo>> {
-      console.log(payload.member_events)
       const displayname_table : Record<string, string[]> = {}
       // set permission event
       commit('mutation_set_permission_for_room', {
