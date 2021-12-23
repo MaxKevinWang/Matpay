@@ -10,14 +10,16 @@
       <p>{{ simple_transaction.to.displayname }} owes {{ simple_transaction.amount / 100 }}€</p>
     </div>
     <div class="card-body">
-      <button class="btn btn-primary" type="button">Modify</button>
+      <button class="btn btn-primary" type="button" @click="modification_click()">Modify</button>
     </div>
+    <ModificationDialog ref="create_dialog" :reference="reference"/>
   </div>
 </template>
 
 <script lang="ts">
 import { GroupedTransaction } from '@/models/transaction.model'
 import { defineComponent, PropType } from 'vue'
+import ModificationDialog from '@/dialogs/ModificationDialog.vue'
 export default defineComponent({
   name: 'TxDetail',
   props: {
@@ -32,8 +34,12 @@ export default defineComponent({
   computed: {
   },
   components: {
+    ModificationDialog
   },
   methods: {
+    modification_click () {
+      this.$refs.create_dialog.show()
+    }
   }
 })
 </script>

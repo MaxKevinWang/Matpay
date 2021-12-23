@@ -25,9 +25,5 @@ app.use(store).use(router)
 app.config.globalProperties.sum_amount = (item: GroupedTransaction | PendingApproval) : number => {
   return item.txs.reduce((sum, tx) => sum + tx.amount, 0)
 }
-app.config.globalProperties.split_percentage = (item: GroupedTransaction | PendingApproval) : Record<TxID, number> => {
-  for (const simple_tx of item.txs) {
-    return <simple_tx.tx_id, simple_tx.amount / app.config.globalProperties.sum_amount(item)>
-  }
-}
+
 app.mount('#app')

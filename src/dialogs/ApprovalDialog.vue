@@ -79,13 +79,6 @@ export default defineComponent({
     hide () {
       this.modal_control?.hide()
       this.is_shown = false
-    },
-    calc_amount2 (tx: PendingApproval) : number {
-      let amount = 0
-      for (const simple_tx of tx.txs) {
-        amount += simple_tx.amount
-      }
-      return amount
     }
   },
   mounted () {
