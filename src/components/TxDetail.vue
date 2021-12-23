@@ -4,7 +4,7 @@
       <h3>Details</h3>
     </div>
     <div class="card-body">
-      <p>{{ tx.description }}: {{ calc_amount(tx) }}€ from {{ tx.from.displayname }} at {{ tx.timestamp.toLocaleDateString() }}</p>
+      <p>{{ tx.description }}: {{ sum_amount(tx) / 100 }}€ from {{ tx.from.displayname }} at {{ tx.timestamp.toLocaleDateString() }}</p>
     </div>
     <div class="card-body" v-for="simple_transaction in tx?.txs" :key="simple_transaction.tx_id">
       <p>{{ simple_transaction.to.displayname }} owes {{ simple_transaction.amount / 100 }}€</p>
@@ -34,13 +34,6 @@ export default defineComponent({
   components: {
   },
   methods: {
-    calc_amount (tx: GroupedTransaction) : number {
-      let amount = 0
-      tx.txs.forEach(txs => {
-        amount += txs.amount
-      })
-      return amount / 100
-    }
   }
 })
 </script>
