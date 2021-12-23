@@ -29,7 +29,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-primary">OK</button>
+          <button type="button" class="btn btn-primary">Submit</button>
         </div>
       </div>
     </div>
@@ -41,12 +41,16 @@
 import { defineComponent, PropType } from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 import { Modal, Popover } from 'bootstrap'
+import { TxApprovedPlaceholder } from '@/models/chat.model'
 
 export default defineComponent({
   name: 'ModificationDialog',
   props: {
     room_id: {
       type: String as PropType<string>
+    },
+    reference: {
+      type: Object as PropType<TxApprovedPlaceholder>
     }
   },
   data () {
