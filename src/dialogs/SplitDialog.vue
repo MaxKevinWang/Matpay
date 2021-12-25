@@ -1,13 +1,13 @@
 <template>
-  <div class="modal fade" id="<...>-modal" tabindex="-1" aria-labelledby="<...>-label" aria-hidden="true">
+  <div class="modal fade" id="Split-modal" tabindex="-1" aria-labelledby="Split-label" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="<...>-label">Some title here</h5>
+          <h5 class="modal-title" id="Split-label">Configuration</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <!-- Content of dialog here -->
+          fuck
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -23,6 +23,7 @@
 import { defineComponent, PropType } from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 import { Modal, Popover } from 'bootstrap'
+import CreateTxDialog from '@/dialogs/CreateTxDialog.vue'
 
 export default defineComponent({
   name: 'SplitDialog',
@@ -52,7 +53,7 @@ export default defineComponent({
     }
   },
   mounted () {
-    this.modal_control = new Modal(document.getElementById('<...>-modal') as HTMLElement, {
+    this.modal_control = new Modal(document.getElementById('Split-modal') as HTMLElement, {
       backdrop: false
     })
   }

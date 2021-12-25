@@ -24,7 +24,7 @@
             </span>
             <input type="text" class="form-control" placeholder="Amount" aria-label="Amount" aria-describedby="basic-addon1">
           </div>
-          <button class="btn btn-primary">Split Configuration</button>
+          <button class="btn btn-primary" @click="on_split_configuration_clicked()">Split Configuration</button>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-primary">Confirm</button>
@@ -32,10 +32,12 @@
       </div>
     </div>
   </div>
+  <SplitDialog ref="split_dialog"/>
 </template>
 
 <script lang="ts">
 /* eslint-disable no-unused-expressions */
+import SplitDialog from '@/dialogs/SplitDialog.vue'
 import { defineComponent, PropType } from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 import { Modal, Popover } from 'bootstrap'
@@ -68,6 +70,10 @@ export default defineComponent({
     hide () {
       this.modal_control?.hide()
       this.is_shown = false
+    },
+    on_split_configuration_clicked () {
+      console.log('test')
+      this.$refs.split_dialog.show()
     }
   },
   mounted () {
