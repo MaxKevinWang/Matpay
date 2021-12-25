@@ -7,11 +7,25 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          fuck
+          <div class="input-group mb-3">
+            <button type="button" class="btn btn-warning"></button>
+            <input type="text" class="form-control" placeholder="Split value" aria-label="Recipient's username" aria-describedby="basic-addon2">
+            <span class="input-group-text" id="basic-addon2">$</span>
+          </div>
+          <div class="input-group mb-3">
+            <button type="button" class="btn btn-warning"></button>
+            <input type="text" class="form-control" placeholder="Split value" aria-label="Recipient's username" aria-describedby="basic-addon2">
+            <span class="input-group-text" id="basic-addon2">$</span>
+          </div>
+          <div class="input-group mb-3">
+            <button type="button" class="btn btn-warning"></button>
+            <input type="text" class="form-control" placeholder="Split value" aria-label="Recipient's username" aria-describedby="basic-addon2">
+            <span class="input-group-text" id="basic-addon2">$</span>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary">OK</button>
+          <button type="button" class="btn btn-primary">Save</button>
         </div>
       </div>
     </div>

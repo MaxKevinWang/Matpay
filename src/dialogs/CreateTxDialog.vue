@@ -61,6 +61,7 @@ export default defineComponent({
   computed: {
   },
   components: {
+    SplitDialog
   },
   methods: {
     show () {
