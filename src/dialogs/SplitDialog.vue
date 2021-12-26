@@ -81,8 +81,6 @@ export default defineComponent({
         this.users = users_tmp
         this.selected_members[0] = this.users[0].user
       }
-    },
-    select_member (user : User) {
     }
   },
   mounted () {
