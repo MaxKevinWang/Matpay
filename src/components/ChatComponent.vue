@@ -14,12 +14,12 @@
       <button class="btn btn-primary" type="button">Send</button>
     </div>
   </div>
-  <CreateTxDialog ref="create_tx_dialog" :room_id="room_id" :room_name="room_name"/>
+  <CreateTxDialog ref="create_tx_dialog" :room_id="room_id" :room_name="room_name" :users_info="users_info"/>
 </template>
 
 <script lang="ts">
-import { User } from '@/models/user.model'
-import { defineComponent } from 'vue'
+import { User, RoomUserInfo } from '@/models/user.model'
+import { defineComponent, PropType } from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 import { ChatLog } from '@/models/chat.model'
 import ChatMessageBox from '@/components/ChatMessageBox.vue'
@@ -31,6 +31,11 @@ import CreateTxDialog from '@/dialogs/CreateTxDialog.vue'
 
 export default defineComponent({
   name: 'ChatComponent',
+  props: {
+    users_info: {
+      type: Object as PropType<Array<RoomUserInfo>>
+    }
+  },
   data () {
     return {
       TxApprovedMessageBox: 'TxApprovedMessageBox' as string,

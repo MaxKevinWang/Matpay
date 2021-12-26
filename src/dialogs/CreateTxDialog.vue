@@ -33,13 +33,14 @@
       </div>
     </div>
   </div>
-  <SplitDialog ref="split_dialog"/>
+  <SplitDialog ref="split_dialog" :room_id="room_id" :users_info="users_info"/>
 </template>
 
 <script lang="ts">
 /* eslint-disable no-unused-expressions */
 import SplitDialog from '@/dialogs/SplitDialog.vue'
 import { defineComponent, PropType } from 'vue'
+import { RoomUserInfo } from '@/models/user.model'
 import { mapActions, mapGetters } from 'vuex'
 import { Modal, Popover } from 'bootstrap'
 
@@ -51,6 +52,9 @@ export default defineComponent({
     },
     room_name: {
       type: String as PropType<string>
+    },
+    users_info: {
+      type: Object as PropType<Array<RoomUserInfo>>
     }
   },
   data () {

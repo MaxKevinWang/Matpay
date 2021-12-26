@@ -13,7 +13,7 @@
       </div>
       <div class="col-lg-9 chat-frame">
         <h4>Chat</h4>
-        <ChatComponent />
+        <ChatComponent :users_info="users_info"/>
       </div>
     </div>
   </div>
