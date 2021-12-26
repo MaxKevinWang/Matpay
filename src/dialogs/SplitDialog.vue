@@ -12,7 +12,7 @@
               <input class="form-check-input" type="checkbox" value="" id="flexCheckCheckedDisabled" checked disabled>
             </span>
             <span class="input-group-text" id="basic-addon3" v-else>
-              <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" @click="select_member()">
+              <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" @click="select_member(user.user)">
             </span>
             <label class="input-group-text" for="inputGroupSelect01">{{ user.displayname }}</label>
             <input type="text" class="form-control" placeholder="Split value" aria-label="Recipient's username" aria-describedby="basic-addon2" id="split-perc">
@@ -32,7 +32,7 @@
 /* eslint-disable no-unused-expressions */
 import { defineComponent, PropType } from 'vue'
 import { mapActions, mapGetters } from 'vuex'
-import { RoomUserInfo } from '@/models/user.model'
+import { RoomUserInfo, User } from '@/models/user.model'
 import { deepcopy } from '@/utils/utils'
 import { Modal, Popover } from 'bootstrap'
 import CreateTxDialog from '@/dialogs/CreateTxDialog.vue'
@@ -51,7 +51,8 @@ export default defineComponent({
     return {
       modal_control: null as Modal | null,
       is_shown: false as boolean,
-      users: [] as Array<RoomUserInfo>
+      users: [] as Array<RoomUserInfo>,
+      selected_members: [] as Array<User>
     }
   },
   computed: {
@@ -78,10 +79,10 @@ export default defineComponent({
           }
         }
         this.users = users_tmp
+        this.selected_members[0] = this.users[0].user
       }
     },
-    select_member () {
-
+    select_member (user : User) {
     }
   },
   mounted () {
