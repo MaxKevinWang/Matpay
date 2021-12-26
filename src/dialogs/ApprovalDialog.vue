@@ -16,7 +16,7 @@
               <p>{{sum_amount(this.reference.approval) + "€" }}</p>
             </div>
             <div class="col-6">
-              <p>{{"From " + this.reference.approval.from.displayname + " at " + this.reference.timestamp.getDay() + " " + this.reference.timestamp.getMonth() + " " + this.reference.timestamp.getFullYear()}}</p>
+              <p>{{"From " + this.reference.approval.from.displayname + " at " + this.reference.timestamp.toLocaleDateString()}}</p>
             </div>
           </div>
           <hr class="solid">

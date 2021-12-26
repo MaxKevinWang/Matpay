@@ -29,7 +29,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-primary">Submit</button>
+          <button type="button" class="btn btn-primary" @click="on_confirm()">Submit</button>
         </div>
       </div>
     </div>
@@ -56,7 +56,9 @@ export default defineComponent({
   data () {
     return {
       modal_control: null as Modal | null,
-      is_shown: false as boolean
+      is_shown: false as boolean,
+      description: '' as string,
+      amount: '' as string
     }
   },
   computed: {
@@ -71,6 +73,52 @@ export default defineComponent({
     hide () {
       this.modal_control?.hide()
       this.is_shown = false
+    },
+    popover_hint (description : boolean) {
+      if (!description) {
+        const popover = new Popover('#input-description', {
+          content: 'Description cannot be empty',
+          container: 'body'
+        })
+        popover.show()
+        setTimeout(() => popover.hide(), 4000)
+      }
+    },
+    is_number () : boolean {
+      if (this.amount.includes(',')) {
+        const split_amount = this.amount.split(',')
+        if (split_amount.length === 2 && split_amount[1].length <= 2 && split_amount[0].match(/^\d+$/) !== null && split_amount[1].match(/^\d+$/) !== null) {
+          return true
+        } else {
+          return false
+        }
+      } else {
+        if (this.amount.match(/^\d+$/) !== null) {
+          return true
+        } else {
+          return false
+        }
+      }
+    },
+    popover_no_number (number: boolean) {
+      if (!number) {
+        const popover = new Popover('#input-amount', {
+          content: 'Amount has to be a number',
+          container: 'body'
+        })
+        popover.show()
+        setTimeout(() => popover.hide(), 4000)
+      }
+    },
+    on_confirm () {
+      if (this.description.length >= 1 && this.is_number()) {
+        this.amount = ''
+        this.description = ''
+        this.hide()
+      } else {
+        this.popover_hint(this.description.length >= 1)
+        this.popover_no_number(this.is_number())
+      }
     }
   },
   mounted () {
