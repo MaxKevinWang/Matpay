@@ -252,6 +252,7 @@ export const sync_store = {
              */
             // then all events
             for (const event of timeline.events) {
+              console.log(event)
               if (state.room_sync_complete[room_id]) { // only update full synced rooms
                 if (!state.processed_events_id.has(event.event_id)) {
                   commit('mutation_process_event', {

@@ -45,6 +45,9 @@ export default createStore({
                 room_id: room_id,
                 state_event: room_event as MatrixRoomStateEvent
               })
+              if (store.state.sync.init_state_complete) {
+                store.dispatch('rooms/action_parse_state_events_for_all_rooms')
+              }
             }
             if (['m.room.message'].includes(room_event.type)) {
               if (room_event.content.msgtype === 'm.text') {
