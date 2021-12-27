@@ -4,9 +4,9 @@ import router from './router'
 import store from './store'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap'
+import 'bootstrap-icons/font/bootstrap-icons.css'
 import axios from 'axios'
 import { GroupedTransaction, PendingApproval, SimpleTransaction } from '@/models/transaction.model'
-import { TxID } from '@/models/id.model'
 
 // register axios interceptor
 axios.interceptors.request.use(function (config) {
