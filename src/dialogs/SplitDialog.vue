@@ -87,7 +87,8 @@ export default defineComponent({
         if (this.users_info) {
           this.users = this.users_info
         }
-      }
+      },
+      immediate: true
     }
   }
 })

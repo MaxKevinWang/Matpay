@@ -12,7 +12,7 @@
     <div class="card-body">
       <button class="btn btn-primary" type="button" @click="modification_click()">Modify</button>
     </div>
-    <ModificationDialog ref="create_dialog" :tx="tx"/>
+    <ModificationDialog ref="create_dialog" :tx="tx" :room_id="room_id" :users_info="this.get_users_info_for_room(this.room_id)"/>
   </div>
 </template>
 
@@ -20,11 +20,16 @@
 import { GroupedTransaction } from '@/models/transaction.model'
 import { defineComponent, PropType } from 'vue'
 import ModificationDialog from '@/dialogs/ModificationDialog.vue'
+import { RoomUserInfo } from '@/models/user.model'
+import { mapGetters } from 'vuex'
 export default defineComponent({
   name: 'TxDetail',
   props: {
     tx: {
       type: Object as PropType<GroupedTransaction>
+    },
+    room_id: {
+      type: String as PropType<string>
     }
   },
   data () {
@@ -32,6 +37,9 @@ export default defineComponent({
     }
   },
   computed: {
+    ...mapGetters('user', [
+      'get_users_info_for_room'
+    ])
   },
   components: {
     ModificationDialog

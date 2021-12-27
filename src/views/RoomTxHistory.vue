@@ -7,7 +7,7 @@
         <TxList :tx_list="tx_list" @on-click="on_click"/>
       </div>
       <div class="col-8" v-if="show_detail === true">
-        <TxDetail :tx="tx"/>
+        <TxDetail :tx="tx" :room_id="room_id"/>
       </div>
     </div>
   </div>
