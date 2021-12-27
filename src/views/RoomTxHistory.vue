@@ -9,8 +9,8 @@
       </button>
     </div>
     <div class="row" v-if="this.is_fully_loaded">
-      <h4>{{ room_name }}</h4>
-      <h4>Your balance: </h4>
+      <h4>History: {{ room_name }}</h4>
+      <h6>Your balance: </h6>
       <div class="col-4" v-if="tx_list.length >= 1">
         <TxList :tx_list="tx_list" @on-click="on_click"/>
       </div>
@@ -83,6 +83,5 @@ export default defineComponent({
   left: 0;
   top: 0;
   padding: 20px;
-  z-index: 7
 }
 </style>
