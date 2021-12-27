@@ -1,6 +1,14 @@
 <template>
-  <div class="Container TxWindowView">
+  <div class="container TxWindowView">
     <div class="row">
+      <button v-if="!is_fully_loaded" class="btn btn-primary spinner" type="button" disabled>
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        Loading further messages...
+        <br>
+        Transaction data won't be available before all messages are downloaded.
+      </button>
+    </div>
+    <div class="row" v-if="this.is_fully_loaded">
       <h4>{{ room_name }}</h4>
       <h4>Your balance: </h4>
       <div class="col-4" v-if="tx_list.length >= 1">
@@ -27,7 +35,8 @@ export default defineComponent({
       room_name: '' as string,
       tx_list: [] as Array<GroupedTransaction>,
       tx: {} as GroupedTransaction,
-      show_detail: false as boolean
+      show_detail: false as boolean,
+      is_fully_loaded: false
     }
   },
   computed: {
@@ -43,6 +52,10 @@ export default defineComponent({
   },
   components: { TxList, TxDetail },
   methods: {
+    ...mapActions('sync', [
+      'action_sync_initial_state',
+      'action_sync_full_events_for_room'
+    ]),
     on_click (tx: GroupedTransaction) {
       if (JSON.stringify(this.tx) === JSON.stringify(tx) && this.show_detail) {
         this.show_detail = false
@@ -52,9 +65,16 @@ export default defineComponent({
       }
     }
   },
-  created () {
-    this.room_name = this.get_room_name(this.room_id)
-    this.tx_list = this.get_grouped_transactions_for_room(this.room_id)
+  async created () {
+    await this.action_sync_initial_state()
+    this.action_sync_full_events_for_room({
+      room_id: this.room_id,
+      tx_only: false
+    }).then(() => {
+      this.room_name = this.get_room_name(this.room_id)
+      this.tx_list = this.get_grouped_transactions_for_room(this.room_id)
+      this.is_fully_loaded = true
+    })
   }
 })
 </script>
