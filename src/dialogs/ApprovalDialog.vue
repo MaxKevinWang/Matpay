@@ -9,7 +9,7 @@
         <div class="modal-body">
           <div class="row">
             <div class="col-2">
-              <p>Place for Icon</p>
+              <i class="bi bi-receipt" size="5"></i>
             </div>
             <div class="col-4">
               <p>{{this.reference.approval.description}}</p>
@@ -23,13 +23,13 @@
           <div v-for="simple_tx in reference.approval.txs" :key="simple_tx.tx_id">
             <div class="row">
               <div class="col-2">
-                <p>Icon</p>
+                <i class="bi bi-person-fill" size="5"></i>
               </div>
               <div class="col-8">
                 <p>{{ simple_tx.to.displayname + ' owe ' + simple_tx.amount + '€' }}</p>
               </div>
               <div class="col-2">
-                <p>0%</p>
+                <p>{{(split_percentage(this.reference.approval)[simple_tx.tx_id] * 100).toFixed(2) + "%"}}</p>
               </div>
             </div>
           </div>
