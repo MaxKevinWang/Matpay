@@ -8,8 +8,8 @@
         </div>
         <div class="modal-body">
           <div class="input-group mb-3 form-control" v-for="user in users" :key="user.user.user_id">
-            <span class="input-group-text" id="basic-addon3">
-              <input class="form-check-input" type="checkbox" :value="this.user.user.user_id" id="flexCheckDefault">
+                   <span class="input-group-text" id="basic-addon3">
+              <input class="form-check-input" type="checkbox" :id="user.user.displayname" :value="user.user.user_id" v-model="selected_members" >
             </span>
             <label class="input-group-text" for="inputGroupSelect01">{{ user.displayname }}</label>
             <input type="text" class="form-control" placeholder="Split value" aria-label="Recipient's username" aria-describedby="basic-addon2" id="split-perc">
@@ -18,7 +18,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary">Save</button>
+          <button type="button" class="btn btn-primary" @click="check_selected">Save</button>
         </div>
       </div>
     </div>
@@ -64,6 +64,16 @@ export default defineComponent({
     hide () {
       this.modal_control?.hide()
       this.is_shown = false
+    },
+    check_selected () {
+      if (this.selected_members.length <= 0) {
+        const popover = new Popover('#input-description', {
+          content: 'At least one member should be selected',
+          container: 'body'
+        })
+        popover.show()
+        setTimeout(() => popover.hide(), 4000)
+      }
     }
   },
   mounted () {
@@ -74,11 +84,10 @@ export default defineComponent({
   watch: {
     users_info: {
       handler () {
-        if (this.users_info !== undefined) {
+        if (this.users_info) {
           this.users = this.users_info
         }
-      },
-      deep: true
+      }
     }
   }
 })
