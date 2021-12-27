@@ -11,11 +11,10 @@
           <p>{{ user_clicked.displayname }}</p>
           <p>{{}}</p>
           <h3>{{ '0$' }}</h3>
-          <button type="button" class="btn btn-primary">settle</button>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary">OK</button>
+          <button type="button" class="btn btn-primary">Settle</button>
         </div>
       </div>
     </div>
