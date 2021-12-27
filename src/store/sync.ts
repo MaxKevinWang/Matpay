@@ -208,8 +208,11 @@ export const sync_store = {
      * If the timeout is givem, it requests Sync API to wait for a certain time for updates.
      * This mode should be used for the application itself to periodically listen for updates.
      * WARNING:
-     * This action polls new events for all rooms, regardless of whether they are already fully synced or not.
-     * Therefore, transaction events should only be processed after a full sync, which may not be done when this function is called.
+     * This action polls new events only for fully synced rooms.
+     * Transaction events should only be processed after a full sync, which may not be done when this function is called.
+     * WARNING:
+     * This action currently continues events directly from the last sync point.
+     * If a gap is created, this action DOES NOT currently call Messages API.
      */
     async action_update_state ({
       state,
@@ -219,7 +222,48 @@ export const sync_store = {
     }, payload: {
       timeout?: number
     }) {
-      throw new Error('Not implemented yet')
+      if (state.init_state_complete) {
+        const homeserver = rootGetters['auth/homeserver']
+        const response = await axios.get<MatrixSyncResponse>(`${homeserver}/_matrix/client/r0/sync`, {
+          params: {
+            full_state: true,
+            timeout: payload ? payload.timeout : undefined,
+            since: state.next_batch
+          }
+        })
+        commit('mutation_set_next_batch', { next_batch: response.data.next_batch })
+        commit('mutation_set_current_response', response.data)
+        if (response.data.rooms && response.data.rooms.join) {
+          // 1. create room structure for every new room
+          for (const room_id of Object.keys(response.data.rooms.join)) {
+            if (!Object.keys(state.room_events).includes(room_id)) {
+              commit('mutation_create_new_room', room_id)
+            }
+          }
+          // TODO: process invited rooms
+          // Then pass single events
+          for (const [room_id, room_data] of Object.entries(response.data.rooms.join)) {
+            const timeline = room_data.timeline
+            /*
+            commit('mutation_set_room_prev_batch', {
+              room_id: room_id,
+              prev_batch: timeline.prev_batch
+            })
+             */
+            // then all events
+            for (const event of timeline.events) {
+              if (state.room_sync_complete[room_id]) { // only update full synced rooms
+                if (!state.processed_events_id.has(event.event_id)) {
+                  commit('mutation_process_event', {
+                    room_id: room_id,
+                    event: event
+                  })
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   getters: <GetterTree<State, any>>{

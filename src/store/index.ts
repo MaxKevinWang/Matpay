@@ -74,6 +74,9 @@ export default createStore({
           }
           case 'sync/mutation_init_state_complete': {
             store.dispatch('rooms/action_parse_state_events_for_all_rooms')
+            setInterval(() => {
+              store.dispatch('sync/action_update_state')
+            }, 5000)
             break
           }
           case 'sync/mutation_room_sync_state_complete': {

@@ -32,9 +32,15 @@ export const rooms_store = {
     mutation_add_state_event_for_joined_room (state: State,
       payload: { room_id: MatrixRoomID, state_event: MatrixRoomStateEvent }) {
       const room = state.joined_rooms.filter(r => r.room_id === payload.room_id)[0]
-      room.state_events = room.state_events.filter(
-        i => i.state_key !== payload.state_event.state_key || i.type !== payload.state_event.type
+      const previous_state_event = room.state_events.filter(
+        i => i.state_key === payload.state_event.state_key &&
+          i.type === payload.state_event.type &&
+          i.origin_server_ts < payload.state_event.origin_server_ts
       )
+      for (const prev of previous_state_event) {
+        const index = room.state_events.indexOf(prev)
+        room.state_events.splice(index, 1)
+      }
       room.state_events.push(payload.state_event)
     },
     mutation_set_name_for_joined_room (state: State, payload: { room_id: MatrixRoomID, name: string }) {
