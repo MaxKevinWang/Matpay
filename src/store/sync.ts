@@ -200,6 +200,17 @@ export const sync_store = {
         commit('mutation_room_sync_state_complete', room_id)
       }
     },
+    /**
+     * This action polls the Sync API once to get batch update.
+     * It accepts a timeout parameter.
+     * If the timeout is not given, it requests Sync API to give an immediate response.
+     * This mode should be used for other stores to notify update after an action.
+     * If the timeout is givem, it requests Sync API to wait for a certain time for updates.
+     * This mode should be used for the application itself to periodically listen for updates.
+     * WARNING:
+     * This action polls new events for all rooms, regardless of whether they are already fully synced or not.
+     * Therefore, transaction events should only be processed after a full sync, which may not be done when this function is called.
+     */
     async action_update_state ({
       state,
       commit,
@@ -208,7 +219,7 @@ export const sync_store = {
     }, payload: {
       timeout?: number
     }) {
-      console.log()
+      throw new Error('Not implemented yet')
     }
   },
   getters: <GetterTree<State, any>>{

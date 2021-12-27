@@ -54,7 +54,22 @@ export default createStore({
                 })
               }
             }
-            // more here
+            if (['com.matpay.reject'].includes(room_event.type)) {
+              console.log('Parse rejection here')
+            }
+            if ([
+              'com.matpay.create',
+              'com.matpay.modify',
+              'com.matpay.approve',
+              'com.matpay.settle'
+            ].includes(room_event.type)) {
+              if (store.state.sync.room_sync_complete[room_id]) {
+                store.dispatch('tx/action_parse_single_tx_event_for_room', {
+                  room_id: room_id,
+                  tx_event: room_event as TxMessageEvent
+                })
+              }
+            }
             break
           }
           case 'sync/mutation_init_state_complete': {

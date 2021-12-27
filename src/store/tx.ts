@@ -3,7 +3,13 @@ import { GroupedTransaction, PendingApproval, SimpleTransaction, TxGraph } from 
 import { GroupID, MatrixEventID, MatrixRoomID, MatrixUserID, TxID } from '@/models/id.model'
 import { RoomUserInfo, User } from '@/models/user.model'
 import { uuidgen } from '@/utils/utils'
-import { TxCreateEvent, TxMessageEvent, TxRejectedEvent } from '@/interface/tx_event.interface'
+import {
+  TxApproveEvent,
+  TxCreateEvent,
+  TxMessageEvent,
+  TxModifyEvent,
+  TxRejectedEvent, TxSettleEvent
+} from '@/interface/tx_event.interface'
 import axios from 'axios'
 import { MatrixError } from '@/interface/error.interface'
 import { RoomEventFilter } from '@/interface/filter.interface'
@@ -169,6 +175,55 @@ export const tx_store = {
       }
       // TODO: notify other stores
     },
+    async action_modify_tx_for_room ({
+      state,
+      commit,
+      getters,
+      dispatch,
+      rootGetters
+    }, payload: {
+      room_id: MatrixRoomID
+      tx_old: GroupedTransaction,
+      tx_new: GroupedTransaction
+    }) {
+      throw new Error('TO BE IMPLEMENTED')
+    },
+    async action_approve_tx_for_room ({
+      state,
+      commit,
+      getters,
+      dispatch,
+      rootGetters
+    }, payload: {
+      room_id: MatrixRoomID
+      approval: PendingApproval
+    }) {
+      throw new Error('TO BE IMPLEMENTED')
+    },
+    async action_reject_tx_for_room ({
+      state,
+      commit,
+      getters,
+      dispatch,
+      rootGetters
+    }, payload: {
+      room_id: MatrixRoomID
+      approval: PendingApproval
+    }) {
+      throw new Error('TO BE IMPLEMENTED')
+    },
+    async action_settle_for_room ({
+      state,
+      commit,
+      getters,
+      dispatch,
+      rootGetters
+    }, payload: {
+      room_id: MatrixRoomID
+      target_user: User
+    }) {
+      throw new Error('TO BE IMPLEMENTED')
+    },
     async action_parse_rejected_events_for_room ({
       state,
       commit,
@@ -201,13 +256,13 @@ export const tx_store = {
       tx_events: TxMessageEvent[]
     }) {
       for (const tx_event of payload.tx_events) {
-        await dispatch('action_parse_single_tx_for_room', {
+        await dispatch('action_parse_single_tx_event_for_room', {
           room_id: payload.room_id,
           tx_event: tx_event
         })
       }
     },
-    async action_parse_single_tx_for_room ({
+    async action_parse_single_tx_event_for_room ({
       state,
       commit,
       getters,
@@ -217,7 +272,6 @@ export const tx_store = {
       room_id: MatrixRoomID,
       tx_event: TxMessageEvent
     }) {
-      debugger
       const room_id = payload.room_id
       const tx_event = payload.tx_event
       // check if rejected
@@ -299,6 +353,22 @@ export const tx_store = {
             pending_approval: new_pending_approval
           }, { root: true })
           // TODO: notify other stores
+          break
+        }
+        case 'com.matpay.modify': {
+          const tx_event_modify = tx_event as TxModifyEvent
+          break
+        }
+        case 'com.matpay.approve': {
+          const tx_event_approve = tx_event as TxApproveEvent
+          break
+        }
+        case 'com.matpay.settle': {
+          const tx_event_settle = tx_event as TxSettleEvent
+          break
+        }
+        default: {
+          throw new Error('Invalid transaction event type!')
         }
       }
     }
