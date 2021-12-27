@@ -14,7 +14,7 @@
                 <path d="M3 4.5a.5.5 0 0 1 .5-.5h6a.5.5 0 1 1 0 1h-6a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 1 1 0 1h-6a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 1 1 0 1h-6a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5zm8-6a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5z"/>
               </svg>
             </span>
-            <input type="text" class="form-control" placeholder="Description" aria-label="Description" aria-describedby="basic-addon1">
+            <input type="text" v-model="description" class="form-control" placeholder="Description" aria-label="Description" aria-describedby="basic-addon1">
           </div>
           <div class="input-group">
             <span id="basic-addon1" class="input-group-text">
@@ -22,10 +22,10 @@
                 <path d="M4 9.42h1.063C5.4 12.323 7.317 14 10.34 14c.622 0 1.167-.068 1.659-.185v-1.3c-.484.119-1.045.17-1.659.17-2.1 0-3.455-1.198-3.775-3.264h4.017v-.928H6.497v-.936c0-.11 0-.219.008-.329h4.078v-.927H6.618c.388-1.898 1.719-2.985 3.723-2.985.614 0 1.175.05 1.659.177V2.194A6.617 6.617 0 0 0 10.341 2c-2.928 0-4.82 1.569-5.244 4.3H4v.928h1.01v1.265H4v.928z"/>
               </svg>
             </span>
-            <input type="text" class="form-control" placeholder="Amount" aria-label="Amount" aria-describedby="basic-addon1">
+            <input type="text" v-model="amount_input" class="form-control" placeholder="Amount" aria-label="Amount" aria-describedby="basic-addon1">
           </div>
           <div>
-            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Split Configuration</button>
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="on_split_configuration_clicked()">Split Configuration</button>
           </div>
         </div>
         <div class="modal-footer">
@@ -34,6 +34,7 @@
       </div>
     </div>
   </div>
+  <SplitDialog ref="split_dialog" :room_id="room_id" :users_info="users_info"/>
 </template>
 
 <script lang="ts">
@@ -42,6 +43,9 @@ import { defineComponent, PropType } from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 import { Modal, Popover } from 'bootstrap'
 import { TxApprovedPlaceholder } from '@/models/chat.model'
+import { RoomUserInfo } from '@/models/user.model'
+import { GroupedTransaction, PendingApproval } from '@/models/transaction.model'
+import SplitDialog from '@/dialogs/SplitDialog.vue'
 
 export default defineComponent({
   name: 'ModificationDialog',
@@ -49,8 +53,11 @@ export default defineComponent({
     room_id: {
       type: String as PropType<string>
     },
-    reference: {
-      type: Object as PropType<TxApprovedPlaceholder>
+    tx: {
+      type: Object as PropType<GroupedTransaction>
+    },
+    users_info: {
+      type: Object as PropType<Array<RoomUserInfo>>
     }
   },
   data () {
@@ -58,12 +65,14 @@ export default defineComponent({
       modal_control: null as Modal | null,
       is_shown: false as boolean,
       description: '' as string,
-      amount: '' as string
+      amount: 0 as number,
+      amount_input: '' as string
     }
   },
   computed: {
   },
   components: {
+    SplitDialog
   },
   methods: {
     show () {
@@ -85,15 +94,15 @@ export default defineComponent({
       }
     },
     is_number () : boolean {
-      if (this.amount.includes(',')) {
-        const split_amount = this.amount.split(',')
+      if (this.amount_input.includes(',')) {
+        const split_amount = this.amount_input.split(',')
         if (split_amount.length === 2 && split_amount[1].length <= 2 && split_amount[0].match(/^\d+$/) !== null && split_amount[1].match(/^\d+$/) !== null) {
           return true
         } else {
           return false
         }
       } else {
-        if (this.amount.match(/^\d+$/) !== null) {
+        if (this.amount_input.match(/^\d+$/) !== null) {
           return true
         } else {
           return false
@@ -112,19 +121,34 @@ export default defineComponent({
     },
     on_confirm () {
       if (this.description.length >= 1 && this.is_number()) {
-        this.amount = ''
+        this.amount_input = ''
         this.description = ''
         this.hide()
       } else {
         this.popover_hint(this.description.length >= 1)
         this.popover_no_number(this.is_number())
       }
+    },
+    on_split_configuration_clicked () {
+      this.$refs.split_dialog.show()
     }
   },
   mounted () {
     this.modal_control = new Modal(document.getElementById('<...>-modal') as HTMLElement, {
       backdrop: false
     })
+  },
+  watch: {
+    reference: {
+      handler () {
+        if (this.tx) {
+          this.description = this.tx?.description
+          this.amount = this.sum_amount(this.tx) / 100
+          this.amount_input = this.amount.toString()
+        }
+      },
+      immediate: true
+    }
   }
 })
 </script>

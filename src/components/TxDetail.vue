@@ -12,7 +12,7 @@
     <div class="card-body">
       <button class="btn btn-primary" type="button" @click="modification_click()">Modify</button>
     </div>
-    <ModificationDialog ref="create_dialog" :reference="reference"/>
+    <ModificationDialog ref="create_dialog" :tx="tx"/>
   </div>
 </template>
 
