@@ -19,6 +19,14 @@
             </span>
             <input v-model="amount_input" type="text" class="form-control" placeholder="Amount" aria-label="Amount" aria-describedby="basic-addon1" data-bs-toggle="popover" id="input-amount">
           </div>
+          <div id="v-model-select-dynamic">
+            <select v-model="selected">
+              <option disabled value="">Choose the payer</option>
+              <option v-for="user in room_members" :key="user.user.user_id">
+                {{ user.user.displayname }}
+              </option>
+            </select>
+          </div>
           <button class="btn btn-primary" @click="on_split_configuration_clicked()">Split Configuration</button>
         </div>
         <div class="modal-footer">
@@ -58,6 +66,8 @@ export default defineComponent({
       is_shown: false as boolean,
       description: '' as string,
       amount_input: '' as string,
+      room_members: [] as Array<RoomUserInfo>,
+      selected: '' as string,
       amount: 0 as number
     }
   },
@@ -131,6 +141,16 @@ export default defineComponent({
     this.modal_control = new Modal(document.getElementById('create-tx-modal') as HTMLElement, {
       backdrop: false
     })
+  },
+  watch: {
+    users_info: {
+      handler () {
+        if (this.users_info) {
+          this.room_members = this.users_info
+        }
+      },
+      deep: true
+    }
   }
 })
 </script>
