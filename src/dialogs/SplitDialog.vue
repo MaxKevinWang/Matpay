@@ -8,11 +8,8 @@
         </div>
         <div class="modal-body">
           <div class="input-group mb-3 form-control" v-for="user in users" :key="user.user.user_id">
-            <span class="input-group-text" id="basic-addon3" v-if="user.is_self">
-              <input class="form-check-input" type="checkbox" value="" id="flexCheckCheckedDisabled" checked disabled>
-            </span>
-            <span class="input-group-text" id="basic-addon3" v-else>
-              <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" @click="select_member(user.user)">
+            <span class="input-group-text" id="basic-addon3">
+              <input class="form-check-input" type="checkbox" :value="this.user.user.user_id" id="flexCheckDefault">
             </span>
             <label class="input-group-text" for="inputGroupSelect01">{{ user.displayname }}</label>
             <input type="text" class="form-control" placeholder="Split value" aria-label="Recipient's username" aria-describedby="basic-addon2" id="split-perc">
@@ -67,20 +64,6 @@ export default defineComponent({
     hide () {
       this.modal_control?.hide()
       this.is_shown = false
-    },
-    show_users () {
-      const users_tmp = deepcopy(this.users_info)
-      if (users_tmp) {
-        // put yourself always at the first
-        for (let i = 0; i < users_tmp.length; i++) {
-          if (users_tmp[i].is_self) {
-            users_tmp.unshift(users_tmp.splice(i, 1)[0])
-            break
-          }
-        }
-        this.users = users_tmp
-        this.selected_members[0] = this.users[0].user
-      }
     }
   },
   mounted () {
@@ -91,8 +74,9 @@ export default defineComponent({
   watch: {
     users_info: {
       handler () {
-        this.users = []
-        this.show_users()
+        if (this.users_info !== undefined) {
+          this.users = this.users_info
+        }
       },
       deep: true
     }
