@@ -9,8 +9,12 @@
   <div>
     <div class="fixed-bottom input-group mb-3">
       <input type="text" class="form-control" placeholder="Send a message" aria-describedby="button-addon2">
-      <button class="btn btn-primary" type="button" @click="on_tx_clicked()">TX</button>
-      <button class="btn btn-primary" type="button">History</button>
+      <button class="btn btn-light" type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="Create Transaction" @click="on_tx_clicked()">
+        <i class="bi bi-receipt"></i>
+      </button>
+      <button class="btn btn-light" type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="History">
+        <i class="bi bi-clock-history"></i>
+      </button>
       <button class="btn btn-primary" type="button">Send</button>
     </div>
   </div>
