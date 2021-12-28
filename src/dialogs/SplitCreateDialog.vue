@@ -33,15 +33,20 @@ import { RoomUserInfo, User } from '@/models/user.model'
 import { deepcopy } from '@/utils/utils'
 import { Modal, Popover } from 'bootstrap'
 import CreateTxDialog from '@/dialogs/CreateTxDialog.vue'
+import { SimpleTransaction } from '@/models/transaction.model'
+import { MatrixUserID } from '@/models/id.model'
 
 export default defineComponent({
-  name: 'SplitDialog',
+  name: 'SplitCreateDialog',
   props: {
     room_id: {
       type: String as PropType<string>
     },
     users_info: {
       type: Object as PropType<Array<RoomUserInfo>>
+    },
+    simple_txs: {
+      type: Object as PropType<Array<SimpleTransaction>>
     }
   },
   data () {
@@ -49,7 +54,8 @@ export default defineComponent({
       modal_control: null as Modal | null,
       is_shown: false as boolean,
       users: [] as Array<RoomUserInfo>,
-      selected_members: [] as Array<User>
+      selected_members: [] as Array<MatrixUserID>
+      // selected_members_split:
     }
   },
   computed: {

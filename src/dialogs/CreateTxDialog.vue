@@ -28,16 +28,17 @@
       </div>
     </div>
   </div>
-  <SplitDialog ref="split_dialog" :room_id="room_id" :users_info="users_info"/>
+  <SplitCreateDialog ref="split_dialog" :room_id="room_id" :users_info="users_info"/>
 </template>
 
 <script lang="ts">
 /* eslint-disable no-unused-expressions */
-import SplitDialog from '@/dialogs/SplitDialog.vue'
+import SplitDialog from '@/dialogs/SplitModifyDialog.vue'
 import { defineComponent, PropType } from 'vue'
 import { RoomUserInfo } from '@/models/user.model'
 import { mapActions, mapGetters } from 'vuex'
 import { Modal, Popover } from 'bootstrap'
+import SplitCreateDialog from '@/dialogs/SplitCreateDialog.vue'
 
 export default defineComponent({
   name: 'CreateTxDialog',
@@ -64,7 +65,7 @@ export default defineComponent({
   computed: {
   },
   components: {
-    SplitDialog
+    SplitCreateDialog
   },
   methods: {
     show () {
