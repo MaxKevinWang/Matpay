@@ -19,6 +19,14 @@
             </span>
             <input v-model="amount_input" type="text" class="form-control" placeholder="Amount" aria-label="Amount" aria-describedby="basic-addon1" data-bs-toggle="popover" id="input-amount">
           </div>
+          <div id="v-model-select-dynamic">
+            <select class="form-select" v-model="selected" id="select-member">
+              <option disabled value="">Choose the payer</option>
+              <option v-for="user in room_members" :key="user.user.user_id" :value="user.user.user_id">
+                {{ user.user.displayname }}
+              </option>
+            </select>
+          </div>
           <button class="btn btn-primary" @click="on_split_configuration_clicked()">Split Configuration</button>
         </div>
         <div class="modal-footer">
@@ -59,6 +67,8 @@ export default defineComponent({
       is_shown: false as boolean,
       description: '' as string,
       amount_input: '' as string,
+      room_members: [] as Array<RoomUserInfo>,
+      selected: '' as string,
       amount: 0 as number
     }
   },
@@ -79,7 +89,7 @@ export default defineComponent({
     on_split_configuration_clicked () {
       this.$refs.split_dialog.show()
     },
-    popover_hint (description : boolean) {
+    popover_hint (description : boolean, number : boolean, selected : boolean) {
       if (!description) {
         const popover = new Popover('#input-description', {
           content: 'Description cannot be empty',
@@ -88,11 +98,18 @@ export default defineComponent({
         popover.show()
         setTimeout(() => popover.hide(), 4000)
       }
-    },
-    popover_no_number (number : boolean) {
       if (!number) {
         const popover = new Popover('#input-amount', {
           content: 'Amount has to be a positive number',
+          container: 'body'
+        })
+        this.amount_input = ''
+        popover.show()
+        setTimeout(() => popover.hide(), 4000)
+      }
+      if (!selected) {
+        const popover = new Popover('#select-member', {
+          content: 'You have to select a payer!',
           container: 'body'
         })
         popover.show()
@@ -100,14 +117,13 @@ export default defineComponent({
       }
     },
     on_confirm () {
-      if (this.description.length >= 1 && this.is_number()) {
+      if (this.description.length >= 1 && this.is_number() && this.selected !== '') {
         this.amount = parseFloat(this.amount_input)
         this.amount_input = ''
         this.description = ''
         this.hide()
       } else {
-        this.popover_hint(this.description.length >= 1)
-        this.popover_no_number(this.is_number())
+        this.popover_hint(this.description.length >= 1, this.is_number(), this.selected !== '')
       }
     },
     is_number () : boolean {
@@ -115,15 +131,10 @@ export default defineComponent({
       if (check_amount.includes(',')) {
         check_amount = check_amount.replace(',', '.')
       }
-      /*
-       if it´s not a number it returns false
-      */
-      if (isNaN(Number(check_amount))) {
+      // if it´s not a number it returns false
+      if (Number.isNaN(Number(check_amount)) || check_amount === '' || check_amount.startsWith('-')) {
         return false
       } else {
-        if (check_amount.charAt(0) === '-') {
-          return false
-        }
         return true
       }
     }
@@ -132,6 +143,16 @@ export default defineComponent({
     this.modal_control = new Modal(document.getElementById('create-tx-modal') as HTMLElement, {
       backdrop: false
     })
+  },
+  watch: {
+    users_info: {
+      handler () {
+        if (this.users_info) {
+          this.room_members = this.users_info
+        }
+      },
+      deep: true
+    }
   }
 })
 </script>
