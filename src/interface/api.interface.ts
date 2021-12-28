@@ -1,5 +1,5 @@
 import { MatrixRoomEvent, MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
-import { MatrixRoomID } from '@/models/id.model'
+import { MatrixEventID, MatrixRoomID } from '@/models/id.model'
 
 export interface GETLoginResponse {
   flows: [{
@@ -26,4 +26,8 @@ export interface GETRoomEventsResponse {
 
 export interface POSTRoomCreateResponse {
   room_id: MatrixRoomID
+}
+
+export interface PUTRoomEventSendResponse {
+  event_id: MatrixEventID
 }

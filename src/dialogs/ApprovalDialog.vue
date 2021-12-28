@@ -35,8 +35,8 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Reject</button>
-          <button type="button" class="btn btn-primary">Approve</button>
+          <button type="button" class="btn btn-danger" @click="on_reject_click()">Reject</button>
+          <button type="button" class="btn btn-primary" @click="on_approve_click()">Approve</button>
         </div>
       </div>
     </div>
@@ -61,6 +61,7 @@ export default defineComponent({
       type: Object as PropType<TxPendingPlaceholder>
     }
   },
+  emits: ['on-approval'],
   data () {
     return {
       modal_control: null as Modal | null,
@@ -79,6 +80,12 @@ export default defineComponent({
     hide () {
       this.modal_control?.hide()
       this.is_shown = false
+    },
+    on_approve_click () {
+      this.$emit('on-approval', this.reference?.approval)
+    },
+    on_reject_click () {
+      this.hide()
     }
   },
   mounted () {

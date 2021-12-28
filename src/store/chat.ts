@@ -1,10 +1,10 @@
 import axios from 'axios'
 import { ActionTree, GetterTree, MutationTree } from 'vuex'
-import { MatrixEventID, MatrixRoomID } from '@/models/id.model'
-import { ChatLog, ChatMessage, TxPendingPlaceholder, TxPlaceholder } from '@/models/chat.model'
+import { GroupID, MatrixEventID, MatrixRoomID } from '@/models/id.model'
+import { ChatLog, ChatMessage, TxApprovedPlaceholder, TxPendingPlaceholder, TxPlaceholder } from '@/models/chat.model'
 import { KICKED_USER, RoomUserInfo, User } from '@/models/user.model'
 import { MatrixRoomChatMessageEvent } from '@/interface/rooms_event.interface'
-import { PendingApproval } from '@/models/transaction.model'
+import { GroupedTransaction, PendingApproval } from '@/models/transaction.model'
 interface State {
   chat_log: Record<MatrixRoomID, ChatLog>,
 }
@@ -27,6 +27,21 @@ export const chat_store = {
       msg: ChatMessage | TxPlaceholder
     }) {
       const messages = state.chat_log[payload.room_id].messages
+      // Transaction messages should overwrite previous ones with the same group ID
+      if ('type' in payload.msg) {
+        let group_id : GroupID
+        if ('grouped_tx' in payload.msg) {
+          group_id = payload.msg.grouped_tx.group_id
+        } else {
+          group_id = payload.msg.approval.group_id
+        }
+        const prev_tx_msg = messages.filter(i => 'grouped_tx' in i && i.grouped_tx.group_id === group_id)
+        const prev_approval_msg = messages.filter(i => 'approval' in i && i.approval.group_id === group_id)
+        for (const prev_msg of prev_tx_msg.concat(prev_approval_msg)) {
+          const index = messages.indexOf(prev_msg)
+          messages.splice(index, 1)
+        }
+      }
       // Insertion sort
       let index = 0
       for (let i = 0; i < messages.length; i++) {
@@ -79,6 +94,27 @@ export const chat_store = {
       commit('mutation_add_single_message_for_room', {
         room_id: room_id,
         msg: approval_msg
+      })
+    },
+    action_parse_single_grouped_tx_for_room ({
+      state,
+      commit,
+      dispatch,
+      rootGetters
+    }, payload: {
+      room_id: MatrixRoomID,
+      grouped_tx: GroupedTransaction
+    }) {
+      const room_id = payload.room_id
+      const grouped_tx = payload.grouped_tx
+      const tx_message : TxApprovedPlaceholder = {
+        type: 'approved',
+        timestamp: grouped_tx.timestamp,
+        grouped_tx: grouped_tx
+      }
+      commit('mutation_add_single_message_for_room', {
+        room_id: room_id,
+        msg: tx_message
       })
     }
   },
