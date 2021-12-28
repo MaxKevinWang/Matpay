@@ -29,7 +29,7 @@
       </div>
     </div>
   </div>
-  <SplitDialog ref="split_dialog" :room_id="room_id" :users_info="users_info" />
+  <SplitModifyDialog ref="split_dialog" :room_id="room_id" :users_info="users_info" :simple_txs="tx.txs"/>
 </template>
 
 <script lang="ts">
@@ -40,7 +40,7 @@ import { Modal, Popover } from 'bootstrap'
 import { TxApprovedPlaceholder } from '@/models/chat.model'
 import { RoomUserInfo } from '@/models/user.model'
 import { GroupedTransaction, PendingApproval } from '@/models/transaction.model'
-import SplitDialog from '@/dialogs/SplitDialog.vue'
+import SplitModifyDialog from '@/dialogs/SplitModifyDialog.vue'
 
 export default defineComponent({
   name: 'ModificationDialog',
@@ -67,7 +67,7 @@ export default defineComponent({
   computed: {
   },
   components: {
-    SplitDialog
+    SplitModifyDialog
   },
   methods: {
     show () {
@@ -136,7 +136,7 @@ export default defineComponent({
     })
   },
   watch: {
-    reference: {
+    tx: {
       handler () {
         if (this.tx) {
           this.description = this.tx?.description
