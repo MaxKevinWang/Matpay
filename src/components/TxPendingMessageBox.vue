@@ -9,14 +9,14 @@
           <p>{{this.reference.approval.description}}</p>
         </div>
         <div class="col">
-          <p>{{this.reference.approval.from.displayname + " paid " + this.calc_amount2(this.reference.approval)+"$"}}</p>
+          <p>{{this.reference.approval.from.displayname + " paid " + sum_amount(this.reference.approval)+"$"}}</p>
         </div>
         <div class="col">
           <button href="#" class="btn btn-primary" @click="approval_click()">details</button>
         </div>
       </div>
     </div>
-    <ApprovalDialog ref="create_dialog" :reference="reference"/>
+    <ApprovalDialog ref="approve_dialog" :reference="reference" @on-approval="on_approval"/>
   </div>
 </template>
 
@@ -54,32 +54,27 @@ export default defineComponent({
     ...mapGetters('tx', [
       'get_grouped_transactions_for_room'
     ])
-    //  ...mapGetters('tx', [
-    //    'transaction'
-    //  ])
   },
   components: {
-    ApprovalDialog,
-    // eslint-disable-next-line vue/no-unused-components
-    TxDetail
+    ApprovalDialog
   },
   methods: {
-    calc_amount (tx: GroupedTransaction) : number {
-      let amount = 0
-      for (const simple_tx of tx.txs) {
-        amount += simple_tx.amount
-      }
-      return amount
-    },
-    calc_amount2 (tx: PendingApproval) : number {
-      let amount = 0
-      for (const simple_tx of tx.txs) {
-        amount += simple_tx.amount
-      }
-      return amount
-    },
+    ...mapActions('tx', [
+      'action_approve_tx_for_room'
+    ]),
     approval_click () {
-      this.$refs.create_dialog.show()
+      this.$refs.approve_dialog.show()
+    },
+    async on_approval (approval: PendingApproval) {
+      try {
+        await this.action_approve_tx_for_room({
+          room_id: this.room_id,
+          approval: approval
+        })
+      } catch (e) {
+        console.log(e)
+      }
+      this.$refs.approve_dialog.hide()
     }
   }
 })

@@ -18,7 +18,7 @@
       <button class="btn btn-primary" type="button">Send</button>
     </div>
   </div>
-  <CreateTxDialog ref="create_tx_dialog" :room_id="room_id" :room_name="room_name" :users_info="users_info"/>
+  <CreateTxDialog ref="create_tx_dialog" :room_id="room_id" :users_info="users_info"/>
 </template>
 
 <script lang="ts">

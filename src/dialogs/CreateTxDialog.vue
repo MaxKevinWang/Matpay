@@ -3,7 +3,7 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="create-tx-label"> {{ room_name }} </h5>
+          <h5 class="modal-title" id="create-tx-label">Create Transaction</h5>
           <button type="button" data-bs-dismiss="modal" class="btn-close" aria-label="Close"></button>
         </div>
         <div class="modal-body d-grid gap-2">
@@ -20,9 +20,9 @@
             <input v-model="amount_input" type="text" class="form-control" placeholder="Amount" aria-label="Amount" aria-describedby="basic-addon1" data-bs-toggle="popover" id="input-amount">
           </div>
           <div id="v-model-select-dynamic">
-            <select v-model="selected">
+            <select class="form-select" v-model="selected" id="select-member">
               <option disabled value="">Choose the payer</option>
-              <option v-for="user in room_members" :key="user.user.user_id">
+              <option v-for="user in room_members" :key="user.user.user_id" :value="user.user.user_id">
                 {{ user.user.displayname }}
               </option>
             </select>
@@ -36,25 +36,23 @@
       </div>
     </div>
   </div>
-  <SplitDialog ref="split_dialog" :room_id="room_id" :users_info="users_info"/>
+  <SplitCreateDialog ref="split_dialog" :room_id="room_id" :users_info="users_info"/>
 </template>
 
 <script lang="ts">
 /* eslint-disable no-unused-expressions */
-import SplitDialog from '@/dialogs/SplitDialog.vue'
+import SplitDialog from '@/dialogs/SplitModifyDialog.vue'
 import { defineComponent, PropType } from 'vue'
 import { RoomUserInfo } from '@/models/user.model'
 import { mapActions, mapGetters } from 'vuex'
 import { Modal, Popover } from 'bootstrap'
+import SplitCreateDialog from '@/dialogs/SplitCreateDialog.vue'
 
 export default defineComponent({
   name: 'CreateTxDialog',
   props: {
     room_id: {
       type: String as PropType<string>
-    },
-    room_name: {
-      type: Number as PropType<number>
     },
     users_info: {
       type: Object as PropType<Array<RoomUserInfo>>
@@ -74,7 +72,7 @@ export default defineComponent({
   computed: {
   },
   components: {
-    SplitDialog
+    SplitCreateDialog
   },
   methods: {
     show () {
@@ -88,7 +86,7 @@ export default defineComponent({
     on_split_configuration_clicked () {
       this.$refs.split_dialog.show()
     },
-    popover_hint (description : boolean) {
+    popover_hint (description : boolean, number : boolean, selected : boolean) {
       if (!description) {
         const popover = new Popover('#input-description', {
           content: 'Description cannot be empty',
@@ -97,11 +95,18 @@ export default defineComponent({
         popover.show()
         setTimeout(() => popover.hide(), 4000)
       }
-    },
-    popover_no_number (number : boolean) {
       if (!number) {
         const popover = new Popover('#input-amount', {
           content: 'Amount has to be a positive number',
+          container: 'body'
+        })
+        this.amount_input = ''
+        popover.show()
+        setTimeout(() => popover.hide(), 4000)
+      }
+      if (!selected) {
+        const popover = new Popover('#select-member', {
+          content: 'You have to select a payer!',
           container: 'body'
         })
         popover.show()
@@ -109,14 +114,13 @@ export default defineComponent({
       }
     },
     on_confirm () {
-      if (this.description.length >= 1 && this.is_number()) {
+      if (this.description.length >= 1 && this.is_number() && this.selected !== '') {
         this.amount = parseFloat(this.amount_input)
         this.amount_input = ''
         this.description = ''
         this.hide()
       } else {
-        this.popover_hint(this.description.length >= 1)
-        this.popover_no_number(this.is_number())
+        this.popover_hint(this.description.length >= 1, this.is_number(), this.selected !== '')
       }
     },
     is_number () : boolean {
@@ -124,15 +128,10 @@ export default defineComponent({
       if (check_amount.includes(',')) {
         check_amount = check_amount.replace(',', '.')
       }
-      /*
-       if it´s not a number it returns false
-      */
-      if (isNaN(Number(check_amount))) {
+      // if it´s not a number it returns false
+      if (Number.isNaN(Number(check_amount)) || check_amount === '' || check_amount.startsWith('-')) {
         return false
       } else {
-        if (check_amount.charAt(0) === '-') {
-          return false
-        }
         return true
       }
     }

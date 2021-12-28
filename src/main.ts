@@ -23,14 +23,25 @@ axios.interceptors.request.use(function (config) {
 })
 const app = createApp(App)
 app.use(store).use(router)
-app.config.globalProperties.sum_amount = (item: GroupedTransaction | PendingApproval) : number => {
-  return item.txs.reduce((sum, tx) => sum + tx.amount, 0)
+app.config.globalProperties.sum_amount = (item: GroupedTransaction | PendingApproval | SimpleTransaction[]) : number => {
+  if (Array.isArray(item)) {
+    return item.reduce((sum, tx) => sum + tx.amount, 0)
+  } else {
+    return item.txs.reduce((sum, tx) => sum + tx.amount, 0)
+  }
 }
-app.config.globalProperties.split_percentage = (item: GroupedTransaction | PendingApproval) : Record<TxID, number> => {
-  const sum = item.txs.reduce((sum, tx) => sum + tx.amount, 0)
-  const result : Record<TxID, number> = {}
-  for (const simple_tx of item.txs) {
-    result[simple_tx.tx_id] = simple_tx.amount / sum
+app.config.globalProperties.split_percentage = (item: GroupedTransaction | PendingApproval | SimpleTransaction[]) : Record<TxID, number> => {
+  const result: Record<TxID, number> = {}
+  if (Array.isArray(item)) {
+    const sum = item.reduce((sum, tx) => sum + tx.amount, 0)
+    for (const simple_tx of item) {
+      result[simple_tx.tx_id] = simple_tx.amount / sum
+    }
+  } else {
+    const sum = item.txs.reduce((sum, tx) => sum + tx.amount, 0)
+    for (const simple_tx of item.txs) {
+      result[simple_tx.tx_id] = simple_tx.amount / sum
+    }
   }
   return result
 }
