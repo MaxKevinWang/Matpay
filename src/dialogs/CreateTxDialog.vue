@@ -3,7 +3,7 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="create-tx-label"> {{ room_name }} </h5>
+          <h5 class="modal-title" id="create-tx-label">Create Transaction</h5>
           <button type="button" data-bs-dismiss="modal" class="btn-close" aria-label="Close"></button>
         </div>
         <div class="modal-body d-grid gap-2">
@@ -53,9 +53,6 @@ export default defineComponent({
   props: {
     room_id: {
       type: String as PropType<string>
-    },
-    room_name: {
-      type: Number as PropType<number>
     },
     users_info: {
       type: Object as PropType<Array<RoomUserInfo>>

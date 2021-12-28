@@ -21,7 +21,7 @@
           Transaction data won't be available before all messages are downloaded.
         </button>
         </div>
-        <ChatComponent />
+        <ChatComponent :users_info="users_info"/>
       </div>
     </div>
   </div>

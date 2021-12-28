@@ -11,8 +11,8 @@
                    <span class="input-group-text" id="basic-addon3">
               <input class="form-check-input" type="checkbox" :id="user.user.displayname" :value="user.user.user_id" v-model="selected_members" >
             </span>
-            <label class="input-group-text" for="inputGroupSelect01">{{ user.displayname }}</label>
-            <input type="text" class="form-control" placeholder="Split value" aria-label="Recipient's username" aria-describedby="basic-addon2" id="split-perc">
+            <label class="input-group-text" for="split-perc">{{ user.displayname }}</label>
+            <input v-model="this.selected_members_split[user.user.user_id]" type="text" class="form-control" placeholder="Split value" aria-label="Recipient's username" aria-describedby="basic-addon2" id="split-perc">
             <span class="input-group-text" id="basic-addon2">%</span>
           </div>
         </div>
@@ -54,8 +54,8 @@ export default defineComponent({
       modal_control: null as Modal | null,
       is_shown: false as boolean,
       users: [] as Array<RoomUserInfo>,
-      selected_members: [] as Array<MatrixUserID>
-      // selected_members_split:
+      selected_members: [] as Array<MatrixUserID>,
+      selected_members_split: {} as Record<MatrixUserID, number>
     }
   },
   computed: {
