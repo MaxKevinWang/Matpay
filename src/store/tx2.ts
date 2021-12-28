@@ -14,8 +14,6 @@ import axios from 'axios'
 import { MatrixError } from '@/interface/error.interface'
 import { RoomEventFilter } from '@/interface/filter.interface'
 import { GETRoomEventsResponse } from '@/interface/api.interface'
-import { validate as uuidValidate } from 'uuid'
-import objectContaining = jasmine.objectContaining
 
 interface State {
   transactions: Record<MatrixRoomID, {
@@ -307,17 +305,6 @@ export const tx_store = {
           if (!tx_event_create.content.description) {
             return
           }
-          // Check if group ID UUIDs
-          if (!uuidValidate(tx_event_create.content.group_id)) {
-            return
-          }
-          // Check if tx_ids UUIDs
-          const check_tx_id = new Set(
-            tx_event_create.content.txs.map(i => i.tx_id).filter(i => !uuidValidate(i))
-          )
-          if (check_tx_id.size > 0) {
-            return
-          }
           const room_users : Array<User> = (rootGetters['user/get_users_info_for_room'](room_id) as Array<RoomUserInfo>)
             .map(u => u.user)
           // all participants in room
@@ -370,7 +357,6 @@ export const tx_store = {
         }
         case 'com.matpay.modify': {
           const tx_event_modify = tx_event as TxModifyEvent
-          // amount >= 0
           if (tx_event_modify.content.txs.map(i => i.amount).filter(i => i < 0).length > 0) {
             return
           }
@@ -378,68 +364,6 @@ export const tx_store = {
           if (!tx_event_modify.content.description) {
             return
           }
-          // Check if group ID UUIDs
-          if (!uuidValidate(tx_event_modify.content.group_id)) {
-            return
-          }
-          // Check if tx_ids UUIDs
-          const check_tx_id = new Set(
-            tx_event_modify.content.txs.map(i => i.tx_id).filter(i => !uuidValidate(i))
-          )
-          if (check_tx_id.size > 0) {
-            return
-          }
-          // Semantic part
-          // Create tx with the same group id
-          const existing_group_ids : Set<GroupID> = getters.get_existing_group_ids_for_room(room_id)
-          if (!existing_group_ids.has(tx_event_modify.content.group_id)) {
-            return
-          }
-          // Each tx_id has same one in the create event
-          const existing_tx_ids : Set<TxID> = getters.get_existing_tx_ids_for_room(room_id)
-          const compare_tx_ids = new Set(
-            tx_event_modify.content.txs.map(i => i.tx_id).filter(x => existing_tx_ids.has(x))
-          )
-          if (compare_tx_ids.size < tx_event_modify.content.txs.length) {
-            return
-          }
-          // get old transaction
-          const existing_txs : GroupedTransaction[] = getters.get_grouped_transactions_for_room(room_id)
-          const old_id = ''
-          for (const u of existing_txs) {
-            if (u.group_id === tx_event_modify.content.group_id) {
-              const old_id = u.group_id
-              break
-            }
-          }
-          // eslint-disable-next-line no-return-assign
-          const old_tx : GroupedTransaction | undefined = existing_txs.find(element => element.group_id = old_id)
-          // The sender participates in this transaction
-          const targets = tx_event_modify.content.txs.map(t => t.to)
-          if (!targets.includes(tx_event_modify.sender) && old_id !== old_tx?.from.user_id) {
-              return
-          }
-
-          // At least one description or at least one simple transaction is modified
-          if (old_tx?.description === tx_event_modify.content.description) {
-
-
-          }
-
-          // To field not changed
-
-
-
-
-
-
-
-
-
-
-
-
-
           break
         }
         case 'com.matpay.approve': {
