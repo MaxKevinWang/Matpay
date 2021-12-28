@@ -9,7 +9,7 @@
         <div class="modal-body">
           <div class="input-group mb-3 form-control" v-for="simple_tx in simple_txs_info" :key="simple_tx.to">
             <label class="input-group-text" for="inputGroupSelect01">{{ simple_tx.to.displayname }}</label>
-            <input type="text" class="form-control" placeholder="Split value" aria-label="Recipient's username" aria-describedby="basic-addon2" id="split-perc">
+            <input type="text" class="form-control" placeholder="Split value" aria-label="Recipient's username" aria-describedby="basic-addon2" id="split-perc" v-model="current_percentages[simple_tx.tx_id]">
             <span class="input-group-text" id="basic-addon2">%</span>
           </div>
         </div>
@@ -31,7 +31,7 @@ import { deepcopy } from '@/utils/utils'
 import { Modal, Popover } from 'bootstrap'
 import CreateTxDialog from '@/dialogs/CreateTxDialog.vue'
 import { SimpleTransaction } from '@/models/transaction.model'
-import { MatrixUserID } from '@/models/id.model'
+import { MatrixUserID, TxID } from '@/models/id.model'
 
 export default defineComponent({
   name: 'SplitModifyDialog',
@@ -52,7 +52,8 @@ export default defineComponent({
       is_shown: false as boolean,
       users: [] as Array<RoomUserInfo>,
       selected_members: [] as Array<MatrixUserID>,
-      simple_txs_info: [] as Array<SimpleTransaction>
+      simple_txs_info: [] as Array<SimpleTransaction>,
+      current_percentages: {} as Record<TxID, number>
     }
   },
   computed: {
@@ -85,18 +86,14 @@ export default defineComponent({
     })
   },
   watch: {
-    users_info: {
-      handler () {
-        if (this.users_info) {
-          this.users = this.users_info
-        }
-      },
-      immediate: true
-    },
     simple_txs: {
       handler () {
         if (this.simple_txs) {
           this.simple_txs_info = this.simple_txs
+          this.current_percentages = this.split_percentage(this.simple_txs)
+          for (const simple_tx of this.simple_txs) {
+            this.current_percentages[simple_tx.tx_id] = Number(((this.current_percentages[simple_tx.tx_id] * 100).toFixed(2)))
+          }
         }
       },
       immediate: true
