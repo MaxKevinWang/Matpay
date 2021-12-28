@@ -131,7 +131,7 @@ export default defineComponent({
         check_amount = check_amount.replace(',', '.')
       }
       // if it´s not a number it returns false
-      if (isNaN(Number(check_amount)) || check_amount === '' || check_amount.startsWith('-')) {
+      if (Number.isNaN(Number(check_amount)) || check_amount === '' || check_amount.startsWith('-')) {
         return false
       } else {
         return true
