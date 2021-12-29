@@ -23,7 +23,12 @@
           <div v-for="simple_tx in reference.approval.txs" :key="simple_tx.tx_id">
             <div class="row">
               <div class="col-2">
-                <i class="bi bi-person-fill" size="5"></i>
+                <div v-if="reference.approval.approvals[simple_tx.to.user_id]">
+                <i class="bi bi-person-check-fill" data-bs-toggle="tooltip" data-bs-placement="top" title="Approved"></i>
+                </div>
+                <div v-else>
+                  <i class="bi bi-person-dash" data-bs-toggle="tooltip" data-bs-placement="top" title="Not Approved"></i>
+                </div>
               </div>
               <div class="col-8">
                 <p>{{ simple_tx.to.displayname + ' owe ' + simple_tx.amount + '€' }}</p>
@@ -31,6 +36,19 @@
               <div class="col-2">
                 <p>{{(split_percentage(this.reference.approval)[simple_tx.tx_id] * 100).toFixed(2) + "%"}}</p>
               </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-2">
+              <div v-if="reference.approval.approvals[reference.approval.from.user_id]">
+                <i class="bi bi-person-check-fill" data-bs-toggle="tooltip" data-bs-placement="top" title="Approved"></i>
+              </div>
+              <div v-else>
+                <i class="bi bi-person-dash" data-bs-toggle="tooltip" data-bs-placement="top" title="Not Approved"></i>
+              </div>
+            </div>
+            <div class="col-10">
+              <p>{{'From ' + reference.approval.from.displayname}}</p>
             </div>
           </div>
         </div>
