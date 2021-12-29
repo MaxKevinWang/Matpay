@@ -359,14 +359,14 @@ export const tx_store = {
     }, payload: {
       room_id: MatrixRoomID,
       tx_event: TxMessageEvent
-    }) {
+    }) : Promise<boolean> {
       const room_id = payload.room_id
       const tx_event = payload.tx_event
       // check if rejected
       // note: this implementation currently does not check if the user can reject it
       // that is, this allows a user to reject a tx he/she is not participating
       if (Object.keys(state.transactions[room_id].rejected).includes(tx_event.event_id)) {
-        return
+        return false
       }
       // parse based on event types
       switch (tx_event.type) {
@@ -375,7 +375,7 @@ export const tx_store = {
           // no previous tx with the same group id
           const existing_group_ids: Set<GroupID> = getters.get_existing_group_ids_for_room(room_id)
           if (existing_group_ids.has(tx_event_create.content.group_id)) {
-            return
+            return false
           }
           // no previous tx with the same tx id
           const existing_tx_ids: Set<TxID> = getters.get_existing_tx_ids_for_room(room_id)
@@ -383,26 +383,26 @@ export const tx_store = {
             tx_event_create.content.txs.map(i => i.tx_id).filter(x => existing_tx_ids.has(x))
           )
           if (intersect.size > 0) {
-            return
+            return false
           }
           // all amounts non negative
           if (tx_event_create.content.txs.map(i => i.amount).filter(i => i < 0).length > 0) {
-            return
+            return false
           }
           // description not blank
           if (!tx_event_create.content.description) {
-            return
+            return false
           }
           // Check if group ID UUIDs
           if (!uuidValidate(tx_event_create.content.group_id)) {
-            return
+            return false
           }
           // Check if tx_ids UUIDs
           const check_tx_id = new Set(
             tx_event_create.content.txs.map(i => i.tx_id).filter(i => !uuidValidate(i))
           )
           if (check_tx_id.size > 0) {
-            return
+            return false
           }
           const room_users: Array<User> = (rootGetters['user/get_users_info_for_room'](room_id) as Array<RoomUserInfo>)
             .map(u => u.user)
@@ -411,16 +411,16 @@ export const tx_store = {
           const participating_users = targets.concat([tx_event_create.content.from])
           for (const u of participating_users) {
             if (!room_users.map(i => i.user_id).includes(u)) {
-              return
+              return false
             }
           }
           // sender must participate
           if (!participating_users.includes(tx_event_create.sender)) {
-            return
+            return false
           }
           // duplicate target
           if (new Set(targets).size !== targets.length) {
-            return
+            return false
           }
           // construct pending approval
           const txs = tx_event_create.content.txs.map<SimpleTransaction>(i => {
