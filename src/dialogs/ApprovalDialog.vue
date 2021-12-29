@@ -23,7 +23,12 @@
           <div v-for="simple_tx in reference.approval.txs" :key="simple_tx.tx_id">
             <div class="row">
               <div class="col-2">
-                <i :class="[reference.approval.approvals[simple_tx.to] ? 'bi bi-person-check-fill' : 'bi bi-person-fill']" ></i>
+                <div v-if="reference.approval.approvals[simple_tx.to.user_id]">
+                <i class="bi bi-person-check-fill" data-bs-toggle="tooltip" data-bs-placement="top" title="Approved"></i>
+                </div>
+                <div v-else>
+                  <i class="bi bi-person-dash" data-bs-toggle="tooltip" data-bs-placement="top" title="Not Approved"></i>
+                </div>
               </div>
               <div class="col-8">
                 <p>{{ simple_tx.to.displayname + ' owe ' + simple_tx.amount + '€' }}</p>
