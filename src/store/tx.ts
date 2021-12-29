@@ -11,16 +11,9 @@ import {
   TxRejectedEvent,
   TxSettleEvent
 } from '@/interface/tx_event.interface'
-import { validate as uuidValidate } from 'uuid'
 import axios from 'axios'
 import { MatrixError } from '@/interface/error.interface'
-<<<<<<< HEAD
-import { RoomEventFilter } from '@/interface/filter.interface'
-import { GETRoomEventsResponse } from '@/interface/api.interface'
 import { validate as uuidValidate } from 'uuid'
-import objectContaining = jasmine.objectContaining
-=======
->>>>>>> ba9822b0e70643539d4ea837445d494cbe005ae9
 import { PUTRoomEventSendResponse } from '@/interface/api.interface'
 
 interface State {
@@ -459,6 +452,7 @@ export const tx_store = {
             pending_approval: new_pending_approval
           }, { root: true })
           // TODO: notify other stores
+          return true
           break
         }
         case 'com.matpay.modify': {
@@ -540,6 +534,7 @@ export const tx_store = {
               return false
             }
           }
+          return true
           break
         }
         case 'com.matpay.approve': {
@@ -575,7 +570,7 @@ export const tx_store = {
               event_id: event_id
             })
           } catch (e) {
-            return
+            return false
           }
           // Check if everyone has approved
           const current_approval = state.transactions[room_id].pending_approvals.filter(i => i.event_id === event_id)[0]
@@ -617,10 +612,12 @@ export const tx_store = {
               grouped_tx: state.transactions[room_id].basic.filter(i => i.group_id === current_approval.group_id)[0]
             }, { root: true })
           }
+          return true
           break
         }
         case 'com.matpay.settle': {
           const tx_event_settle = tx_event as TxSettleEvent
+          return true
           break
         }
         default: {
