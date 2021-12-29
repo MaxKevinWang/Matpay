@@ -11,12 +11,16 @@ import {
   TxRejectedEvent,
   TxSettleEvent
 } from '@/interface/tx_event.interface'
+import { validate as uuidValidate } from 'uuid'
 import axios from 'axios'
 import { MatrixError } from '@/interface/error.interface'
+<<<<<<< HEAD
 import { RoomEventFilter } from '@/interface/filter.interface'
 import { GETRoomEventsResponse } from '@/interface/api.interface'
 import { validate as uuidValidate } from 'uuid'
 import objectContaining = jasmine.objectContaining
+=======
+>>>>>>> ba9822b0e70643539d4ea837445d494cbe005ae9
 import { PUTRoomEventSendResponse } from '@/interface/api.interface'
 
 interface State {
@@ -362,14 +366,14 @@ export const tx_store = {
     }, payload: {
       room_id: MatrixRoomID,
       tx_event: TxMessageEvent
-    }) {
+    }) : Promise<boolean> {
       const room_id = payload.room_id
       const tx_event = payload.tx_event
       // check if rejected
       // note: this implementation currently does not check if the user can reject it
       // that is, this allows a user to reject a tx he/she is not participating
       if (Object.keys(state.transactions[room_id].rejected).includes(tx_event.event_id)) {
-        return
+        return false
       }
       // parse based on event types
       switch (tx_event.type) {
@@ -407,7 +411,7 @@ export const tx_store = {
           if (check_tx_id.size > 0) {
             return false
           }
-          const room_users : Array<User> = (rootGetters['user/get_users_info_for_room'](room_id) as Array<RoomUserInfo>)
+          const room_users: Array<User> = (rootGetters['user/get_users_info_for_room'](room_id) as Array<RoomUserInfo>)
             .map(u => u.user)
           // all participants in room
           const targets = tx_event_create.content.txs.map(t => t.to)
@@ -480,12 +484,12 @@ export const tx_store = {
           }
           // Semantic part
           // Create tx with the same group id
-          const existing_group_ids : Set<GroupID> = getters.get_existing_group_ids_for_room(room_id)
+          const existing_group_ids: Set<GroupID> = getters.get_existing_group_ids_for_room(room_id)
           if (!existing_group_ids.has(tx_event_modify.content.group_id)) {
             return false
           }
           // Each tx_id has same one in the create event
-          const existing_tx_ids : Set<TxID> = getters.get_existing_tx_ids_for_room(room_id)
+          const existing_tx_ids: Set<TxID> = getters.get_existing_tx_ids_for_room(room_id)
           const compare_tx_ids = new Set(
             tx_event_modify.content.txs.map(i => i.tx_id).filter(x => existing_tx_ids.has(x))
           )
@@ -493,7 +497,7 @@ export const tx_store = {
             return false
           }
           // get old transaction
-          const existing_txs : GroupedTransaction[] = getters.get_grouped_transactions_for_room(room_id)
+          const existing_txs: GroupedTransaction[] = getters.get_grouped_transactions_for_room(room_id)
           let old_tx: GroupedTransaction | undefined
           for (const u of existing_txs) {
             if (u.group_id === tx_event_modify.content.group_id) {
@@ -540,7 +544,28 @@ export const tx_store = {
         }
         case 'com.matpay.approve': {
           const tx_event_approve = tx_event as TxApproveEvent
-          // Validation goes here
+          const existing_pending_approval: PendingApproval[] = getters.get_pending_approvals_for_room(room_id)
+          const compare_event_ids = new Set(
+            existing_pending_approval.filter(x => (x.event_id === tx_event_approve.event_id))
+          )
+          // There exists data event before this event that has the sane event_id
+          if (compare_event_ids.size === 0) {
+            return false
+          }
+          // A user can only approve once
+          for (const e of existing_pending_approval) {
+            if (e.approvals[tx_event_approve.sender]) {
+              return false
+            }
+          }
+          const rejected_events: MatrixEventID[] = Object.keys(state.transactions[room_id].rejected)
+          const copare_rejected_ids = new Set(
+            rejected_events.filter(x => x === tx_event_approve.event_id)
+          )
+          // Event ID is not in rejected event list
+          if (compare_event_ids.size > 0) {
+            return false
+          }
           const event_id = tx_event_approve.content.event_id
           // Mark as validated
           try {
@@ -578,6 +603,10 @@ export const tx_store = {
                 description: current_approval.description,
                 state: 'approved'
               }
+              commit('mutation_add_approved_grouped_transaction_for_room', {
+                room_id: room_id,
+                grouped_tx: new_tx
+              })
             }
             commit('mutation_remove_pending_approval_for_room', {
               room_id: room_id,
