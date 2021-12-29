@@ -14,6 +14,13 @@ import {
 import { validate as uuidValidate } from 'uuid'
 import axios from 'axios'
 import { MatrixError } from '@/interface/error.interface'
+<<<<<<< HEAD
+import { RoomEventFilter } from '@/interface/filter.interface'
+import { GETRoomEventsResponse } from '@/interface/api.interface'
+import { validate as uuidValidate } from 'uuid'
+import objectContaining = jasmine.objectContaining
+=======
+>>>>>>> ba9822b0e70643539d4ea837445d494cbe005ae9
 import { PUTRoomEventSendResponse } from '@/interface/api.interface'
 
 interface State {
@@ -458,61 +465,107 @@ export const tx_store = {
           const tx_event_modify = tx_event as TxModifyEvent
           // amount >= 0
           if (tx_event_modify.content.txs.map(i => i.amount).filter(i => i < 0).length > 0) {
-            return
+            return false
           }
           // description not blank
           if (!tx_event_modify.content.description) {
-            return
+            return false
           }
           // Check if group ID UUIDs
           if (!uuidValidate(tx_event_modify.content.group_id)) {
-            return
+            return false
           }
           // Check if tx_ids UUIDs
           const check_tx_id = new Set(
             tx_event_modify.content.txs.map(i => i.tx_id).filter(i => !uuidValidate(i))
           )
           if (check_tx_id.size > 0) {
-            return
+            return false
           }
           // Semantic part
           // Create tx with the same group id
-          const existing_group_ids : Set<GroupID> = getters.get_existing_group_ids_for_room(room_id)
+          const existing_group_ids: Set<GroupID> = getters.get_existing_group_ids_for_room(room_id)
           if (!existing_group_ids.has(tx_event_modify.content.group_id)) {
-            return
+            return false
           }
           // Each tx_id has same one in the create event
-          const existing_tx_ids : Set<TxID> = getters.get_existing_tx_ids_for_room(room_id)
+          const existing_tx_ids: Set<TxID> = getters.get_existing_tx_ids_for_room(room_id)
           const compare_tx_ids = new Set(
             tx_event_modify.content.txs.map(i => i.tx_id).filter(x => existing_tx_ids.has(x))
           )
-          if (compare_tx_ids.size < tx_event_modify.content.txs.length) {
-            return
+          if (compare_tx_ids.size === tx_event_modify.content.txs.length) {
+            return false
           }
           // get old transaction
-          const existing_txs : GroupedTransaction[] = getters.get_grouped_transactions_for_room(room_id)
-          const old_id = ''
+          const existing_txs: GroupedTransaction[] = getters.get_grouped_transactions_for_room(room_id)
+          let old_tx: GroupedTransaction | undefined
           for (const u of existing_txs) {
             if (u.group_id === tx_event_modify.content.group_id) {
-              const old_id = u.group_id
+              old_tx = u
               break
             }
           }
-          // eslint-disable-next-line no-return-assign
-          const old_tx : GroupedTransaction | undefined = existing_txs.find(element => element.group_id = old_id)
           // The sender participates in this transaction
-          const targets = tx_event_modify.content.txs.map(t => t.to)
-          if (!targets.includes(tx_event_modify.sender) && old_id !== old_tx?.from.user_id) {
-            return
+          const is_from = old_tx?.from.user_id === tx_event_modify.sender
+          let is_to = false
+          for (const u of tx_event_modify.content.txs) {
+            if (u.to === tx_event_modify.sender) {
+              is_to = true
+              break
+            }
           }
-          // At least one description or at least one simple transaction is modified
-          if (old_tx?.description === tx_event_modify.content.description) {
+          if (is_to === false && is_from === false) {
+            return false
+          }
+          // At least one description
+          // OR at least one simple transaction is modified
+          // AND To-sides of the transactions are not modified
+          const description_changed = old_tx?.description !== tx_event_modify.content.description
+          let simple_tx_changed = false
+          for (const u of tx_event_modify.content.txs) {
+            if (old_tx?.txs) {
+              for (const v of old_tx?.txs) {
+                if (u.tx_id === v.tx_id) {
+                  if (u.to !== v.to.user_id) {
+                    return false
+                  }
+                  if (u.amount !== v.amount) {
+                    simple_tx_changed = true
+                    break
+                  }
+                }
+              }
+            }
+            if (simple_tx_changed === false && description_changed === false) {
+              return false
+            }
           }
           break
         }
         case 'com.matpay.approve': {
           const tx_event_approve = tx_event as TxApproveEvent
-          // Validation goes here
+          const existing_pending_approval: PendingApproval[] = getters.get_pending_approvals_for_room(room_id)
+          const compare_event_ids = new Set(
+            existing_pending_approval.filter(x => (x.event_id === tx_event_approve.event_id))
+          )
+          // There exists data event before this event that has the sane event_id
+          if (compare_event_ids.size === 0) {
+            return false
+          }
+          // A user can only approve once
+          for (const e of existing_pending_approval) {
+            if (e.approvals[tx_event_approve.sender]) {
+              return false
+            }
+          }
+          const rejected_events: MatrixEventID[] = Object.keys(state.transactions[room_id].rejected)
+          const copare_rejected_ids = new Set(
+            rejected_events.filter(x => x === tx_event_approve.event_id)
+          )
+          // Event ID is not in rejected event list
+          if (compare_event_ids.size > 0) {
+            return false
+          }
           const event_id = tx_event_approve.content.event_id
           // Mark as validated
           try {
