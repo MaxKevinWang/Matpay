@@ -163,11 +163,7 @@ export const tx_store = {
         const pd1: PendingApproval = {
           event_id: 'XXX',
           type: 'modify',
-          approvals: {
-            AAAA: false,
-            BBBB: false,
-            CCCC: true
-          },
+          approvals: {},
           group_id: tx3.group_id,
           from: user_3,
           description: 'Drink',
@@ -185,6 +181,9 @@ export const tx_store = {
           ],
           timestamp: new Date(2022, 0, 1, 20, 0, 0)
         }
+        pd1.approvals[user_1.user_id] = false
+        pd1.approvals[user_2.user_id] = false
+        pd1.approvals[user_3.user_id] = true
         const pd2: PendingApproval = {
           event_id: 'YYY',
           type: 'create',

@@ -38,6 +38,19 @@
               </div>
             </div>
           </div>
+          <div class="row">
+            <div class="col-2">
+              <div v-if="reference.approval.approvals[reference.approval.from.user_id]">
+                <i class="bi bi-person-check-fill" data-bs-toggle="tooltip" data-bs-placement="top" title="Approved"></i>
+              </div>
+              <div v-else>
+                <i class="bi bi-person-dash" data-bs-toggle="tooltip" data-bs-placement="top" title="Not Approved"></i>
+              </div>
+            </div>
+            <div class="col-10">
+              <p>{{'From ' + reference.approval.from.displayname}}</p>
+            </div>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Reject</button>
