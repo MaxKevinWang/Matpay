@@ -23,7 +23,7 @@
           <div v-for="simple_tx in reference.approval.txs" :key="simple_tx.tx_id">
             <div class="row">
               <div class="col-2">
-                <i class="bi bi-person-fill" size="5"></i>
+                <i :class="[reference.approval.approvals[simple_tx.to] ? 'bi bi-person-check-fill' : 'bi bi-person-fill']" ></i>
               </div>
               <div class="col-8">
                 <p>{{ simple_tx.to.displayname + ' owe ' + simple_tx.amount + '€' }}</p>
