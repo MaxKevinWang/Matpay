@@ -11,7 +11,7 @@ import {
   TxRejectedEvent,
   TxSettleEvent
 } from '@/interface/tx_event.interface'
-import { uuidValidate } from 'uuid'
+import { validate as uuidValidate } from 'uuid'
 import axios from 'axios'
 import { MatrixError } from '@/interface/error.interface'
 import { PUTRoomEventSendResponse } from '@/interface/api.interface'
@@ -554,54 +554,6 @@ export const tx_store = {
                 room_id: room_id,
                 grouped_tx: new_tx
               })
-            }
-            commit('mutation_remove_pending_approval_for_room', {
-              room_id: room_id,
-              event_id: current_approval.event_id
-            })
-            dispatch('chat/action_parse_single_grouped_tx_for_room', {
-              room_id: room_id,
-              grouped_tx: state.transactions[room_id].basic.filter(i => i.group_id === current_approval.group_id)[0]
-            }, { root: true })
-          }
-          // Validation goes here
-          const event_id = tx_event_approve.content.event_id
-          // Mark as validated
-          try {
-            commit('mutation_mark_user_as_approved_for_room', {
-              room_id: room_id,
-              user_id: tx_event_approve.sender,
-              event_id: event_id
-            })
-          } catch (e) {
-            return
-          }
-          // Check if everyone has approved
-          const current_approval = state.transactions[room_id].pending_approvals.filter(i => i.event_id === event_id)[0]
-          if (Object.values(current_approval.approvals).every(i => i === true)) {
-            // Apply approved changes to basic storage
-            if (current_approval.type === 'modify') {
-              commit('mutation_modify_grouped_transaction_for_room', {
-                room_id: room_id,
-                group_id: current_approval.group_id,
-                description: current_approval.description,
-                txs: current_approval.txs
-              })
-              commit('mutation_change_tx_state_for_room', {
-                room_id: room_id,
-                group_id: current_approval.group_id,
-                state: 'approved'
-              })
-            } else {
-              const new_tx : GroupedTransaction = {
-                from: current_approval.from,
-                txs: current_approval.txs,
-                timestamp: current_approval.timestamp,
-                group_id: current_approval.group_id,
-                pending_approvals: [],
-                description: current_approval.description,
-                state: 'approved'
-              }
             }
             commit('mutation_remove_pending_approval_for_room', {
               room_id: room_id,
