@@ -18,6 +18,7 @@
           </div>
         </div>
         <div class="modal-footer">
+          <button type="button" class="btn btn-info" @click="on_default_split">Split Equally among Selected</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           <button type="button" class="btn btn-primary" @click="on_save_click">Save</button>
         </div>
@@ -36,6 +37,7 @@ import { Modal, Popover } from 'bootstrap'
 import CreateTxDialog from '@/dialogs/CreateTxDialog.vue'
 import { SimpleTransaction } from '@/models/transaction.model'
 import { MatrixUserID } from '@/models/id.model'
+import Dinero from 'dinero.js'
 
 export default defineComponent({
   name: 'SplitCreateDialog',
@@ -108,6 +110,15 @@ export default defineComponent({
       }
       this.$emit('on-save-split', split)
       this.hide()
+    },
+    on_default_split () {
+      if (this.selected_members.length >= 1) {
+        const ones = new Array(this.selected_members.length).fill(1)
+        const dinero_allocate = Dinero({ amount: 100 }).allocate(ones)
+        for (const [index, selected] of this.selected_members.entries()) {
+          this.selected_members_split[selected] = dinero_allocate[index].getAmount().toString()
+        }
+      }
     }
   },
   mounted () {

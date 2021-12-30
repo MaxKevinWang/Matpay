@@ -239,6 +239,7 @@ export const tx_store = {
       if (response.status !== 200) {
         throw new Error((response.data as unknown as MatrixError).error)
       }
+      // TODO: approve immediately by the user him/herself
       // TODO: notify other stores
     },
     async action_modify_tx_for_room ({
