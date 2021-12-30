@@ -36,7 +36,7 @@
       </div>
     </div>
   </div>
-  <SplitCreateDialog ref="split_dialog" :room_id="room_id" :users_info="users_info"/>
+  <SplitCreateDialog ref="split_dialog" :room_id="room_id" :users_info="users_info" :current_split="split" @on-save-split="on_save_split"/>
 </template>
 
 <script lang="ts">
@@ -47,6 +47,7 @@ import { RoomUserInfo } from '@/models/user.model'
 import { mapActions, mapGetters } from 'vuex'
 import { Modal, Popover } from 'bootstrap'
 import SplitCreateDialog from '@/dialogs/SplitCreateDialog.vue'
+import { MatrixUserID } from '@/models/id.model'
 
 export default defineComponent({
   name: 'CreateTxDialog',
@@ -66,7 +67,8 @@ export default defineComponent({
       amount_input: '' as string,
       room_members: [] as Array<RoomUserInfo>,
       selected: '' as string,
-      amount: 0 as number
+      amount: 0 as number,
+      split: {} as Record<MatrixUserID, number>
     }
   },
   computed: {
@@ -122,6 +124,9 @@ export default defineComponent({
       } else {
         this.popover_hint(this.description.length >= 1, this.is_number(), this.selected !== '')
       }
+    },
+    on_save_split (split: Record<MatrixUserID, number>) {
+      this.split = split
     },
     is_number () : boolean {
       let check_amount = this.amount_input
