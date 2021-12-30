@@ -69,7 +69,7 @@ export default defineComponent({
       this.modal_control?.hide()
       this.is_shown = false
     },
-    check_selected () {
+    on_save_click () {
       if (this.selected_members.length <= 0) {
         const popover = new Popover('#input-description', {
           content: 'At least one member should be selected',

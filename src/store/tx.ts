@@ -239,6 +239,7 @@ export const tx_store = {
       if (response.status !== 200) {
         throw new Error((response.data as unknown as MatrixError).error)
       }
+      // TODO: approve immediately by the user him/herself
       // TODO: notify other stores
     },
     async action_modify_tx_for_room ({
@@ -554,11 +555,11 @@ export const tx_store = {
             }
           }
           const rejected_events: MatrixEventID[] = Object.keys(state.transactions[room_id].rejected)
-          const copare_rejected_ids = new Set(
+          const compare_rejected_ids = new Set(
             rejected_events.filter(x => x === tx_event_approve.event_id)
           )
           // Event ID is not in rejected event list
-          if (compare_event_ids.size > 0) {
+          if (compare_rejected_ids.size > 0) {
             return false
           }
           const event_id = tx_event_approve.content.event_id
