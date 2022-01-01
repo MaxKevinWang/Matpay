@@ -628,8 +628,10 @@ export const tx_store = {
             return false
           }
           // Sending user is on receiving side
-          const tx_in_graph : Array<[MatrixUserID, number]> = state.transactions[room_id].graph[tx_event_settle.content.user_id]
-          if () {
+          const tx_in_graph : Array<String> = state.transactions[room_id].graph?[tx_event_settle.content.user_id] : []
+          if (tx_in_graph.length === 0) {
+            return false
+          } else if (tx_in_graph.filter(receiver => receiver)) { // TODO
 
           }
           // TODO: Check for open balance between sender and user with specific user_id after running settlement and optimization algorithm
