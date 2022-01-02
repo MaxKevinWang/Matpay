@@ -544,7 +544,7 @@ export const tx_store = {
           const compare_event_ids = new Set(
             existing_pending_approval.filter(x => x.event_id === tx_event_approve.event_id)
           )
-          // There exists data event before this event that has the sane event_id
+          // There exists data event before this event that has the same event_id
           if (compare_event_ids.size === 0) {
             return false
           }
@@ -618,7 +618,24 @@ export const tx_store = {
         }
         case 'com.matpay.settle': {
           const tx_event_settle = tx_event as TxSettleEvent
-          return true
+          // User is in the room
+          const room_members: RoomUserInfo[] = getters.get_users_info_for_room(room_id)
+          if (room_members.filter(id => id.user.user_id === tx_event_settle.content.user_id).length === 0) {
+            return false
+          }
+          // amount > 0
+          if (tx_event_settle.content.amount <= 0) {
+            return false
+          }
+          // Sending user is on receiving side
+          const tx_in_graph : Array<String> = state.transactions[room_id].graph?[tx_event_settle.content.user_id] : []
+          if (tx_in_graph.length === 0) {
+            return false
+          } else if (tx_in_graph.filter(receiver => receiver)) { // TODO
+
+          }
+          // TODO: Check for open balance between sender and user with specific user_id after running settlement and optimization algorithm
+           return true
           break
         }
         default: {
