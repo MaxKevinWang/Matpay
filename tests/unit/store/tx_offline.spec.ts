@@ -450,7 +450,383 @@ describe('Test transaction Vuex store offline', () => {
                 }
               ],
               group_id: uuidgen(),
-              description: ''
+              description: '' // empty description
+            }
+          }
+          await expect(action({
+            state,
+            commit: jest.fn(),
+            dispatch: jest.fn(),
+            getters: getters,
+            rootGetters: rootGetters
+          }, {
+            room_id: room_id,
+            tx_event: event
+          })).resolves.toEqual(false)
+        })
+        it('Test negative Amount', async () => {
+          const getters = {
+            get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
+            get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
+            get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
+            get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
+          }
+          const event: TxModifyEvent = {
+            type: 'com.matpay.modify',
+            sender: user_1.user_id,
+            room_id: room_id,
+            origin_server_ts: 60000,
+            event_id: 'e01',
+            content: {
+              txs: [
+                {
+                  to: user_2.user_id,
+                  amount: -5, // negative amount
+                  tx_id: uuidgen()
+                }
+              ],
+              group_id: uuidgen(),
+              description: 'aaaa'
+            }
+          }
+          await expect(action({
+            state,
+            commit: jest.fn(),
+            dispatch: jest.fn(),
+            getters: getters,
+            rootGetters: rootGetters
+          }, {
+            room_id: room_id,
+            tx_event: event
+          })).resolves.toEqual(false)
+        })
+        it('Test tx with same group_id does not exist', async () => {
+          const getters = {
+            get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
+            get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
+            get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
+            get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
+          }
+          const event1: TxCreateEvent = {
+            type: 'com.matpay.create',
+            sender: user_1.user_id,
+            room_id: room_id,
+            origin_server_ts: 60000,
+            event_id: 'e01',
+            content: {
+              from: user_1.user_id,
+              txs: [
+                {
+                  to: user_2.user_id,
+                  amount: 50,
+                  tx_id: uuidgen()
+                }
+              ],
+              group_id: uuidgen(), // TODO: How to check same group_id ?
+              description: 'aaaa'
+            }
+          }
+          const event: TxModifyEvent = {
+            type: 'com.matpay.modify',
+            sender: user_1.user_id,
+            room_id: room_id,
+            origin_server_ts: 60000,
+            event_id: 'e02',
+            content: {
+              txs: [
+                {
+                  to: user_2.user_id,
+                  amount: 50,
+                  tx_id: uuidgen()
+                }
+              ],
+              group_id: uuidgen(),
+              description: 'AAA'
+            }
+          }
+          await expect(action({
+            state,
+            commit: jest.fn(),
+            dispatch: jest.fn(),
+            getters: getters,
+            rootGetters: rootGetters
+          }, {
+            room_id: room_id,
+            tx_event: event
+          })).resolves.toEqual(false)
+        })
+        it('Test different tx_id', async () => {
+          const getters = {
+            get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
+            get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
+            get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
+            get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
+          }
+          const fake_group_id = uuidgen()
+          const event1: TxCreateEvent = {
+            type: 'com.matpay.create',
+            sender: user_1.user_id,
+            room_id: room_id,
+            origin_server_ts: 60000,
+            event_id: 'e01',
+            content: {
+              from: user_1.user_id,
+              txs: [
+                {
+                  to: user_2.user_id,
+                  amount: 50,
+                  tx_id: uuidgen() // TODO: How to check same tx_id ?
+                }
+              ],
+              group_id: fake_group_id,
+              description: 'aaaa'
+            }
+          }
+          const event: TxModifyEvent = {
+            type: 'com.matpay.modify',
+            sender: user_1.user_id,
+            room_id: room_id,
+            origin_server_ts: 60000,
+            event_id: 'e02',
+            content: {
+              txs: [
+                {
+                  to: user_2.user_id,
+                  amount: 50,
+                  tx_id: uuidgen()
+                }
+              ],
+              group_id: fake_group_id,
+              description: 'aaa'
+            }
+          }
+          await expect(action({
+            state,
+            commit: jest.fn(),
+            dispatch: jest.fn(),
+            getters: getters,
+            rootGetters: rootGetters
+          }, {
+            room_id: room_id,
+            tx_event: event
+          })).resolves.toEqual(false)
+        })
+        it('Test To Field Modification', async () => {
+          const getters = {
+            get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
+            get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
+            get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
+            get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
+          }
+          const fake_group_id = uuidgen()
+          const fake_tx_id = uuidgen()
+          const event1: TxCreateEvent = {
+            type: 'com.matpay.create',
+            sender: user_1.user_id,
+            room_id: room_id,
+            origin_server_ts: 60000,
+            event_id: 'e01',
+            content: {
+              from: user_1.user_id,
+              txs: [
+                {
+                  to: user_2.user_id,
+                  amount: 50,
+                  tx_id: fake_tx_id
+                }
+              ],
+              group_id: fake_group_id,
+              description: 'aaaa'
+            }
+          }
+          const event: TxModifyEvent = {
+            type: 'com.matpay.modify',
+            sender: user_1.user_id,
+            room_id: room_id,
+            origin_server_ts: 60000,
+            event_id: 'e02',
+            content: {
+              txs: [
+                {
+                  to: user_3.user_id,
+                  amount: 50,
+                  tx_id: fake_tx_id
+                }
+              ],
+              group_id: fake_group_id,
+              description: 'aaa'
+            }
+          }
+          await expect(action({
+            state,
+            commit: jest.fn(),
+            dispatch: jest.fn(),
+            getters: getters,
+            rootGetters: rootGetters
+          }, {
+            room_id: room_id,
+            tx_event: event
+          })).resolves.toEqual(false)
+        })
+        it('Test Sender is not Participant', async () => {
+          const getters = {
+            get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
+            get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
+            get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
+            get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
+          }
+          const fake_group_id = uuidgen()
+          const fake_tx_id = uuidgen()
+          const event1: TxCreateEvent = {
+            type: 'com.matpay.create',
+            sender: user_1.user_id,
+            room_id: room_id,
+            origin_server_ts: 60000,
+            event_id: 'e01',
+            content: {
+              from: user_1.user_id,
+              txs: [
+                {
+                  to: user_2.user_id,
+                  amount: 50,
+                  tx_id: fake_tx_id
+                }
+              ],
+              group_id: fake_group_id,
+              description: 'aaaa'
+            }
+          }
+          const event: TxModifyEvent = {
+            type: 'com.matpay.modify',
+            sender: user_3.user_id,
+            room_id: room_id,
+            origin_server_ts: 60000,
+            event_id: 'e02',
+            content: {
+              txs: [
+                {
+                  to: user_2.user_id,
+                  amount: 50,
+                  tx_id: fake_tx_id
+                }
+              ],
+              group_id: fake_group_id,
+              description: 'AA'
+            }
+          }
+          await expect(action({
+            state,
+            commit: jest.fn(),
+            dispatch: jest.fn(),
+            getters: getters,
+            rootGetters: rootGetters
+          }, {
+            room_id: room_id,
+            tx_event: event
+          })).resolves.toEqual(false)
+        })
+        it('Test Nothing changed', async () => {
+          const getters = {
+            get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
+            get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
+            get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
+            get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
+          }
+          const fake_group_id = uuidgen()
+          const fake_tx_id = uuidgen()
+          const event1: TxCreateEvent = {
+            type: 'com.matpay.create',
+            sender: user_1.user_id,
+            room_id: room_id,
+            origin_server_ts: 60000,
+            event_id: 'e01',
+            content: {
+              from: user_1.user_id,
+              txs: [
+                {
+                  to: user_2.user_id,
+                  amount: 50,
+                  tx_id: fake_tx_id
+                }
+              ],
+              group_id: fake_group_id,
+              description: 'aaaa'
+            }
+          }
+          const event: TxModifyEvent = {
+            type: 'com.matpay.modify',
+            sender: user_1.user_id,
+            room_id: room_id,
+            origin_server_ts: 60000,
+            event_id: 'e02',
+            content: {
+              txs: [
+                {
+                  to: user_2.user_id,
+                  amount: 50,
+                  tx_id: fake_tx_id
+                }
+              ],
+              group_id: fake_group_id,
+              description: 'aaaa'
+            }
+          }
+          await expect(action({
+            state,
+            commit: jest.fn(),
+            dispatch: jest.fn(),
+            getters: getters,
+            rootGetters: rootGetters
+          }, {
+            room_id: room_id,
+            tx_event: event
+          })).resolves.toEqual(false)
+        })
+        it('Test Tx has been Frozen', async () => {
+          const getters = {
+            get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
+            get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
+            get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
+            get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
+          }
+          const fake_group_id = uuidgen()
+          const fake_tx_id = uuidgen()
+          const event1: TxCreateEvent = {
+            type: 'com.matpay.create',
+            sender: user_1.user_id,
+            room_id: room_id,
+            origin_server_ts: 60000,
+            event_id: 'e01',
+            content: {
+              from: user_1.user_id,
+              txs: [
+                {
+                  to: user_2.user_id,
+                  amount: 50,
+                  tx_id: fake_tx_id
+                }
+              ],
+              group_id: fake_group_id,
+              description: 'aaaa'
+            }
+          }
+          // TODO: Add Settle event
+          const event: TxModifyEvent = {
+            type: 'com.matpay.modify',
+            sender: user_1.user_id,
+            room_id: room_id,
+            origin_server_ts: 60000,
+            event_id: 'e02',
+            content: {
+              txs: [
+                {
+                  to: user_2.user_id,
+                  amount: 50,
+                  tx_id: fake_tx_id
+                }
+              ],
+              group_id: fake_group_id,
+              description: 'Aaa'
             }
           }
           await expect(action({
@@ -511,7 +887,7 @@ describe('Test transaction Vuex store offline', () => {
               event_id: 'e01'
             }
           }
-          Object.keys(state.transactions[room_id].rejected).push('e01',user_1.user_id)
+          Object.keys(state.transactions[room_id].rejected).push('e01', user_1.user_id)
           await expect(action({
             state,
             commit: jest.fn(),
