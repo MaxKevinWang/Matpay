@@ -623,16 +623,19 @@ export const tx_store = {
           if (room_members.filter(id => id.user.user_id === tx_event_settle.content.user_id).length === 0) {
             return false
           }
-          // amount > 0
-          if (tx_event_settle.content.amount <= 0) {
+          const tx_in_graph : Array<string|number> = state.transactions[room_id].graph ? [tx_event_settle.content.user_id] : []
+          // Sending user is on receiving side
+          if (tx_in_graph.length === 0 || tx_in_graph[0] !== tx_event_settle.sender) {
             return false
           }
-          // Sending user is on receiving side
-          const tx_in_graph : Array<string> = state.transactions[room_id].graph ? [tx_event_settle.content.user_id] : []
-          if (tx_in_graph.length === 0) {
+          // amount is greater than 0 and smaller or same as the open balance
+          if (tx_event_settle.content.amount <= 0 || tx_event_settle.content.amount > tx_in_graph[1]) {
             return false
-          } else if (tx_in_graph.filter(receiver => receiver)) { // TODO
-
+          }
+          // event_id matches a previous event
+          const event_ids : Set<TxID> = getters.get_existing_tx_ids_for_room(room_id)
+          if (!event_ids.has(tx_event_settle.event_id)) {
+            return false
           }
           // TODO: Check for open balance between sender and user with specific user_id after running settlement and optimization algorithm
           return true
