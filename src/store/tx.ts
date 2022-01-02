@@ -542,7 +542,7 @@ export const tx_store = {
           const tx_event_approve = tx_event as TxApproveEvent
           const existing_pending_approval: PendingApproval[] = getters.get_pending_approvals_for_room(room_id)
           const compare_event_ids = new Set(
-            existing_pending_approval.filter(x => (x.event_id === tx_event_approve.event_id))
+            existing_pending_approval.filter(x => x.event_id === tx_event_approve.event_id)
           )
           // There exists data event before this event that has the sane event_id
           if (compare_event_ids.size === 0) {
