@@ -1,5 +1,5 @@
 <template>
-  <SettlementDialog ref="settle_dialog" :user_clicked="user_prop" />
+  <SettlementDialog ref="settle_dialog" :balance="open_balance" :user_clicked="user_prop" />
   <div :id="'usercard_' + user_id" @click="on_user_card_click()">
     <img :src="this.avatar" alt="avatar" class="avatar">
     <div class="about" @contextmenu="open_right_click_menu">
@@ -111,7 +111,9 @@ export default defineComponent({
       }
     },
     on_user_card_click () {
-      this.$refs.settle_dialog.show()
+      if (this.open_balance < 0) {
+        this.$refs.settle_dialog.show()
+      }
     }
   },
   watch: {
