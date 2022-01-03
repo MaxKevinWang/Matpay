@@ -9,7 +9,7 @@
           <p>{{this.reference.approval.description}}</p>
         </div>
         <div class="col">
-          <p>{{this.reference.approval.from.displayname + " paid " + sum_amount(this.reference.approval)+"$"}}</p>
+          <p>{{this.reference.approval.from.displayname + " paid " + (sum_amount(this.reference.approval)/ 100).toFixed(2)+"€"}}</p>
         </div>
         <div class="col">
           <button href="#" class="btn btn-primary" @click="approval_click()">details</button>
