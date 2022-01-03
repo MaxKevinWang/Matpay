@@ -9,8 +9,8 @@
         </div>
         <div class="modal-body">
           <p>{{ user_clicked.displayname }}</p>
-          <p>{{}}</p>
-          <h3>{{ '0$' }}</h3>
+          <p></p>
+          <h3>{{ (-balance / 100).toFixed(2) + '€' }}</h3>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -36,13 +36,15 @@ export default defineComponent({
     },
     user_clicked: {
       type: Object as PropType<RoomUserInfo>
+    },
+    balance: {
+      type: Number as PropType<number>
     }
   },
   data () {
     return {
       modal_control: null as Modal | null,
-      is_shown: false as boolean,
-      amount: 0 as number
+      is_shown: false as boolean
     }
   },
   computed: {
