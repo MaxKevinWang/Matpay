@@ -1,5 +1,5 @@
 <template>
-  <SettlementDialog ref="settle_dialog" :user_clicked="user_prop" />
+  <SettlementDialog ref="settle_dialog" :balance="open_balance" :user_clicked="user_prop" />
   <div :id="'usercard_' + user_id" @click="on_user_card_click()">
     <img :src="this.avatar" alt="avatar" class="avatar">
     <div class="about" @contextmenu="open_right_click_menu">
@@ -8,6 +8,13 @@
         }}
       </div>
       <div class="status">{{ this.is_self ? 'Yourself, ' + this.user_type : this.user_type }}</div>
+      <div class="status" v-if="!this.is_self">
+        {{
+          this.open_balance < 0
+            ? 'Oweing you: ' + to_currency_display(-open_balance)
+            : 'You oweing: ' + to_currency_display(open_balance)
+        }}
+      </div>
     </div>
     <!-- Right Click Menu -->
     <RightClickMenu :display="show_right_click_menu" ref="menu" v-if="can_i_kick_user && !is_self">
@@ -29,6 +36,7 @@ import RightClickMenu from '@/components/RightClickMenu.vue'
 import SettlementDialog from '@/dialogs/SettlementDialog.vue'
 import { RoomUserInfo } from '@/models/user.model'
 import { TxPlaceholder } from '@/models/chat.model'
+import { MatrixUserID } from '@/models/id.model'
 
 export default defineComponent({
   name: 'UserCard',
@@ -38,12 +46,21 @@ export default defineComponent({
     },
     can_i_kick_user: {
       type: Boolean as PropType<boolean>
+    },
+    room_id: {
+      type: String as PropType<string>
     }
   },
   computed: {
     ...mapGetters('auth', [
       'homeserver'
-    ])
+    ]),
+    ...mapGetters('tx', [
+      'get_open_balance_against_user_for_room'
+    ]),
+    open_balance () : number {
+      return this.get_open_balance_against_user_for_room(this.room_id, this.user_prop?.user.user_id)
+    }
   },
   emits: [
     'on-kick',
@@ -94,7 +111,9 @@ export default defineComponent({
       }
     },
     on_user_card_click () {
-      this.$refs.settle_dialog.show()
+      if (this.open_balance < 0) {
+        this.$refs.settle_dialog.show()
+      }
     }
   },
   watch: {

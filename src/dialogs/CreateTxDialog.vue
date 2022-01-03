@@ -138,7 +138,7 @@ export default defineComponent({
         this.is_number() &&
         this.selected_from !== '' &&
         Object.keys(this.split).length > 0) {
-        const amount = Number(this.amount_input)
+        const amount = Number(this.amount_input) * 100 // Euro to cent
         // prepare transaction creation
         try {
           const from_user = this.room_members.filter(i => i.user.user_id === this.selected_from)[0].user

@@ -9,7 +9,7 @@
           <p>{{this.reference.grouped_tx.description}}</p>
         </div>
         <div class="col">
-          <p>{{this.reference.grouped_tx.from.displayname + " paid " + sum_amount(this.reference.grouped_tx)+"$"}}</p>
+          <p>{{this.reference.grouped_tx.from.displayname + " paid " + to_currency_display(sum_amount(this.reference.grouped_tx))}}</p>
         </div>
         <div class="col">
          <a href="#" class="btn btn-primary">details</a>

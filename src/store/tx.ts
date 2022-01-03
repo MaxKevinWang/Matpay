@@ -181,7 +181,7 @@ export const tx_store = {
       const targets = tx.txs.map(t => t.to)
       const participating_users = targets.concat([tx.from])
       for (const u of participating_users) {
-        if (!room_users.includes(u)) {
+        if (!(room_users.map(i => i.user_id)).includes(u.user_id)) {
           throw new Error('Implementation Error: user not in room!')
         }
       }
@@ -239,7 +239,18 @@ export const tx_store = {
       if (response.status !== 200) {
         throw new Error((response.data as unknown as MatrixError).error)
       }
-      // TODO: approve immediately by the user him/herself
+      // Approve immediately by the user him/herself
+      const approve_event = {
+        event_id: response.data.event_id
+      }
+      const event_txn_id_2 = uuidgen()
+      const response_approve = await axios.put<PUTRoomEventSendResponse>(`${homeserver}/_matrix/client/r0/rooms/${room_id}/send/com.matpay.approve/${event_txn_id_2}`,
+        approve_event,
+        { validateStatus: () => true }
+      )
+      if (response_approve.status !== 200) {
+        throw new Error((response.data as unknown as MatrixError).error)
+      }
       // TODO: notify other stores
     },
     async action_modify_tx_for_room ({
@@ -360,7 +371,7 @@ export const tx_store = {
     }, payload: {
       room_id: MatrixRoomID,
       tx_event: TxMessageEvent
-    }) : Promise<boolean> {
+    }): Promise<boolean> {
       const room_id = payload.room_id
       const tx_event = payload.tx_event
       // check if rejected
@@ -431,6 +442,11 @@ export const tx_store = {
               to: room_users.filter(j => j.user_id === i.to)[0]
             }
           })
+          const approvals = tx_event_create.content.txs.reduce((prev: Record<MatrixRoomID, boolean>, cur) => {
+            prev[cur.to] = false
+            return prev
+          }, {} as Record<MatrixUserID, boolean>)
+          approvals[tx_event_create.content.from] = false
           const new_pending_approval: PendingApproval = {
             event_id: tx_event_create.event_id,
             type: 'create',
@@ -439,10 +455,7 @@ export const tx_store = {
             from: room_users.filter(i => i.user_id === tx_event_create.content.from)[0],
             timestamp: new Date(tx_event_create.origin_server_ts),
             txs: txs,
-            approvals: tx_event_create.content.txs.reduce((prev: Record<MatrixRoomID, boolean>, cur) => {
-              prev[cur.to] = false
-              return prev
-            }, {} as Record<MatrixUserID, boolean>)
+            approvals: approvals
           }
           commit('mutation_add_pending_approval_for_room', {
             room_id: room_id,
@@ -590,7 +603,7 @@ export const tx_store = {
                 state: 'approved'
               })
             } else {
-              const new_tx : GroupedTransaction = {
+              const new_tx: GroupedTransaction = {
                 from: current_approval.from,
                 txs: current_approval.txs,
                 timestamp: current_approval.timestamp,
@@ -690,7 +703,34 @@ export const tx_store = {
           return a.concat(b.txs.map(t => t.tx_id))
         }, []))
       ])
-    }
+    },
+    get_open_balance_against_user_for_room: (state: State, getters, rootState, rootGetters) =>
+      (room_id: MatrixRoomID, target_user_id: MatrixUserID): number => {
+        // In this getter, negative means receiving.
+        const grouped_txs = state.transactions[room_id].basic
+        const current_user_id : MatrixUserID = rootGetters['auth/user_id']
+        let balance = 0
+        for (const grouped_tx of grouped_txs) {
+          // Case 1: the current user is on the from side
+          if (grouped_tx.from.user_id === current_user_id) {
+            // Scan for all simple tx and look for target
+            const oweing_sum = grouped_tx.txs
+              .filter(i => i.to.user_id === target_user_id)
+              .map(i => i.amount)
+              .reduce((sum, tx) => sum + tx, 0)
+            balance -= oweing_sum
+          }
+          // Case 2: the target user is on the from side
+          if (grouped_tx.from.user_id === target_user_id) {
+            const owed_sum = grouped_tx.txs
+              .filter(i => i.to.user_id === current_user_id)
+              .map(i => i.amount)
+              .reduce((sum, tx) => sum + tx, 0)
+            balance += owed_sum
+          }
+        }
+        return balance
+      }
   }
 }
 

@@ -9,6 +9,7 @@ declare module '@vue/runtime-core' {
     }
     sum_amount: (t: PendingApproval | GroupedTransaction | SimpleTransaction[]) => number,
     split_percentage: (t: GroupedTransaction | PendingApproval | SimpleTransaction[]) => Record<TxID, number>
+    to_currency_display: (num: number) => string
     // ... more stuff
   }
 }

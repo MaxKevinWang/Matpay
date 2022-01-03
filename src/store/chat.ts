@@ -5,6 +5,9 @@ import { ChatLog, ChatMessage, TxApprovedPlaceholder, TxPendingPlaceholder, TxPl
 import { KICKED_USER, RoomUserInfo, User } from '@/models/user.model'
 import { MatrixRoomChatMessageEvent } from '@/interface/rooms_event.interface'
 import { GroupedTransaction, PendingApproval } from '@/models/transaction.model'
+import { PUTRoomEventSendResponse } from '@/interface/api.interface'
+import { uuidgen } from '@/utils/utils'
+import { MatrixError } from '@/interface/error.interface'
 interface State {
   chat_log: Record<MatrixRoomID, ChatLog>,
 }
@@ -42,7 +45,7 @@ export const chat_store = {
           messages.splice(index, 1)
         }
       }
-      // Insertion sort
+      // Insertion sort in reverse timestamp order, latest first
       let index = 0
       for (let i = 0; i < messages.length; i++) {
         if (messages[i].timestamp.getTime() >= payload.msg.timestamp.getTime()) {
@@ -116,6 +119,32 @@ export const chat_store = {
         room_id: room_id,
         msg: tx_message
       })
+    },
+    async action_send_chat_message_for_room ({
+      state,
+      commit,
+      dispatch,
+      rootGetters
+    }, payload: {
+      room_id: MatrixRoomID,
+      message: string
+    }) {
+      const room_id = payload.room_id
+      const message = payload.message
+      if (!message || message.length === 0) {
+        throw new Error('The chat message cannot be empty!')
+      }
+      const homeserver = rootGetters['auth/homeserver']
+      const response = await axios.put<PUTRoomEventSendResponse>(`${homeserver}/_matrix/client/r0/rooms/${room_id}/send/m.room.message/${uuidgen()}`, {
+        msgtype: 'm.text',
+        body: message
+      },
+      { validateStatus: () => true }
+      )
+      if (response.status !== 200) {
+        throw new Error((response.data as unknown as MatrixError).error)
+      }
+      // TODO: notify other stores
     }
   },
   getters: <GetterTree<State, any>>{
