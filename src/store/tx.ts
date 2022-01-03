@@ -181,7 +181,7 @@ export const tx_store = {
       const targets = tx.txs.map(t => t.to)
       const participating_users = targets.concat([tx.from])
       for (const u of participating_users) {
-        if (!room_users.includes(u)) {
+        if (!(room_users.map(i => i.user_id)).includes(u.user_id)) {
           throw new Error('Implementation Error: user not in room!')
         }
       }
