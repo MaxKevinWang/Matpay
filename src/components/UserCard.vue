@@ -11,8 +11,8 @@
       <div class="status" v-if="!this.is_self">
         {{
           this.open_balance < 0
-            ? 'Oweing you: ' + (-open_balance / 100).toFixed(2) + '€'
-            : 'You oweing: ' + (open_balance / 100).toFixed(2) + '€'
+            ? 'Oweing you: ' + to_currency_display(-open_balance)
+            : 'You oweing: ' + to_currency_display(open_balance)
         }}
       </div>
     </div>

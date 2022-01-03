@@ -45,5 +45,7 @@ app.config.globalProperties.split_percentage = (item: GroupedTransaction | Pendi
   }
   return result
 }
-
+app.config.globalProperties.to_currency_display = (num: number) : string => {
+  return (num / 100).toFixed(2) + '€'
+}
 app.mount('#app')
