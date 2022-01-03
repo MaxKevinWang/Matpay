@@ -8,14 +8,14 @@
   </div>
   <div>
     <div class="fixed-bottom input-group mb-3">
-      <input type="text" class="form-control" placeholder="Send a message" aria-describedby="button-addon2">
+      <input type="text" v-model="chat_message" class="form-control" placeholder="Send a message" aria-describedby="button-addon2">
       <button class="btn btn-light" type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="Create Transaction" @click="on_tx_clicked()">
         <i class="bi bi-receipt"></i>
       </button>
       <button class="btn btn-light" type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="History">
         <i class="bi bi-clock-history"></i>
       </button>
-      <button class="btn btn-primary" type="button">Send</button>
+      <button class="btn btn-primary" type="button" :disabled="!this.chat_message" @click="on_send_click">Send</button>
     </div>
   </div>
   <CreateTxDialog ref="create_tx_dialog" :room_id="room_id" :users_info="users_info"/>
@@ -45,7 +45,8 @@ export default defineComponent({
       TxApprovedMessageBox: 'TxApprovedMessageBox' as string,
       TxPendingMessageBox: 'TxPendingMessageBox' as string,
       ChatMessageBox: 'ChatMessageBox' as string,
-      room_name: '' as string
+      room_name: '' as string,
+      chat_message: null as string | null
     }
   },
   computed: {
@@ -62,9 +63,7 @@ export default defineComponent({
     chat_log () : ChatLog {
       const messages = (this.get_chat_log_for_room(this.room_id) as ChatLog).messages
       return {
-        messages: [...messages].sort((a, b) => {
-          return a.timestamp.getTime() - b.timestamp.getTime()
-        })
+        messages: [...messages].reverse()
       }
     }
   },
@@ -75,9 +74,25 @@ export default defineComponent({
     CreateTxDialog
   },
   methods: {
+    ...mapActions('chat', [
+      'action_send_chat_message_for_room'
+    ]),
     on_tx_clicked () {
       this.room_name = this.get_room_name(this.room_id)
       this.$refs.create_tx_dialog.show()
+    },
+    async on_send_click () {
+      if (this.chat_message) {
+        try {
+          await this.action_send_chat_message_for_room({
+            room_id: this.room_id,
+            message: this.chat_message
+          })
+          this.chat_message = null
+        } catch (e) {
+          console.log(e)
+        }
+      }
     }
   }
 })
