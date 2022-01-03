@@ -620,11 +620,12 @@ export const tx_store = {
           const tx_event_settle = tx_event as TxSettleEvent
           // User is in the room
           const room_members: RoomUserInfo[] = getters.get_users_info_for_room(room_id)
-          if (room_members.filter(id => id.user.user_id === tx_event_settle.content.user_id).length === 0) {
+          const sending_user : RoomUserInfo[] = room_members.filter(id => id.user.user_id === tx_event_settle.content.user_id)
+          if (sending_user.length === 0) {
             return false
           }
           const tx_in_graph : Array<string|number> = state.transactions[room_id].graph ? [tx_event_settle.content.user_id] : []
-          // Sending user is on receiving side
+          // Sending user is on receiving side && event_id matches previous event
           if (tx_in_graph.length === 0 || tx_in_graph[0] !== tx_event_settle.sender) {
             return false
           }
@@ -632,11 +633,27 @@ export const tx_store = {
           if (tx_event_settle.content.amount <= 0 || tx_event_settle.content.amount > tx_in_graph[1]) {
             return false
           }
-          // event_id matches a previous event
-          const event_ids : Set<TxID> = getters.get_existing_tx_ids_for_room(room_id)
-          if (!event_ids.has(tx_event_settle.event_id)) {
-            return false
+          // Send new settlement transaction
+          const new_tx : GroupedTransaction = {
+            from: sending_user[0].user,
+            txs: [
+              {
+                to: room_members.filter(id => id.user.user_id === tx_event_settle.sender)[0].user,
+                tx_id: uuidgen(),
+                amount: tx_event_settle.content.amount
+              }
+            ],
+            timestamp: new Date(),
+            group_id: '',
+            pending_approvals: [],
+            description: 'Settlement',
+            state: 'settlement'
           }
+          commit('mutation_add_approved_grouped_transaction_for_room', {
+            room_id: room_id,
+            grouped_tx: new_tx
+          })
+          // TODO: Change transaction state for grouped transaction with commit from line 132
           // TODO: Check for open balance between sender and user with specific user_id after running settlement and optimization algorithm
           return true
           break
