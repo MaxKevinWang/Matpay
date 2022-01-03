@@ -10,7 +10,7 @@
         <div class="modal-body">
           <p>{{ user_clicked.displayname }}</p>
           <p></p>
-          <h3>{{ (-balance / 100).toFixed(2) + '€' }}</h3>
+          <h3>{{ to_currency_display(-balance) }}</h3>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

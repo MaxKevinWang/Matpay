@@ -13,7 +13,7 @@
             </div>
             <div class="col-4">
               <p>{{this.reference.approval.description}}</p>
-              <p>{{sum_amount(this.reference.approval) + "€" }}</p>
+              <p>{{to_currency_display(sum_amount(this.reference.approval))}}</p>
             </div>
             <div class="col-6">
               <p>{{"From " + this.reference.approval.from.displayname + " at " + this.reference.timestamp.toLocaleDateString()}}</p>
@@ -31,7 +31,7 @@
                 </div>
               </div>
               <div class="col-8">
-                <p>{{ simple_tx.to.displayname + ' owe ' + simple_tx.amount + '€' }}</p>
+                <p>{{ simple_tx.to.displayname + ' owe ' + to_currency_display(simple_tx.amount) }}</p>
               </div>
               <div class="col-2">
                 <p>{{(split_percentage(this.reference.approval)[simple_tx.tx_id] * 100).toFixed(2) + "%"}}</p>
