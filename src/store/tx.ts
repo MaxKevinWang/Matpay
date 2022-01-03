@@ -431,6 +431,11 @@ export const tx_store = {
               to: room_users.filter(j => j.user_id === i.to)[0]
             }
           })
+          const approvals = tx_event_create.content.txs.reduce((prev: Record<MatrixRoomID, boolean>, cur) => {
+            prev[cur.to] = false
+            return prev
+          }, {} as Record<MatrixUserID, boolean>)
+          approvals[tx_event_create.content.from] = false
           const new_pending_approval: PendingApproval = {
             event_id: tx_event_create.event_id,
             type: 'create',
@@ -439,10 +444,7 @@ export const tx_store = {
             from: room_users.filter(i => i.user_id === tx_event_create.content.from)[0],
             timestamp: new Date(tx_event_create.origin_server_ts),
             txs: txs,
-            approvals: tx_event_create.content.txs.reduce((prev: Record<MatrixRoomID, boolean>, cur) => {
-              prev[cur.to] = false
-              return prev
-            }, {} as Record<MatrixUserID, boolean>)
+            approvals: approvals
           }
           commit('mutation_add_pending_approval_for_room', {
             room_id: room_id,
