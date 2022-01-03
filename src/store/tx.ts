@@ -360,7 +360,7 @@ export const tx_store = {
     }, payload: {
       room_id: MatrixRoomID,
       tx_event: TxMessageEvent
-    }) : Promise<boolean> {
+    }): Promise<boolean> {
       const room_id = payload.room_id
       const tx_event = payload.tx_event
       // check if rejected
@@ -592,7 +592,7 @@ export const tx_store = {
                 state: 'approved'
               })
             } else {
-              const new_tx : GroupedTransaction = {
+              const new_tx: GroupedTransaction = {
                 from: current_approval.from,
                 txs: current_approval.txs,
                 timestamp: current_approval.timestamp,
@@ -655,7 +655,34 @@ export const tx_store = {
           return a.concat(b.txs.map(t => t.tx_id))
         }, []))
       ])
-    }
+    },
+    get_open_balance_against_user_for_room: (state: State, getters, rootState, rootGetters) =>
+      (room_id: MatrixRoomID, target_user_id: MatrixUserID): number => {
+        // In this getter, negative means receiving.
+        const grouped_txs = state.transactions[room_id].basic
+        const current_user_id : MatrixUserID = rootGetters['auth/user_id']
+        let balance = 0
+        for (const grouped_tx of grouped_txs) {
+          // Case 1: the current user is on the from side
+          if (grouped_tx.from.user_id === current_user_id) {
+            // Scan for all simple tx and look for target
+            const oweing_sum = grouped_tx.txs
+              .filter(i => i.to.user_id === target_user_id)
+              .map(i => i.amount)
+              .reduce((sum, tx) => sum + tx, 0)
+            balance -= oweing_sum
+          }
+          // Case 2: the target user is on the from side
+          if (grouped_tx.from.user_id === target_user_id) {
+            const owed_sum = grouped_tx.txs
+              .filter(i => i.to.user_id === current_user_id)
+              .map(i => i.amount)
+              .reduce((sum, tx) => sum + tx, 0)
+            balance += owed_sum
+          }
+        }
+        return balance
+      }
   }
 }
 

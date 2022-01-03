@@ -8,6 +8,13 @@
         }}
       </div>
       <div class="status">{{ this.is_self ? 'Yourself, ' + this.user_type : this.user_type }}</div>
+      <div class="status" v-if="!this.is_self">
+        {{
+          this.open_balance < 0
+            ? 'Oweing you: ' + (-open_balance / 100).toFixed(2) + '€'
+            : 'You oweing: ' + (open_balance / 100).toFixed(2) + '€'
+        }}
+      </div>
     </div>
     <!-- Right Click Menu -->
     <RightClickMenu :display="show_right_click_menu" ref="menu" v-if="can_i_kick_user && !is_self">
@@ -29,6 +36,7 @@ import RightClickMenu from '@/components/RightClickMenu.vue'
 import SettlementDialog from '@/dialogs/SettlementDialog.vue'
 import { RoomUserInfo } from '@/models/user.model'
 import { TxPlaceholder } from '@/models/chat.model'
+import { MatrixUserID } from '@/models/id.model'
 
 export default defineComponent({
   name: 'UserCard',
@@ -38,12 +46,21 @@ export default defineComponent({
     },
     can_i_kick_user: {
       type: Boolean as PropType<boolean>
+    },
+    room_id: {
+      type: String as PropType<string>
     }
   },
   computed: {
     ...mapGetters('auth', [
       'homeserver'
-    ])
+    ]),
+    ...mapGetters('tx', [
+      'get_open_balance_against_user_for_room'
+    ]),
+    open_balance () : number {
+      return this.get_open_balance_against_user_for_room(this.room_id, this.user_prop?.user.user_id)
+    }
   },
   emits: [
     'on-kick',
