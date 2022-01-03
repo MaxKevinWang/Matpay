@@ -540,7 +540,6 @@ export const tx_store = {
         }
         case 'com.matpay.approve': {
           const tx_event_approve = tx_event as TxApproveEvent
-          /*
           const existing_pending_approval: PendingApproval[] = getters.get_pending_approvals_for_room(room_id)
           const compare_event_ids = new Set(
             existing_pending_approval.filter(x => x.event_id === tx_event_approve.event_id)
@@ -563,7 +562,6 @@ export const tx_store = {
           if (compare_rejected_ids.size > 0) {
             return false
           }
-           */
           const event_id = tx_event_approve.content.event_id
           // Mark as validated
           try {
