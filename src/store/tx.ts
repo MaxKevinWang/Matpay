@@ -547,6 +547,9 @@ export const tx_store = {
             if (simple_tx_changed === false && description_changed === false) {
               return false
             }
+            if (old_tx?.state === 'frozen') {
+              return false
+            }
           }
           return true
           break
