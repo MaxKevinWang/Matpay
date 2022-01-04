@@ -58,7 +58,7 @@ describe('Test transaction Vuex store offline', () => {
         }
       })
       describe('Test parse create event', () => {
-        it('Test invalid UUID', async () => {
+        it('Test invalid UUID --groupid', async () => {
           const getters = {
             get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
             get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
@@ -81,6 +81,44 @@ describe('Test transaction Vuex store offline', () => {
                 }
               ],
               group_id: 'aaa', // invalid UUID,
+              description: 'AAA'
+            }
+          }
+          await expect(action({
+            state,
+            commit: jest.fn(),
+            dispatch: jest.fn(),
+            getters: getters,
+            rootGetters: rootGetters
+          }, {
+            room_id: room_id,
+            tx_event: event
+          })).resolves.toEqual(false)
+        })
+
+        it('Test invalid UUID --txID', async () => {
+          const getters = {
+            get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
+            get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
+            get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
+            get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
+          }
+          const event: TxCreateEvent = {
+            type: 'com.matpay.create',
+            sender: user_1.user_id,
+            room_id: room_id,
+            origin_server_ts: 60000,
+            event_id: 'e01',
+            content: {
+              from: user_1.user_id,
+              txs: [
+                {
+                  to: user_2.user_id,
+                  amount: 50,
+                  tx_id: 'wrongTxID'
+                }
+              ],
+              group_id: uuidgen(),// invalid UUID,
               description: 'AAA'
             }
           }
@@ -920,6 +958,16 @@ describe('Test transaction Vuex store offline', () => {
               event_id: 'e01'
             }
           }
+          state.transactions[room_id].pending_approvals.push({
+            event_id: 'e01',
+            type: 'create',
+            group_id: uuidgen(),
+            txs: [],
+            approvals: {},
+            from: user_1,
+            description: 'dfsdgs',
+            timestamp: new Date()
+          })
           state.transactions[room_id].rejected.e01 = new Set<MatrixUserID>()
           state.transactions[room_id].rejected.e01.add(user_1.user_id)
           await expect(action({
