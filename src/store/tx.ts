@@ -632,9 +632,9 @@ export const tx_store = {
         case 'com.matpay.settle': {
           const tx_event_settle = tx_event as TxSettleEvent
           // User is in the room
-          const room_members: RoomUserInfo[] = getters.get_users_info_for_room(room_id)
-          const sending_user : RoomUserInfo[] = room_members.filter(id => id.user.user_id === tx_event_settle.content.user_id)
-          if (sending_user.length === 0) {
+          const room_members: RoomUserInfo[] = (rootGetters['user/get_users_info_for_room'](room_id) as Array<RoomUserInfo>)
+          const oweing_user : RoomUserInfo[] = room_members.filter(id => id.user.user_id === tx_event_settle.content.user_id)
+          if (oweing_user.length === 0) {
             return false
           }
           const tx_in_graph : Array<[MatrixUserID, number]> = state.transactions[room_id].graph.graph[tx_event_settle.content.user_id]
@@ -648,7 +648,7 @@ export const tx_store = {
           }
           // Send new settlement transaction
           const new_tx : GroupedTransaction = {
-            from: sending_user[0].user,
+            from: oweing_user[0].user,
             txs: [
               {
                 to: room_members.filter(id => id.user.user_id === tx_event_settle.sender)[0].user,
