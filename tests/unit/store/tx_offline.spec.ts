@@ -6,6 +6,7 @@ import { test_account1, test_account2 } from '../../test_utils'
 import { uuidgen } from '@/utils/utils'
 import { room_01_user_info, user_1, user_2, user_3 } from '../mocks/mocked_user'
 import user from '@/store/user'
+import { Room } from '@/models/room.model'
 
 interface State {
   transactions: Record<MatrixRoomID, {
