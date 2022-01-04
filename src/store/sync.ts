@@ -67,6 +67,9 @@ export const sync_store = {
     },
     mutation_room_sync_state_complete (state: State, payload: MatrixRoomID) {
       state.room_sync_complete[payload] = true
+    },
+    mutation_room_sync_state_incomplete (state: State, payload: MatrixRoomID) {
+      state.room_sync_complete[payload] = false
     }
   },
   actions: <ActionTree<State, any>>{
@@ -269,6 +272,16 @@ export const sync_store = {
           }
         }
       }
+    },
+    async action_resync_initial_state ({
+      state,
+      commit,
+      dispatch,
+      rootGetters
+    }) {
+      // A brute force implementation for resyncing after room creation and invitation accepting.
+      commit('mutation_room_sync_state_incomplete')
+      dispatch('action_sync_initial_state')
     }
   },
   getters: <GetterTree<State, any>>{

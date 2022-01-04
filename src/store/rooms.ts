@@ -133,7 +133,33 @@ export const rooms_store = {
       if (response.status !== 200) {
         throw new Error((response.data as unknown as MatrixError).error)
       }
+      // Resync joined rooms
+      // TODO: create structure directly instead of full resync
+      await dispatch('sync/action_resync_initial_state', null, { root: true })
       return response.data.room_id
+    },
+    async action_accept_invitation_for_room ({
+      state,
+      commit,
+      dispatch,
+      getters,
+      rootGetters
+    }, payload: {
+      room_id: MatrixRoomID
+    }) {
+      if (!payload.room_id) {
+        throw new Error('Invalid room id!')
+      }
+      const homeserver = rootGetters['auth/homeserver']
+      const response = await axios.post<POSTRoomCreateResponse>(`${homeserver}/_matrix/client/r0/rooms/${payload.room_id}/join`,
+        null,
+        { validateStatus: () => true })
+      if (response.status !== 200) {
+        throw new Error((response.data as unknown as MatrixError).error)
+      }
+      // Resync joined rooms
+      // TODO: create structure directly instead of full resync
+      await dispatch('sync/action_resync_initial_state', null, { root: true })
     }
   },
   getters: <GetterTree<State, any>>{
