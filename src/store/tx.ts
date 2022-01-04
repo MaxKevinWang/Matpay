@@ -666,8 +666,7 @@ export const tx_store = {
             room_id: room_id,
             grouped_tx: new_tx
           })
-          // TODO: Change transaction state for grouped transaction with commit from line 132
-          // TODO: Check for open balance between sender and user with specific user_id after running settlement and optimization algorithm
+          // TODO: Change transaction state to frozen for grouped transaction
           return true
           break
         }
