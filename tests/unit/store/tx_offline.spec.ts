@@ -887,7 +887,8 @@ describe('Test transaction Vuex store offline', () => {
               event_id: 'e01'
             }
           }
-          Object.keys(state.transactions[room_id].rejected).push('e01', user_1.user_id)
+          state.transactions[room_id].rejected.e01 = new Set<MatrixUserID>()
+          state.transactions[room_id].rejected.e01.add(user_1.user_id)
           await expect(action({
             state,
             commit: jest.fn(),
@@ -916,18 +917,18 @@ describe('Test transaction Vuex store offline', () => {
               event_id: 'e01'
             }
           }
-          state.transactions[room_id].pending_approvals.push({
+          const existing_approval : PendingApproval = {
             event_id: 'e01',
             type: 'create',
             group_id: uuidgen(),
             txs: [],
-            approvals: {
-              boolean: true
-            },
+            approvals: {},
             from: user_1,
             description: 'dfsdgs',
             timestamp: new Date()
-          })
+          }
+          existing_approval.approvals[user_1.user_id] = true
+          state.transactions[room_id].pending_approvals.push(existing_approval)
           await expect(action({
             state,
             commit: jest.fn(),
