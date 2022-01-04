@@ -7,6 +7,7 @@
     <div class="alert alert-primary" role="alert" v-if="is_loading">
       Loading...
     </div>
+    <h3>Joined Rooms</h3>
     <table class="table" v-if="!is_loading && room_exists">
       <thead>
       <tr>
@@ -30,8 +31,30 @@
       </tr>
       </tbody>
     </table>
+    <h3>Received Invitations</h3>
+    <table class="table" v-if="!is_loading && this.get_invited_rooms">
+      <thead>
+      <tr>
+        <th scope="col">ID</th>
+        <th scope="col">Name</th>
+        <th scope="col">Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr v-for="room in this.get_invited_rooms()" :key="room.room_id">
+        <th scope="row">{{ room.room_id.split(':')[0].substring(1) }}</th>
+        <td>{{ room.name ? room.name : 'NO NAME' }}</td>
+        <td>
+          <button class="btn btn-success" @click="accept_invitation(room.room_id)">Accept</button>
+          <!--
+          <button class="btn btn-warning" @click="reject_invitation(room.room_id)">Reject</button>
+          -->
+        </td>
+      </tr>
+      </tbody>
+    </table>
     <button class="btn btn-primary" @click="on_create_room_click()">Create New Room...</button>
-    <CreateRoomDialog ref="create_dialog" @on-create="on_create" />
+    <CreateRoomDialog ref="create_dialog" @on-create="on_create"/>
   </div>
 </template>
 
@@ -39,10 +62,9 @@
 import { defineComponent } from 'vue'
 import { MatrixRoomMemberStateEvent, MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
 import { mapActions, mapGetters } from 'vuex'
-import { GETJoinedRoomsResponse } from '@/interface/api.interface'
 import { Room } from '@/models/room.model'
-import { MatrixRoomID } from '@/models/id.model'
 import CreateRoomDialog from '@/dialogs/CreateRoomDialog.vue'
+
 interface RoomTableRow {
   room_id: string,
   room_id_display: string,
@@ -75,7 +97,8 @@ export default defineComponent({
       'user_id'
     ]),
     ...mapGetters('rooms', [
-      'get_all_joined_rooms'
+      'get_all_joined_rooms',
+      'get_invited_rooms'
     ]),
     ...mapGetters('sync', [
       'is_initial_sync_complete'
@@ -83,14 +106,15 @@ export default defineComponent({
   },
   methods: {
     ...mapActions('rooms', [
-      'action_create_room'
+      'action_create_room',
+      'action_accept_invitation_for_room'
     ]),
     ...mapActions('sync', [
       'action_sync_initial_state'
     ]),
     async update_room_table () {
       // get room details
-      const rooms : Room[] = this.get_all_joined_rooms()
+      const rooms: Room[] = this.get_all_joined_rooms()
       for (const room of rooms) {
         this.rooms.push({
           room_id: room.room_id,
@@ -150,6 +174,21 @@ export default defineComponent({
       try {
         const room_id = await this.action_create_room({
           room_name: room_name
+        })
+        this.$router.push({
+          name: 'room_detail',
+          params: {
+            room_id: room_id
+          }
+        })
+      } catch (e) {
+        console.log(e)
+      }
+    },
+    async accept_invitation (room_id: string) {
+      try {
+        await this.action_accept_invitation_for_room({
+          room_id: room_id
         })
         this.$router.push({
           name: 'room_detail',

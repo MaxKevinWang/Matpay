@@ -72,7 +72,7 @@ export default defineComponent({
         this.room_name = this.get_room_name(this.room_id)
         this.users_info = this.get_users_info_for_room(this.room_id)
       } catch (e) {
-        alert('Room does not exist or you are not part of the room!')
+        alert(e)
         this.$router.push({
           name: 'rooms'
         })

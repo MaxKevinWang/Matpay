@@ -64,10 +64,6 @@ export default defineComponent({
           password: this.password
         })
         await this.$router.push('/rooms')
-        // start initial state sync
-        await this.action_sync_state({
-          continue_batch: false
-        })
       } catch (reason) {
         this.error = reason
       }

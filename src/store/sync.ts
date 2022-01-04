@@ -67,6 +67,9 @@ export const sync_store = {
     },
     mutation_room_sync_state_complete (state: State, payload: MatrixRoomID) {
       state.room_sync_complete[payload] = true
+    },
+    mutation_room_sync_state_incomplete (state: State, payload: MatrixRoomID) {
+      state.room_sync_complete[payload] = false
     }
   },
   actions: <ActionTree<State, any>>{
@@ -92,6 +95,11 @@ export const sync_store = {
         })
         commit('mutation_set_next_batch', { next_batch: response.data.next_batch })
         commit('mutation_set_current_response', response.data)
+        // Parse invited rooms
+        // Note: **NONE** state events are parsed in this stage.
+        if (response.data.rooms && response.data.rooms.invite) {
+          dispatch('rooms/action_parse_invited_rooms', response.data.rooms.invite, { root: true })
+        }
         if (response.data.rooms && response.data.rooms.join) {
           // 1. create room structure for every existing room
           for (const room_id of Object.keys(response.data.rooms.join)) {
@@ -111,7 +119,6 @@ export const sync_store = {
               }
             }
           }
-          // TODO: process invited rooms
           commit('mutation_init_state_complete')
           // Then pass single events
           for (const [room_id, room_data] of Object.entries(response.data.rooms.join)) {
@@ -265,6 +272,16 @@ export const sync_store = {
           }
         }
       }
+    },
+    async action_resync_initial_state ({
+      state,
+      commit,
+      dispatch,
+      rootGetters
+    }) {
+      // A brute force implementation for resyncing after room creation and invitation accepting.
+      commit('mutation_room_sync_state_incomplete')
+      dispatch('action_sync_initial_state')
     }
   },
   getters: <GetterTree<State, any>>{

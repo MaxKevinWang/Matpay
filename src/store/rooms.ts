@@ -6,6 +6,7 @@ import { MatrixError } from '@/interface/error.interface'
 import { MatrixRoomID, MatrixUserID } from '@/models/id.model'
 import { Room } from '@/models/room.model'
 import { TxRejectedEvent } from '@/interface/tx_event.interface'
+import { MatrixSyncInvitedRooms } from '@/interface/sync.interface'
 
 interface State {
   joined_rooms: Room[],
@@ -28,6 +29,17 @@ export const rooms_store = {
         state_events: []
       }
       state.joined_rooms.push(new_room)
+    },
+    mutation_add_invited_room (state: State, payload: {
+      room_id: MatrixRoomID,
+      name: string
+    }) {
+      const new_room: Room = {
+        room_id: payload.room_id,
+        name: payload.name,
+        state_events: []
+      }
+      state.invited_rooms.push(new_room)
     },
     mutation_add_state_event_for_joined_room (state: State,
       payload: { room_id: MatrixRoomID, state_event: MatrixRoomStateEvent }) {
@@ -71,6 +83,25 @@ export const rooms_store = {
         }, { root: true })
       }
     },
+    action_parse_invited_rooms ({
+      state,
+      commit,
+      dispatch,
+      getters,
+      rootGetters
+    }, payload: MatrixSyncInvitedRooms) {
+      for (const [room_id, invite_state] of Object.entries(payload)) {
+        let room_name = ''
+        const name_events = invite_state.invite_state.events.filter(i => i.type === 'm.room.name')
+        if (name_events.length > 0) {
+          room_name = (name_events[0] as MatrixRoomStateEvent).content.name as string
+        }
+        commit('mutation_add_invited_room', {
+          room_id: room_id,
+          name: room_name
+        })
+      }
+    },
     // Room creation action
     // This action does not create store structures for the room, nor fetches events after creation.
     async action_create_room ({
@@ -102,12 +133,41 @@ export const rooms_store = {
       if (response.status !== 200) {
         throw new Error((response.data as unknown as MatrixError).error)
       }
+      // Resync joined rooms
+      // TODO: create structure directly instead of full resync
+      await dispatch('sync/action_resync_initial_state', null, { root: true })
       return response.data.room_id
+    },
+    async action_accept_invitation_for_room ({
+      state,
+      commit,
+      dispatch,
+      getters,
+      rootGetters
+    }, payload: {
+      room_id: MatrixRoomID
+    }) {
+      if (!payload.room_id) {
+        throw new Error('Invalid room id!')
+      }
+      const homeserver = rootGetters['auth/homeserver']
+      const response = await axios.post<POSTRoomCreateResponse>(`${homeserver}/_matrix/client/r0/rooms/${payload.room_id}/join`,
+        null,
+        { validateStatus: () => true })
+      if (response.status !== 200) {
+        throw new Error((response.data as unknown as MatrixError).error)
+      }
+      // Resync joined rooms
+      // TODO: create structure directly instead of full resync
+      await dispatch('sync/action_resync_initial_state', null, { root: true })
     }
   },
   getters: <GetterTree<State, any>>{
     get_all_joined_rooms: (state: State) => (): Room[] => {
       return state.joined_rooms
+    },
+    get_invited_rooms: (state: State) => (): Room[] => {
+      return state.invited_rooms
     },
     get_member_state_events_for_room: (state: State) => (room_id: MatrixRoomID): MatrixRoomMemberStateEvent[] => {
       const rooms = state.joined_rooms.filter(r => r.room_id === room_id)

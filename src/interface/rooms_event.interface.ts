@@ -17,10 +17,10 @@ export interface MatrixRoomStateEvent extends MatrixRoomEvent {
   prev_content?: Record<string, unknown>
 }
 export interface MatrixRoomStrippedEvent extends MatrixRoomStateEvent {
-  prev_content: never,
-  event_id: never,
-  origin_server_ts: never,
-  room_id: never
+  prev_content: Record<string, unknown>,
+  event_id: MatrixEventID,
+  origin_server_ts: number,
+  room_id: MatrixRoomID
 }
 export interface MatrixRoomMemberStateEvent extends MatrixRoomStateEvent {
   type: 'm.room.member',
