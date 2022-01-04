@@ -637,7 +637,7 @@ export const tx_store = {
           if (sending_user.length === 0) {
             return false
           }
-          const tx_in_graph : Array<string|number> = state.transactions[room_id].graph ? [tx_event_settle.content.user_id] : []
+          const tx_in_graph : Array<[MatrixUserID, number]> = state.transactions[room_id].graph.graph[tx_event_settle.content.user_id]
           // Sending user is on receiving side && event_id matches previous event
           if (tx_in_graph.length === 0 || tx_in_graph[0] !== tx_event_settle.sender) {
             return false
