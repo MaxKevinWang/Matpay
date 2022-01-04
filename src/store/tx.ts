@@ -501,7 +501,7 @@ export const tx_store = {
           const compare_tx_ids = new Set(
             tx_event_modify.content.txs.map(i => i.tx_id).filter(x => existing_tx_ids.has(x))
           )
-          if (compare_tx_ids.size === tx_event_modify.content.txs.length) {
+          if (compare_tx_ids.size !== tx_event_modify.content.txs.length) {
             return false
           }
           // get old transaction
