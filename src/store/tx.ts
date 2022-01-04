@@ -555,7 +555,7 @@ export const tx_store = {
           const tx_event_approve = tx_event as TxApproveEvent
           const existing_pending_approval: PendingApproval[] = getters.get_pending_approvals_for_room(room_id)
           const compare_event_ids = new Set(
-            existing_pending_approval.filter(x => x.event_id === tx_event_approve.event_id)
+            existing_pending_approval.filter(x => x.event_id === tx_event_approve.content.event_id)
           )
           // There exists data event before this event that has the same event_id
           if (compare_event_ids.size === 0) {
@@ -566,14 +566,6 @@ export const tx_store = {
             if (e.approvals[tx_event_approve.sender]) {
               return false
             }
-          }
-          const rejected_events: MatrixEventID[] = Object.keys(state.transactions[room_id].rejected)
-          const compare_rejected_ids = new Set(
-            rejected_events.filter(x => x === tx_event_approve.event_id)
-          )
-          // Event ID is not in rejected event list
-          if (compare_rejected_ids.size > 0) {
-            return false
           }
           const event_id = tx_event_approve.content.event_id
           // Mark as validated
