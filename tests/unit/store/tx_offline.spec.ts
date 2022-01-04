@@ -466,6 +466,42 @@ describe('Test transaction Vuex store offline', () => {
             tx_event: event
           })).resolves.toEqual(false)
         })
+        it('Test invalid UUID for tx_id', async () => {
+          const getters = {
+            get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
+            get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
+            get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
+            get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
+          }
+          const event: TxModifyEvent = {
+            type: 'com.matpay.modify',
+            sender: user_1.user_id,
+            room_id: room_id,
+            origin_server_ts: 60000,
+            event_id: 'e01',
+            content: {
+              txs: [
+                {
+                  to: user_2.user_id,
+                  amount: 50,
+                  tx_id: 'aaa' // invalid UUID
+                }
+              ],
+              group_id: uuidgen(),
+              description: 'AAA'
+            }
+          }
+          await expect(action({
+            state,
+            commit: jest.fn(),
+            dispatch: jest.fn(),
+            getters: getters,
+            rootGetters: rootGetters
+          }, {
+            room_id: 'aaa',
+            tx_event: event
+          })).resolves.toEqual(false)
+        })
         it('Test description empty', async () => {
           const getters = {
             get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
@@ -634,7 +670,7 @@ describe('Test transaction Vuex store offline', () => {
           })
           const event: TxModifyEvent = {
             type: 'com.matpay.modify',
-            sender: user_1.user_id,
+            sender: user_2.user_id,
             room_id: room_id,
             origin_server_ts: 60000,
             event_id: 'e02',
@@ -793,7 +829,7 @@ describe('Test transaction Vuex store offline', () => {
           })
           const event: TxModifyEvent = {
             type: 'com.matpay.modify',
-            sender: user_1.user_id,
+            sender: user_2.user_id,
             room_id: room_id,
             origin_server_ts: 60000,
             event_id: 'e02',
@@ -854,7 +890,7 @@ describe('Test transaction Vuex store offline', () => {
               txs: [
                 {
                   to: user_2.user_id,
-                  amount: 50,
+                  amount: 500,
                   tx_id: fake_tx_id
                 }
               ],
