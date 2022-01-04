@@ -1,7 +1,7 @@
 import store from '@/store/tx'
 import { MatrixEventID, MatrixRoomID, MatrixUserID } from '@/models/id.model'
 import { GroupedTransaction, PendingApproval, TxGraph } from '@/models/transaction.model'
-import { TxApproveEvent, TxCreateEvent, TxModifyEvent } from '@/interface/tx_event.interface'
+import { TxApproveEvent, TxCreateEvent, TxModifyEvent, TxSettleEvent } from '@/interface/tx_event.interface'
 import { test_account1, test_account2 } from '../../test_utils'
 import { uuidgen } from '@/utils/utils'
 import { room_01_user_info, user_1, user_2, user_3 } from '../mocks/mocked_user'
@@ -1022,7 +1022,69 @@ describe('Test transaction Vuex store offline', () => {
         })
       })
       describe('Test parse settle event', () => {
-        console.log()
+        it('User with given user_id is not in the room', async () => {
+          const getters = {
+            get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
+            get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
+            get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
+            get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
+          }
+          const event: TxSettleEvent = {
+            type: 'com.matpay.settle',
+            sender: user_1.user_id,
+            room_id: room_id,
+            origin_server_ts: 60000,
+            event_id: 'e01',
+            content: {
+              user_id: '@test-4:dsn.tm.kit.edu',
+              event_id: 'e01',
+              amount: 50
+            }
+          }
+          await expect(action({
+            state,
+            commit: jest.fn(),
+            dispatch: jest.fn(),
+            getters: getters,
+            rootGetters: rootGetters
+          }, {
+            room_id: room_id,
+            tx_event: event
+          })).resolves.toEqual(false)
+        })
+        it('Sending user is on the receiving side', async () => {
+          const getters = {
+            get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
+            get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
+            get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
+            get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
+          }
+          const event: TxSettleEvent = {
+            type: 'com.matpay.settle',
+            sender: user_1.user_id,
+            room_id: room_id,
+            origin_server_ts: 60000,
+            event_id: 'e01',
+            content: {
+              user_id: user_2.user_id,
+              event_id: 'e01',
+              amount: 50
+            }
+          }
+          const tx: Record<MatrixUserID, Array<[MatrixUserID, number]>> = {}
+          tx[user_1.user_id] = new Array([user_2.user_id, 50])
+          state.transactions[room_id].graph.graph = tx
+          await expect(action({
+            state,
+            commit: jest.fn(),
+            dispatch: jest.fn(),
+            getters: getters,
+            rootGetters: rootGetters
+          }, {
+            room_id: room_id,
+            tx_event: event
+          })).resolves.toEqual(false)
+        })
       })
     })
   })
