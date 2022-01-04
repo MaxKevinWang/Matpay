@@ -435,6 +435,23 @@ describe('Test transaction Vuex store offline', () => {
             get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
             get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
           }
+          const fake_group_id = uuidgen()
+          const fake_tx_id = uuidgen()
+          state.transactions[room_id].basic.push({
+            state: 'approved',
+            group_id: fake_group_id,
+            txs: [
+              {
+                to: user_2,
+                amount: 50,
+                tx_id: fake_tx_id
+              }
+            ],
+            pending_approvals: [],
+            from: user_1,
+            description: 'dfsdgs',
+            timestamp: new Date()
+          })
           const event: TxModifyEvent = {
             type: 'com.matpay.modify',
             sender: user_1.user_id,
@@ -446,10 +463,10 @@ describe('Test transaction Vuex store offline', () => {
                 {
                   to: user_2.user_id,
                   amount: 50,
-                  tx_id: uuidgen()
+                  tx_id: fake_tx_id
                 }
               ],
-              group_id: uuidgen(),
+              group_id: fake_group_id,
               description: '' // empty description
             }
           }
@@ -471,6 +488,23 @@ describe('Test transaction Vuex store offline', () => {
             get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
             get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
           }
+          const fake_group_id = uuidgen()
+          const fake_tx_id = uuidgen()
+          state.transactions[room_id].basic.push({
+            state: 'approved',
+            group_id: fake_group_id,
+            txs: [
+              {
+                to: user_2,
+                amount: 50,
+                tx_id: fake_tx_id
+              }
+            ],
+            pending_approvals: [],
+            from: user_1,
+            description: 'aaaa',
+            timestamp: new Date()
+          })
           const event: TxModifyEvent = {
             type: 'com.matpay.modify',
             sender: user_1.user_id,
@@ -482,10 +516,10 @@ describe('Test transaction Vuex store offline', () => {
                 {
                   to: user_2.user_id,
                   amount: -5, // negative amount
-                  tx_id: uuidgen()
+                  tx_id: fake_tx_id
                 }
               ],
-              group_id: uuidgen(),
+              group_id: fake_group_id,
               description: 'aaaa'
             }
           }
@@ -522,7 +556,7 @@ describe('Test transaction Vuex store offline', () => {
                   tx_id: uuidgen()
                 }
               ],
-              group_id: uuidgen(), // TODO: How to check same group_id ?
+              group_id: uuidgen(),
               description: 'aaaa'
             }
           }
@@ -563,6 +597,22 @@ describe('Test transaction Vuex store offline', () => {
             get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
           }
           const fake_group_id = uuidgen()
+          const fake_tx_id = uuidgen()
+          state.transactions[room_id].basic.push({
+            state: 'approved',
+            group_id: fake_group_id,
+            txs: [
+              {
+                to: user_2,
+                amount: 50,
+                tx_id: fake_tx_id
+              }
+            ],
+            pending_approvals: [],
+            from: user_1,
+            description: 'aaaa',
+            timestamp: new Date()
+          })
           const event1: TxCreateEvent = {
             type: 'com.matpay.create',
             sender: user_1.user_id,
@@ -575,7 +625,7 @@ describe('Test transaction Vuex store offline', () => {
                 {
                   to: user_2.user_id,
                   amount: 50,
-                  tx_id: uuidgen() // TODO: How to check same tx_id ?
+                  tx_id: uuidgen()
                 }
               ],
               group_id: fake_group_id,
@@ -620,25 +670,21 @@ describe('Test transaction Vuex store offline', () => {
           }
           const fake_group_id = uuidgen()
           const fake_tx_id = uuidgen()
-          const event1: TxCreateEvent = {
-            type: 'com.matpay.create',
-            sender: user_1.user_id,
-            room_id: room_id,
-            origin_server_ts: 60000,
-            event_id: 'e01',
-            content: {
-              from: user_1.user_id,
-              txs: [
-                {
-                  to: user_2.user_id,
-                  amount: 50,
-                  tx_id: fake_tx_id
-                }
-              ],
-              group_id: fake_group_id,
-              description: 'aaaa'
-            }
-          }
+          state.transactions[room_id].basic.push({
+            state: 'approved',
+            group_id: fake_group_id,
+            txs: [
+              {
+                to: user_2,
+                amount: 50,
+                tx_id: fake_tx_id
+              }
+            ],
+            pending_approvals: [],
+            from: user_1,
+            description: 'aaaa',
+            timestamp: new Date()
+          })
           const event: TxModifyEvent = {
             type: 'com.matpay.modify',
             sender: user_1.user_id,
@@ -677,25 +723,21 @@ describe('Test transaction Vuex store offline', () => {
           }
           const fake_group_id = uuidgen()
           const fake_tx_id = uuidgen()
-          const event1: TxCreateEvent = {
-            type: 'com.matpay.create',
-            sender: user_1.user_id,
-            room_id: room_id,
-            origin_server_ts: 60000,
-            event_id: 'e01',
-            content: {
-              from: user_1.user_id,
-              txs: [
-                {
-                  to: user_2.user_id,
-                  amount: 50,
-                  tx_id: fake_tx_id
-                }
-              ],
-              group_id: fake_group_id,
-              description: 'aaaa'
-            }
-          }
+          state.transactions[room_id].basic.push({
+            state: 'approved',
+            group_id: fake_group_id,
+            txs: [
+              {
+                to: user_2,
+                amount: 50,
+                tx_id: fake_tx_id
+              }
+            ],
+            pending_approvals: [],
+            from: user_1,
+            description: 'aaaa',
+            timestamp: new Date()
+          })
           const event: TxModifyEvent = {
             type: 'com.matpay.modify',
             sender: user_3.user_id,
@@ -734,25 +776,21 @@ describe('Test transaction Vuex store offline', () => {
           }
           const fake_group_id = uuidgen()
           const fake_tx_id = uuidgen()
-          const event1: TxCreateEvent = {
-            type: 'com.matpay.create',
-            sender: user_1.user_id,
-            room_id: room_id,
-            origin_server_ts: 60000,
-            event_id: 'e01',
-            content: {
-              from: user_1.user_id,
-              txs: [
-                {
-                  to: user_2.user_id,
-                  amount: 50,
-                  tx_id: fake_tx_id
-                }
-              ],
-              group_id: fake_group_id,
-              description: 'aaaa'
-            }
-          }
+          state.transactions[room_id].basic.push({
+            state: 'approved',
+            group_id: fake_group_id,
+            txs: [
+              {
+                to: user_2,
+                amount: 50,
+                tx_id: fake_tx_id
+              }
+            ],
+            pending_approvals: [],
+            from: user_1,
+            description: 'aaaa',
+            timestamp: new Date()
+          })
           const event: TxModifyEvent = {
             type: 'com.matpay.modify',
             sender: user_1.user_id,
@@ -791,26 +829,21 @@ describe('Test transaction Vuex store offline', () => {
           }
           const fake_group_id = uuidgen()
           const fake_tx_id = uuidgen()
-          const event1: TxCreateEvent = {
-            type: 'com.matpay.create',
-            sender: user_1.user_id,
-            room_id: room_id,
-            origin_server_ts: 60000,
-            event_id: 'e01',
-            content: {
-              from: user_1.user_id,
-              txs: [
-                {
-                  to: user_2.user_id,
-                  amount: 50,
-                  tx_id: fake_tx_id
-                }
-              ],
-              group_id: fake_group_id,
-              description: 'aaaa'
-            }
-          }
-          // TODO: Add Settle event
+          state.transactions[room_id].basic.push({
+            state: 'frozen',
+            group_id: fake_group_id,
+            txs: [
+              {
+                to: user_2,
+                amount: 50,
+                tx_id: fake_tx_id
+              }
+            ],
+            pending_approvals: [],
+            from: user_1,
+            description: 'aaaa',
+            timestamp: new Date()
+          })
           const event: TxModifyEvent = {
             type: 'com.matpay.modify',
             sender: user_1.user_id,
