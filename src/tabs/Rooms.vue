@@ -7,6 +7,7 @@
     <div class="alert alert-primary" role="alert" v-if="is_loading">
       Loading...
     </div>
+    <h3>Joined Rooms</h3>
     <table class="table" v-if="!is_loading && room_exists">
       <thead>
       <tr>
@@ -26,6 +27,26 @@
         <td>
           <button class="btn btn-primary" @click="enter_room_detail(room.room_id)">Details</button>
           <button class="btn btn-info" @click="enter_room_history(room.room_id)">History</button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+    <h3>Received Invitations</h3>
+    <table class="table" v-if="!is_loading && this.get_invited_rooms">
+      <thead>
+      <tr>
+        <th scope="col">ID</th>
+        <th scope="col">Name</th>
+        <th scope="col">Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr v-for="room in this.get_invited_rooms()" :key="room.room_id">
+        <th scope="row">{{ room.room_id.split(':')[0].substring(1) }}</th>
+        <td>{{ room.name ? room.name : 'NO NAME' }}</td>
+        <td>
+          <button class="btn btn-success" @click="accept_invitation(room.room_id)">Accept</button>
+          <button class="btn btn-warning" @click="reject_invitation(room.room_id)">Reject</button>
         </td>
       </tr>
       </tbody>
@@ -75,7 +96,8 @@ export default defineComponent({
       'user_id'
     ]),
     ...mapGetters('rooms', [
-      'get_all_joined_rooms'
+      'get_all_joined_rooms',
+      'get_invited_rooms'
     ]),
     ...mapGetters('sync', [
       'is_initial_sync_complete'
