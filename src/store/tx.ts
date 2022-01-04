@@ -639,11 +639,11 @@ export const tx_store = {
           }
           const tx_in_graph : Array<[MatrixUserID, number]> = state.transactions[room_id].graph.graph[tx_event_settle.content.user_id]
           // Sending user is on receiving side && event_id matches previous event
-          if (tx_in_graph.length === 0 || tx_in_graph[0] !== tx_event_settle.sender) {
+          if (tx_in_graph.length === 0 || tx_in_graph[0][0] !== tx_event_settle.sender) {
             return false
           }
           // amount is greater than 0 and smaller or same as the open balance
-          if (tx_event_settle.content.amount <= 0 || tx_event_settle.content.amount > tx_in_graph[1]) {
+          if (tx_event_settle.content.amount <= 0 || tx_event_settle.content.amount > tx_in_graph[0][1]) {
             return false
           }
           // Send new settlement transaction
