@@ -579,25 +579,6 @@ describe('Test transaction Vuex store offline', () => {
             get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
             get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
           }
-          const event1: TxCreateEvent = {
-            type: 'com.matpay.create',
-            sender: user_1.user_id,
-            room_id: room_id,
-            origin_server_ts: 60000,
-            event_id: 'e01',
-            content: {
-              from: user_1.user_id,
-              txs: [
-                {
-                  to: user_2.user_id,
-                  amount: 50,
-                  tx_id: uuidgen()
-                }
-              ],
-              group_id: uuidgen(),
-              description: 'aaaa'
-            }
-          }
           const event: TxModifyEvent = {
             type: 'com.matpay.modify',
             sender: user_1.user_id,
@@ -651,25 +632,6 @@ describe('Test transaction Vuex store offline', () => {
             description: 'aaaa',
             timestamp: new Date()
           })
-          const event1: TxCreateEvent = {
-            type: 'com.matpay.create',
-            sender: user_1.user_id,
-            room_id: room_id,
-            origin_server_ts: 60000,
-            event_id: 'e01',
-            content: {
-              from: user_1.user_id,
-              txs: [
-                {
-                  to: user_2.user_id,
-                  amount: 50,
-                  tx_id: uuidgen()
-                }
-              ],
-              group_id: fake_group_id,
-              description: 'aaaa'
-            }
-          }
           const event: TxModifyEvent = {
             type: 'com.matpay.modify',
             sender: user_1.user_id,
