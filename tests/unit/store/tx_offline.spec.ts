@@ -1091,9 +1091,8 @@ describe('Test transaction Vuex store offline', () => {
               amount: 50
             }
           }
-          const tx: Record<MatrixUserID, Array<[MatrixUserID, number]>> = {}
-          tx[user_1.user_id] = new Array([user_2.user_id, 50])
-          state.transactions[room_id].graph.graph = tx
+          // This is how you can add transactions to the draft Xuyang =>
+          state.transactions[room_id].graph.graph[user_1.user_id] = new Array([user_2.user_id, 50])
           await expect(action({
             state,
             commit: jest.fn(),
@@ -1176,7 +1175,6 @@ describe('Test transaction Vuex store offline', () => {
           })).resolves.toEqual(false)
         })
         it('amount field smaller than open balance', async () => {
-          // TODO Xuyang: How can i add a open balance?
           const getters = {
             get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
             get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
