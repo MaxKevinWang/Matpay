@@ -635,7 +635,7 @@ export const tx_store = {
           const tx_in_graph : Array<[MatrixUserID, number]> = state.transactions[room_id].graph.graph[tx_event_settle.content.user_id]
           const receiver : Array<[boolean, number]> = receiver_is_not_sender(tx_in_graph, tx_event_settle)
           // Sending user is on receiving side && event_id matches previous event
-          if (tx_in_graph.length === 0 || receiver[0][0] === false) {
+          if (!tx_in_graph || receiver[0][0] === false) {
             return false
           }
           // amount is greater than 0 and smaller or same as the open balance
@@ -673,6 +673,9 @@ export const tx_store = {
       // Loops to all tx an user has and checks if the sender of the settle event is somewhere on the receiving side
       // Returns true if the user is on the receiving side and the index of that element
       function receiver_is_not_sender (tx_in_graph : Array<[MatrixUserID, number]>, tx_event_settle : TxSettleEvent) : Array<[boolean, number]> {
+        if (!tx_in_graph) {
+          return new Array([false, 0])
+        }
         for (let index = 0; index < tx_in_graph.length; index++) {
           if (tx_in_graph[index][0] === tx_event_settle.sender) {
             return new Array([true, index])
