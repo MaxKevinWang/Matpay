@@ -119,7 +119,7 @@ describe('Test transaction Vuex store offline', () => {
                   tx_id: 'wrongTxID'
                 }
               ],
-              group_id: uuidgen(),// invalid UUID,
+              group_id: uuidgen(), // invalid UUID,
               description: 'AAA'
             }
           }
