@@ -1,43 +1,14 @@
 import { TxGraph } from '@/models/transaction.model'
 import { optimize_graph } from '@/utils/utils'
+import { graph1_optimized, graph1_unoptimized, graph2_optimized, graph2_unoptimized } from '../mocks/mocked_graph'
 
 describe('Test optimization algorithm', () => {
   it('Data 1: simple loop', () => {
-    const data : TxGraph = {
-      graph: {
-        aaa: [['bbb', 30]],
-        bbb: [['ccc', 20]],
-        ccc: [['aaa', 20]]
-      }
-    }
-    const result = optimize_graph(data)
-    expect(result).toEqual({
-      graph: {
-        aaa: [['bbb', 10]]
-      }
-    })
+    const result = optimize_graph(graph1_unoptimized)
+    expect(result).toEqual(graph1_optimized)
   })
   it('Data 2: a more complex loop', () => {
-    const data : TxGraph = {
-      graph: {
-        a: [['b', 50], ['c', 50]],
-        b: [['d', 100]],
-        c: [['e', 100]],
-        d: [['a', 25], ['f', 75]],
-        e: [],
-        f: []
-      }
-    }
-    const result = optimize_graph(data)
-    expect(result).toEqual({
-      graph: {
-        a: [['b', 25], ['c', 50]],
-        b: [['d', 75]],
-        c: [['e', 100]],
-        d: [['f', 75]],
-        e: [],
-        f: []
-      }
-    })
+    const result = optimize_graph(graph2_unoptimized)
+    expect(result).toEqual(graph2_optimized)
   })
 })
