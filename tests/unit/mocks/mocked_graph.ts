@@ -10,7 +10,9 @@ export const graph1_unoptimized : TxGraph = {
 
 export const graph1_optimized : TxGraph = {
   graph: {
-    aaa: [['bbb', 10]]
+    aaa: [['bbb', 10]],
+    bbb: [],
+    ccc: []
   }
 }
 
