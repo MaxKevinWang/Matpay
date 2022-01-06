@@ -2,7 +2,7 @@ import { ActionTree, GetterTree, MutationTree } from 'vuex'
 import { GroupedTransaction, PendingApproval, SimpleTransaction, TxGraph } from '@/models/transaction.model'
 import { GroupID, MatrixEventID, MatrixRoomID, MatrixUserID, TxID } from '@/models/id.model'
 import { RoomUserInfo, User } from '@/models/user.model'
-import { uuidgen } from '@/utils/utils'
+import { optimize_graph, uuidgen } from '@/utils/utils'
 import {
   TxApproveEvent,
   TxCreateEvent,
@@ -98,7 +98,7 @@ export const tx_store = {
         }
       }
       // Optimize immediately after th graph is built
-      throw new Error('Not yet implementation')
+      state.transactions[payload].optimized_graph = optimize_graph(state.transactions[payload].graph)
       state.transactions[payload].is_graph_dirty = false
     },
     mutation_mark_user_as_approved_for_room (state: State, payload: {
