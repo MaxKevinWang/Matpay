@@ -11,10 +11,11 @@
           <p>{{ user_clicked.displayname }}</p>
           <p></p>
           <h3>{{ to_currency_display(-balance) }}</h3>
+          <p v-if="balance >= 0">You cannot settle with this user.</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary">Settle</button>
+          <button type="button" class="btn btn-primary" :disabled="balance >= 0">Settle</button>
         </div>
       </div>
     </div>

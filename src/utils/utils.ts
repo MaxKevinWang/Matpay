@@ -44,12 +44,13 @@ function dfs (graph: Record<MatrixUserID, Array<[MatrixUserID, number]>>,
   cycles: Array<Array<MatrixUserID>>) {
   for (const target_vertex of graph[current.slice(-1)[0]]) {
     if (target_vertex[0] === current[0]) {
-      // loop detected
+      // cycle detected
       cycles.push(deepcopy(current).concat(target_vertex[0]))
     }
     if (!visited[target_vertex[0]]) {
       visited[target_vertex[0]] = true
       dfs(graph, current.concat(target_vertex[0]), visited, cycles)
+      visited[target_vertex[0]] = false
       current.pop()
     }
   }
