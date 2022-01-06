@@ -21,7 +21,8 @@ interface State {
     basic: GroupedTransaction[],
     pending_approvals: PendingApproval[],
     graph: TxGraph
-    is_graph_dirty: boolean // is the graph updated to the basic
+    optimized_graph: TxGraph,
+    is_graph_dirty: boolean, // if both graphs are updated with basic
     rejected: Record<MatrixEventID, Set<MatrixUserID>>,
   }>
 }
@@ -43,6 +44,9 @@ export const tx_store = {
             graph: {}
           },
           is_graph_dirty: false,
+          optimized_graph: {
+            graph: {}
+          },
           rejected: {}
         }
       }
@@ -72,7 +76,29 @@ export const tx_store = {
       state.transactions[payload.room_id].pending_approvals.push(payload.pending_approval)
     },
     mutation_build_tx_graph_for_room (state: State, payload: MatrixRoomID) {
-      // TODO: build the graph here
+      if (state.transactions[payload].is_graph_dirty) {
+        // clear the graph
+        state.transactions[payload].graph.graph = {}
+        for (const grouped_tx of state.transactions[payload].basic) {
+          for (const simple_tx of grouped_tx.txs) {
+            // From side is a new vertex
+            if (!state.transactions[payload].graph.graph[grouped_tx.from.user_id]) {
+              state.transactions[payload].graph.graph[grouped_tx.from.user_id] = []
+            }
+            // To side is a new vertex
+            if (!state.transactions[payload].graph.graph[simple_tx.to.user_id]) {
+              state.transactions[payload].graph.graph[simple_tx.to.user_id] = []
+            }
+            // Add new adjacency list edge: from -> to
+            state.transactions[payload].graph.graph[grouped_tx.from.user_id].push([
+              simple_tx.to.user_id,
+              simple_tx.amount
+            ])
+          }
+        }
+      }
+      // Optimize immediately after th graph is built
+      throw new Error('Not yet implementation')
       state.transactions[payload].is_graph_dirty = false
     },
     mutation_mark_user_as_approved_for_room (state: State, payload: {
@@ -128,6 +154,7 @@ export const tx_store = {
       if (payload.txs) {
         tx[0].txs = payload.txs
       }
+      state.transactions[payload.room_id].is_graph_dirty = true
     },
     mutation_change_tx_state_for_room (state: State, payload: {
       room_id: MatrixRoomID,
@@ -139,6 +166,7 @@ export const tx_store = {
         throw new Error('Invalid group ID!')
       }
       tx[0].state = payload.state
+      state.transactions[payload.room_id].is_graph_dirty = true
     }
   },
   actions: <ActionTree<State, any>>{
@@ -683,6 +711,17 @@ export const tx_store = {
         }
         return new Array([false, 0])
       }
+    },
+    async action_optimize_graph_and_prepare_balance_for_room ({
+      state,
+      commit,
+      getters,
+      dispatch,
+      rootGetters
+    }, payload: {
+      room_id: MatrixRoomID
+    }) {
+      throw new Error('Not implemented yet')
     }
   },
   getters: <GetterTree<State, any>>{
@@ -714,6 +753,8 @@ export const tx_store = {
     },
     get_open_balance_against_user_for_room: (state: State, getters, rootState, rootGetters) =>
       (room_id: MatrixRoomID, target_user_id: MatrixUserID): number => {
+      /*
+        // The old implementation that does not consider loops.
         // In this getter, negative means receiving.
         const grouped_txs = state.transactions[room_id].basic
         const current_user_id : MatrixUserID = rootGetters['auth/user_id']
@@ -738,6 +779,13 @@ export const tx_store = {
           }
         }
         return balance
+       */
+        if (state.transactions[room_id].is_graph_dirty) {
+          throw new Error('Graph is not clean. Call corresponding actions first')
+        } else {
+          // actually calculate balance
+          return 0
+        }
       }
   }
 }
