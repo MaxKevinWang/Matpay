@@ -654,14 +654,18 @@ export const tx_store = {
         }
         case 'com.matpay.settle': {
           const tx_event_settle = tx_event as TxSettleEvent
+          // First check if there are tx in th room
+          if (state.transactions[room_id].basic.length === 0) {
+            return false
+          }
           // User is in the room
           const room_members: RoomUserInfo[] = (rootGetters['user/get_users_info_for_room'](room_id) as Array<RoomUserInfo>)
-          const oweing_user : RoomUserInfo[] = room_members.filter(id => id.user.user_id === tx_event_settle.content.user_id)
+          const oweing_user: RoomUserInfo[] = room_members.filter(id => id.user.user_id === tx_event_settle.content.user_id)
           if (oweing_user.length === 0) {
             return false
           }
-          const tx_in_graph : Array<[MatrixUserID, number]> = state.transactions[room_id].graph.graph[tx_event_settle.content.user_id]
-          const receiver : Array<[boolean, number]> = receiver_is_not_sender(tx_in_graph, tx_event_settle)
+          const tx_in_graph: Array<[MatrixUserID, number]> = state.transactions[room_id].graph.graph[tx_event_settle.content.user_id]
+          const receiver: Array<[boolean, number]> = receiver_is_not_sender(tx_in_graph, tx_event_settle)
           // Sending user is on receiving side && event_id matches previous event
           if (!tx_in_graph || receiver[0][0] === false) {
             return false
@@ -671,7 +675,7 @@ export const tx_store = {
             return false
           }
           // Send new settlement transaction
-          const new_tx : GroupedTransaction = {
+          const new_tx: GroupedTransaction = {
             from: oweing_user[0].user,
             txs: [
               {
@@ -700,7 +704,7 @@ export const tx_store = {
       }
       // Loops to all tx an user has and checks if the sender of the settle event is somewhere on the receiving side
       // Returns true if the user is on the receiving side and the index of that element
-      function receiver_is_not_sender (tx_in_graph : Array<[MatrixUserID, number]>, tx_event_settle : TxSettleEvent) : Array<[boolean, number]> {
+      function receiver_is_not_sender (tx_in_graph: Array<[MatrixUserID, number]>, tx_event_settle: TxSettleEvent): Array<[boolean, number]> {
         if (!tx_in_graph) {
           return new Array([false, 0])
         }
@@ -751,8 +755,7 @@ export const tx_store = {
         }, []))
       ])
     },
-    get_open_balance_against_user_for_room: (state: State, getters, rootState, rootGetters) =>
-      (room_id: MatrixRoomID, target_user_id: MatrixUserID): number => {
+    get_open_balance_against_user_for_room: (state: State) => (room_id: MatrixRoomID, source_user_id: MatrixUserID, target_user_id: MatrixUserID): number => {
       /*
         // The old implementation that does not consider loops.
         // In this getter, negative means receiving.
@@ -780,13 +783,21 @@ export const tx_store = {
         }
         return balance
        */
-        if (state.transactions[room_id].is_graph_dirty) {
-          throw new Error('Graph is not clean. Call corresponding actions first')
-        } else {
-          // actually calculate balance
-          return 0
-        }
+      if (state.transactions[room_id].is_graph_dirty) {
+        throw new Error('Graph is not clean. Call corresponding actions first')
+      } else {
+        // actually calculate balance
+        return 0
       }
+    },
+    get_total_open_balance_for_user_for_room: (state: State, getters) => (room_id: MatrixRoomID, source_user_id: MatrixUserID) => {
+      if (state.transactions[room_id].is_graph_dirty) {
+        throw new Error('Graph is not clean. Call corresponding actions first')
+      } else {
+        // call the other getter for every other user
+        return 0
+      }
+    }
   }
 }
 
