@@ -19,6 +19,156 @@ interface State {
 }
 
 describe('Test transaction Vuex store offline', () => {
+  describe('Test store mutation', () => {
+    const room_id = 'aaa'
+    let state: State = {
+      transactions: {
+        aaa: {
+          basic: [],
+          pending_approvals: [],
+          graph: {
+            graph: {}
+          },
+          is_graph_dirty: false,
+          rejected: {}
+        }
+      }
+    }
+    beforeEach(() => {
+      state = { // clear mocks
+        transactions: {
+          aaa: {
+            basic: [],
+            pending_approvals: [],
+            graph: {
+              graph: {}
+            },
+            is_graph_dirty: false,
+            rejected: {}
+          }
+        }
+      }
+    })
+    it('Test mutation_init_joined_room', function () {
+      const mutation = store.mutations.mutation_init_joined_room
+      mutation(state, 'aaa')
+      expect(state.transactions.aaa.basic).toEqual([])
+      expect(state.transactions.aaa.pending_approvals).toEqual([])
+      expect(state.transactions.aaa.is_graph_dirty).toEqual(false)
+      expect(state.transactions.aaa.graph.graph).toEqual({})
+      expect(state.transactions.aaa.rejected).toEqual({})
+    })
+    it('Test mutation_add_rejected_events_for_room', function () {
+      const mutation = store.mutations.mutation_add_rejected_events_for_room
+      const fake_rejected_events = new Array(['ep01', 'user1'])
+      mutation(state, { room_id: 'aaa', rejected_events: fake_rejected_events })
+      expect(state.transactions.aaa.rejected[0]).toEqual(fake_rejected_events)
+    })
+    it('Test mutation_add_approved_grouped_transaction_for_room', function () {
+      const mutation = store.mutations.mutation_add_approved_grouped_transaction_for_room
+      const fake_grouped_tx: GroupedTransaction = {
+        from: user_1,
+        group_id: uuidgen(),
+        state: 'approved',
+        txs: [],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      mutation(state, { room_id: 'aaa', grouped_tx: fake_grouped_tx })
+      expect(state.transactions.aaa.basic[0]).toEqual(fake_grouped_tx)
+    })
+    it('Test mutation_add_pending_approval_for_room', function () {
+      const mutation = store.mutations.mutation_add_pending_approval_for_room
+      const fake_pending_approval: PendingApproval = {
+        event_id: 'e01',
+        from: user_1,
+        group_id: uuidgen(),
+        type: 'create',
+        txs: [],
+        description: '',
+        approvals: {},
+        timestamp: new Date()
+      }
+      mutation(state, { room_id: 'aaa', grouped_tx: fake_pending_approval })
+      expect(state.transactions.aaa.pending_approvals[0]).toEqual(fake_pending_approval)
+    })
+    it('Test mutation_mark_user_as_approved_for_room', function () {
+      const mutation = store.mutations.mutation_mark_user_as_approved_for_room
+      const fake_pending_approval: PendingApproval = {
+        event_id: 'e01',
+        from: user_1,
+        group_id: uuidgen(),
+        type: 'create',
+        txs: [],
+        description: '',
+        approvals: {},
+        timestamp: new Date()
+      }
+      expect(() => mutation(state, { room_id: 'aaa', user_id: user_1.user_id, event_id: 'e01' })).toThrow('Invalid event ID!')
+      state.transactions.aaa.pending_approvals.push(fake_pending_approval)
+      mutation(state, { room_id: 'aaa', user_id: user_1.user_id, event_id: 'e01' })
+      expect(state.transactions.aaa.pending_approvals[0].approvals).toEqual(true)
+    })
+    it('Test mutation_remove_pending_approval_for_room', function () {
+      const mutation = store.mutations.mutation_remove_pending_approval_for_room
+      const fake_pending_approval: PendingApproval = {
+        event_id: 'e01',
+        from: user_1,
+        group_id: uuidgen(),
+        type: 'create',
+        txs: [],
+        description: '',
+        approvals: {},
+        timestamp: new Date()
+      }
+      expect(() => mutation(state, { room_id: 'aaa', event_id: 'e01' })).toThrow('Invalid event ID!')
+      state.transactions.aaa.pending_approvals.push(fake_pending_approval)
+      mutation(state, { room_id: 'aaa', event_id: 'e01' })
+      expect(state.transactions.aaa.pending_approvals.length).toEqual(0)
+    })
+    it('Test mutation_modify_grouped_transaction_for_room', function () {
+      const mutation = store.mutations.mutation_modify_grouped_transaction_for_room
+      const fake_group_id = uuidgen()
+      const fake_tx_id = uuidgen()
+      const fake_txs = new Array([user_1, fake_tx_id, 10])
+      const fake_grouped_tx: GroupedTransaction = {
+        from: user_1,
+        group_id: fake_group_id,
+        state: 'approved',
+        txs: [],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      expect(() => mutation(state, { room_id: 'aaa', group_id: fake_group_id, description: 'aaaa', txs: fake_txs })).toThrow('Nothing to modify!')
+      expect(() => mutation(state, { room_id: 'aaa', group_id: uuidgen(), description: 'aaaa', txs: fake_txs })).toThrow('Invalid group ID!')
+      state.transactions.aaa.basic.push(fake_grouped_tx)
+      mutation(state, { room_id: 'aaa', group_id: fake_group_id, description: 'aaaa', txs: fake_txs })
+      expect(state.transactions.aaa.basic[0].description).toEqual('aaaa')
+      expect(state.transactions.aaa.basic[0].txs).toEqual(fake_txs)
+    })
+    it('Test mutation_change_tx_state_for_room', function () {
+      const mutation = store.mutations.mutation_change_tx_state_for_room
+      const fake_group_id = uuidgen()
+      const fake_grouped_tx: GroupedTransaction = {
+        from: user_1,
+        group_id: fake_group_id,
+        state: 'approved',
+        txs: [],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      expect(() => mutation(state, { room_id: 'aaa', group_id: uuidgen(), state: 'frozen' })).toThrow('Invalid group ID!')
+      state.transactions.aaa.basic.push(fake_grouped_tx)
+      mutation(state, { room_id: 'aaa', group_id: fake_group_id, state: 'frozen' })
+      expect(state.transactions.aaa.basic[0].state).toEqual('frozen')
+    })
+  })
   describe('Test actions', () => {
     describe('Test action parse single event', () => {
       const action = store.actions.action_parse_single_tx_event_for_room as (context: any, payload: any) => Promise<boolean>
@@ -119,7 +269,7 @@ describe('Test transaction Vuex store offline', () => {
                   tx_id: 'wrongTxID'
                 }
               ],
-              group_id: uuidgen(),// invalid UUID,
+              group_id: uuidgen(), // invalid UUID,
               description: 'AAA'
             }
           }
