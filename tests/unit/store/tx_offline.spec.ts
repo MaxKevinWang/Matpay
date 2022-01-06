@@ -12,8 +12,9 @@ interface State {
   transactions: Record<MatrixRoomID, {
     basic: GroupedTransaction[],
     pending_approvals: PendingApproval[],
-    graph: TxGraph
-    is_graph_dirty: boolean // is the graph updated to the basic
+    graph: TxGraph,
+    optimized_graph: TxGraph,
+    is_graph_dirty: boolean, // if both graphs are updated with basic
     rejected: Record<MatrixEventID, Set<MatrixUserID>>,
   }>
 }
@@ -29,6 +30,9 @@ describe('Test transaction Vuex store offline', () => {
           graph: {
             graph: {}
           },
+          optimized_graph: {
+            graph: {}
+          },
           is_graph_dirty: false,
           rejected: {}
         }
@@ -41,6 +45,9 @@ describe('Test transaction Vuex store offline', () => {
             basic: [],
             pending_approvals: [],
             graph: {
+              graph: {}
+            },
+            optimized_graph: {
               graph: {}
             },
             is_graph_dirty: false,
@@ -60,9 +67,9 @@ describe('Test transaction Vuex store offline', () => {
     })
     it('Test mutation_add_rejected_events_for_room', function () {
       const mutation = store.mutations.mutation_add_rejected_events_for_room
-      const fake_rejected_events = new Array(['ep01', 'user1'])
+      const fake_rejected_events = new Array(['ep01', user_1.user_id], ['ep01', user_2.user_id])
       mutation(state, { room_id: 'aaa', rejected_events: fake_rejected_events })
-      expect(state.transactions.aaa.rejected[0]).toEqual(fake_rejected_events)
+      expect(state.transactions.aaa.rejected.ep01).toEqual(new Set([user_1.user_id, user_2.user_id]))
     })
     it('Test mutation_add_approved_grouped_transaction_for_room', function () {
       const mutation = store.mutations.mutation_add_approved_grouped_transaction_for_room
@@ -91,7 +98,7 @@ describe('Test transaction Vuex store offline', () => {
         approvals: {},
         timestamp: new Date()
       }
-      mutation(state, { room_id: 'aaa', grouped_tx: fake_pending_approval })
+      mutation(state, { room_id: 'aaa', pending_approval: fake_pending_approval })
       expect(state.transactions.aaa.pending_approvals[0]).toEqual(fake_pending_approval)
     })
     it('Test mutation_mark_user_as_approved_for_room', function () {
@@ -109,7 +116,7 @@ describe('Test transaction Vuex store offline', () => {
       expect(() => mutation(state, { room_id: 'aaa', user_id: user_1.user_id, event_id: 'e01' })).toThrow('Invalid event ID!')
       state.transactions.aaa.pending_approvals.push(fake_pending_approval)
       mutation(state, { room_id: 'aaa', user_id: user_1.user_id, event_id: 'e01' })
-      expect(state.transactions.aaa.pending_approvals[0].approvals).toEqual(true)
+      expect(state.transactions.aaa.pending_approvals[0].approvals[user_1.user_id]).toEqual(true)
     })
     it('Test mutation_remove_pending_approval_for_room', function () {
       const mutation = store.mutations.mutation_remove_pending_approval_for_room
@@ -143,9 +150,9 @@ describe('Test transaction Vuex store offline', () => {
         timestamp: new Date(),
         pending_approvals: []
       }
-      expect(() => mutation(state, { room_id: 'aaa', group_id: fake_group_id, description: 'aaaa', txs: fake_txs })).toThrow('Nothing to modify!')
       expect(() => mutation(state, { room_id: 'aaa', group_id: uuidgen(), description: 'aaaa', txs: fake_txs })).toThrow('Invalid group ID!')
       state.transactions.aaa.basic.push(fake_grouped_tx)
+      expect(() => mutation(state, { room_id: 'aaa', group_id: fake_group_id})).toThrow('Nothing to modify!')
       mutation(state, { room_id: 'aaa', group_id: fake_group_id, description: 'aaaa', txs: fake_txs })
       expect(state.transactions.aaa.basic[0].description).toEqual('aaaa')
       expect(state.transactions.aaa.basic[0].txs).toEqual(fake_txs)
@@ -181,6 +188,9 @@ describe('Test transaction Vuex store offline', () => {
             graph: {
               graph: {}
             },
+            optimized_graph: {
+              graph: {}
+            },
             is_graph_dirty: false,
             rejected: {}
           }
@@ -200,6 +210,9 @@ describe('Test transaction Vuex store offline', () => {
               basic: [],
               pending_approvals: [],
               graph: {
+                graph: {}
+              },
+              optimized_graph: {
                 graph: {}
               },
               is_graph_dirty: false,
