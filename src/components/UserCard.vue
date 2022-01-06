@@ -1,5 +1,5 @@
 <template>
-  <SettlementDialog ref="settle_dialog" :balance="open_balance" :user_clicked="user_prop" />
+  <SettlementDialog ref="settle_dialog" :room_id="room_id" :balance="open_balance" :user_clicked="user_prop" />
   <div :id="'usercard_' + user_id" @click="on_user_card_click()">
     <img :src="this.avatar" alt="avatar" class="avatar">
     <div class="about" @contextmenu="open_right_click_menu">
@@ -8,13 +8,6 @@
         }}
       </div>
       <div class="status">{{ this.is_self ? 'Yourself, ' + this.user_type : this.user_type }}</div>
-      <div class="status" v-if="!this.is_self">
-        {{
-          this.open_balance < 0
-            ? 'Oweing you: ' + to_currency_display(-open_balance)
-            : 'You oweing: ' + to_currency_display(open_balance)
-        }}
-      </div>
     </div>
     <!-- Right Click Menu -->
     <RightClickMenu :display="show_right_click_menu" ref="menu" v-if="can_i_kick_user && !is_self">
@@ -31,7 +24,7 @@
 import { defineComponent, PropType } from 'vue'
 import { DEFAULT_AVATAR } from '@/utils/consts'
 import { get_file_from_content_repository } from '@/utils/ContentRepository'
-import { mapGetters } from 'vuex'
+import { mapActions, mapGetters } from 'vuex'
 import RightClickMenu from '@/components/RightClickMenu.vue'
 import SettlementDialog from '@/dialogs/SettlementDialog.vue'
 import { RoomUserInfo } from '@/models/user.model'
@@ -55,12 +48,12 @@ export default defineComponent({
     ...mapGetters('auth', [
       'homeserver'
     ]),
+    ...mapGetters('auth', {
+      self_user_id: 'user_id'
+    }),
     ...mapGetters('tx', [
       'get_open_balance_against_user_for_room'
-    ]),
-    open_balance () : number {
-      return this.get_open_balance_against_user_for_room(this.room_id, this.user_prop?.user.user_id)
-    }
+    ])
   },
   emits: [
     'on-kick',
@@ -73,10 +66,14 @@ export default defineComponent({
       avatar: DEFAULT_AVATAR as string,
       is_self: false as boolean,
       user_type: 'Member',
-      show_right_click_menu: false as boolean
+      show_right_click_menu: false as boolean,
+      open_balance: 0 as number
     }
   },
   methods: {
+    ...mapActions('tx', [
+      'action_optimize_graph_and_prepare_balance_for_room'
+    ]),
     update_user_card () {
       if (this.user_prop) {
         this.user_id = this.user_prop.user.user_id
@@ -110,10 +107,18 @@ export default defineComponent({
         this.$emit('on-ban', this.user_id)
       }
     },
-    on_user_card_click () {
-      if (this.open_balance < 0) {
-        this.$refs.settle_dialog.show()
+    async on_user_card_click () {
+      let open_balance = 0
+      try {
+        open_balance = this.get_open_balance_against_user_for_room(this.room_id, this.self_user_id, this.user_id)
+      } catch (e) {
+        await this.action_optimize_graph_and_prepare_balance_for_room({
+          room_id: this.room_id
+        })
+        open_balance = this.get_open_balance_against_user_for_room(this.room_id, this.self_user_id, this.user_id)
       }
+      this.open_balance = open_balance
+      this.$refs.settle_dialog.show()
     }
   },
   watch: {

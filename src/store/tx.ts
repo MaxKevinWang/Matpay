@@ -725,7 +725,9 @@ export const tx_store = {
     }, payload: {
       room_id: MatrixRoomID
     }) {
-      throw new Error('Not implemented yet')
+      if (state.transactions[payload.room_id].is_graph_dirty) {
+        commit('mutation_build_tx_graph_for_room', payload.room_id)
+      }
     }
   },
   getters: <GetterTree<State, any>>{
