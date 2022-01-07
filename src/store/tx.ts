@@ -654,7 +654,7 @@ export const tx_store = {
         }
         case 'com.matpay.settle': {
           const tx_event_settle = tx_event as TxSettleEvent
-          // First check if there are tx in th room
+          // First check if there are tx in the room
           if (state.transactions[room_id].basic.length === 0) {
             return false
           }
@@ -776,7 +776,16 @@ export const tx_store = {
       if (state.transactions[room_id].is_graph_dirty) {
         throw new Error('Graph is not clean. Call corresponding actions first')
       } else {
-        // actually calculate balance
+        const txs_for_user: Array<[string, number]> = state.transactions[room_id].optimized_graph.graph[source_user_id]
+        if (!txs_for_user) {
+          return 0
+        } else {
+          for (const tx of txs_for_user) {
+            if (tx[0] === target_user_id) {
+              return tx[1]
+            }
+          }
+        }
         return 0
       }
     },

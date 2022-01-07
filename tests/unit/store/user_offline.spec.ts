@@ -1,6 +1,6 @@
 import store from '@/store/user'
 import { RoomUserInfo, User } from '@/models/user.model'
-import { MatrixRoomID } from '@/models/id.model'
+import { MatrixEventID, MatrixRoomID, MatrixUserID } from '@/models/id.model'
 import { MatrixRoomPermissionConfiguration } from '@/interface/rooms_event.interface'
 interface State {
   users_info: Record<MatrixRoomID, Array<RoomUserInfo>>,
@@ -9,13 +9,23 @@ interface State {
 
 describe('Test user store', function () {
   describe('Test store mutation', function () {
-    const room_id : MatrixRoomID = '!ABC:@dsn.kit.edu'
+    const room_id = 'ABC'
     let state : State = {
       users_info: {
-        
+        ABC: []
       },
       permissions: {
-
+        ABC: {
+          ban: 0,
+          events: {},
+          events_default: 0,
+          invite: 0,
+          kick: 0,
+          redact: 0,
+          state_default: 0,
+          users_default: 0,
+          users: {}
+        }
       }
     }
   })
