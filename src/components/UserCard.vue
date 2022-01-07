@@ -108,17 +108,19 @@ export default defineComponent({
       }
     },
     async on_user_card_click () {
-      let open_balance = 0
-      try {
-        open_balance = this.get_open_balance_against_user_for_room(this.room_id, this.self_user_id, this.user_id)
-      } catch (e) {
-        await this.action_optimize_graph_and_prepare_balance_for_room({
-          room_id: this.room_id
-        })
-        open_balance = this.get_open_balance_against_user_for_room(this.room_id, this.self_user_id, this.user_id)
+      if (!this.is_self) {
+        let open_balance = 0
+        try {
+          open_balance = this.get_open_balance_against_user_for_room(this.room_id, this.self_user_id, this.user_id)
+        } catch (e) {
+          await this.action_optimize_graph_and_prepare_balance_for_room({
+            room_id: this.room_id
+          })
+          open_balance = this.get_open_balance_against_user_for_room(this.room_id, this.self_user_id, this.user_id)
+        }
+        this.open_balance = open_balance
+        this.$refs.settle_dialog.show()
       }
-      this.open_balance = open_balance
-      this.$refs.settle_dialog.show()
     }
   },
   watch: {

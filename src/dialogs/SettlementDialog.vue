@@ -4,14 +4,19 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="settlement-label">Settlement</h5>
+          <h5 class="modal-title" id="settlement-label">Settlement with {{ user_clicked.displayname }}</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <p>{{ user_clicked.displayname }}</p>
-          <p></p>
-          <h3>{{ to_currency_display(-balance) }}</h3>
-          <p v-if="balance >= 0">You cannot settle with this user.</p>
+          <div v-if="balance >= 0">
+            <p>You owe:</p>
+            <h3>{{ to_currency_display(balance) }}</h3>
+            <p>You cannot settle with this user.</p>
+          </div>
+          <div v-if="balance < 0">
+            <p>Oweing you: </p>
+            <h3>{{ to_currency_display(-balance) }}</h3>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
