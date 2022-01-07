@@ -778,25 +778,36 @@ export const tx_store = {
       if (state.transactions[room_id].is_graph_dirty) {
         throw new Error('Graph is not clean. Call corresponding actions first')
       } else {
-        const txs_for_user: Array<[string, number]> = state.transactions[room_id].optimized_graph.graph[source_user_id]
-        if (!txs_for_user) {
-          return 0
-        } else {
-          for (const tx of txs_for_user) {
-            if (tx[0] === target_user_id) {
-              return tx[1]
+        let balance = 0
+        for (const from of Object.keys(state.transactions[room_id].optimized_graph.graph)) {
+          for (const [to, amount] of state.transactions[room_id].optimized_graph.graph[from]) {
+            if (from === source_user_id && to === target_user_id) {
+              balance -= amount
+            }
+            if (to === source_user_id && from === target_user_id) {
+              balance += amount
             }
           }
         }
-        return 0
+        return balance
       }
     },
-    get_total_open_balance_for_user_for_room: (state: State, getters) => (room_id: MatrixRoomID, source_user_id: MatrixUserID) => {
+    get_total_open_balance_for_user_for_room: (state: State) => (room_id: MatrixRoomID, source_user_id: MatrixUserID) => {
       if (state.transactions[room_id].is_graph_dirty) {
         throw new Error('Graph is not clean. Call corresponding actions first')
       } else {
-        // call the other getter for every other user
-        return 0
+        let balance = 0
+        for (const from of Object.keys(state.transactions[room_id].optimized_graph.graph)) {
+          for (const [to, amount] of state.transactions[room_id].optimized_graph.graph[from]) {
+            if (from === source_user_id) {
+              balance -= amount
+            }
+            if (to === source_user_id) {
+              balance += amount
+            }
+          }
+        }
+        return balance
       }
     }
   }
