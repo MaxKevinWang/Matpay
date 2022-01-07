@@ -1,4 +1,5 @@
 import { RoomUserInfo } from '@/models/user.model'
+import { MatrixRoomPermissionConfiguration } from '@/interface/rooms_event.interface'
 
 export const user_1 = {
   user_id: '@test-1:dsn.tm.kit.edu',
@@ -68,3 +69,14 @@ export const room_01_user_info: Array<RoomUserInfo> = [{
   user_type: 'Member',
   balance: 0
 }]
+export const room_01_permission: MatrixRoomPermissionConfiguration = {
+  ban: 50,
+  events: {},
+  events_default: 50,
+  invite: 100,
+  kick: 100,
+  redact: 50,
+  state_default: 50,
+  users_default: 50,
+  users: {}
+}

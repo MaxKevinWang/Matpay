@@ -2,7 +2,7 @@ import store from '@/store/user'
 import { RoomUserInfo, User } from '@/models/user.model'
 import { MatrixEventID, MatrixRoomID, MatrixUserID } from '@/models/id.model'
 import { MatrixRoomPermissionConfiguration } from '@/interface/rooms_event.interface'
-import { room_01_user_info } from '../mocks/mocked_user'
+import { room_01_permission, room_01_user_info } from '../mocks/mocked_user'
 
 interface State {
   users_info: Record<MatrixRoomID, Array<RoomUserInfo>>,
@@ -50,12 +50,21 @@ describe('Test user store', function () {
         }
       }
     })
-    // state.users_info = { ABC: room_01_user_info }
     it('Test mutation_init_joined_room', function () {
       const mutation = store.mutations.mutation_init_joined_room
-      state.users_info = {}
       mutation(state, 'ABC')
       expect(state.users_info).toEqual({ ABC: [] })
+    })
+    // Error: Unexpected token u in JSON at position 0. Something is undefined
+    it('Test mutation_set_users_for_room', function () {
+      const mutation = store.mutations.mutation_set_users_for_room
+      mutation(state, { ABC: room_01_user_info })
+      expect(state.users_info[room_id]).toEqual(room_01_user_info)
+    })
+    it('Test mutation_set_permission_for_room', function () {
+      const mutation = store.mutations.mutation_set_permission_for_room
+      mutation(state, { ABC: room_01_permission })
+      expect(state.permissions[room_id]).toEqual(room_01_permission)
     })
   })
 })
