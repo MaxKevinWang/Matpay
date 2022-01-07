@@ -1,12 +1,23 @@
 import store from '@/store/tx'
 import { MatrixEventID, MatrixRoomID, MatrixUserID } from '@/models/id.model'
-import { GroupedTransaction, PendingApproval, TxGraph } from '@/models/transaction.model'
+import { GroupedTransaction, PendingApproval, SimpleTransaction, TxGraph } from '@/models/transaction.model'
 import { TxApproveEvent, TxCreateEvent, TxModifyEvent, TxSettleEvent } from '@/interface/tx_event.interface'
 import { test_account1, test_account2 } from '../../test_utils'
 import { uuidgen } from '@/utils/utils'
-import { room_01_user_info, user_1, user_2, user_3 } from '../mocks/mocked_user'
+import {
+  room_01_user_info,
+  user_1,
+  user_2,
+  user_3,
+  user_a,
+  user_aaa,
+  user_b,
+  user_bbb, user_c,
+  user_ccc, user_d, user_e, user_f
+} from '../mocks/mocked_user'
 import user from '@/store/user'
 import { Room } from '@/models/room.model'
+import { graph1_optimized, graph1_unoptimized, graph2_optimized, graph2_unoptimized } from '../mocks/mocked_graph'
 
 interface State {
   transactions: Record<MatrixRoomID, {
@@ -21,7 +32,6 @@ interface State {
 
 describe('Test transaction Vuex store offline', () => {
   describe('Test store mutation', () => {
-    const room_id = 'aaa'
     let state: State = {
       transactions: {
         aaa: {
@@ -58,6 +68,7 @@ describe('Test transaction Vuex store offline', () => {
     })
     it('Test mutation_init_joined_room', function () {
       const mutation = store.mutations.mutation_init_joined_room
+      state.transactions = {}
       mutation(state, 'aaa')
       expect(state.transactions.aaa.basic).toEqual([])
       expect(state.transactions.aaa.pending_approvals).toEqual([])
@@ -67,7 +78,7 @@ describe('Test transaction Vuex store offline', () => {
     })
     it('Test mutation_add_rejected_events_for_room', function () {
       const mutation = store.mutations.mutation_add_rejected_events_for_room
-      const fake_rejected_events = new Array(['ep01', user_1.user_id], ['ep01', user_2.user_id])
+      const fake_rejected_events = [['ep01', user_1.user_id], ['ep01', user_2.user_id]]
       mutation(state, { room_id: 'aaa', rejected_events: fake_rejected_events })
       expect(state.transactions.aaa.rejected.ep01).toEqual(new Set([user_1.user_id, user_2.user_id]))
     })
@@ -130,10 +141,31 @@ describe('Test transaction Vuex store offline', () => {
         approvals: {},
         timestamp: new Date()
       }
+      const fake_grouped_tx: GroupedTransaction = {
+        from: user_1,
+        group_id: uuidgen(),
+        state: 'approved',
+        txs: [],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: [{
+          event_id: 'e01',
+          from: user_1,
+          group_id: uuidgen(),
+          type: 'create',
+          txs: [],
+          description: '',
+          approvals: {},
+          timestamp: new Date()
+        }]
+      }
       expect(() => mutation(state, { room_id: 'aaa', event_id: 'e01' })).toThrow('Invalid event ID!')
+      state.transactions.aaa.basic.push(fake_grouped_tx)
       state.transactions.aaa.pending_approvals.push(fake_pending_approval)
       mutation(state, { room_id: 'aaa', event_id: 'e01' })
       expect(state.transactions.aaa.pending_approvals.length).toEqual(0)
+      expect(state.transactions.aaa.basic[0].pending_approvals.length).toEqual(0)
     })
     it('Test mutation_modify_grouped_transaction_for_room', function () {
       const mutation = store.mutations.mutation_modify_grouped_transaction_for_room
@@ -152,7 +184,7 @@ describe('Test transaction Vuex store offline', () => {
       }
       expect(() => mutation(state, { room_id: 'aaa', group_id: uuidgen(), description: 'aaaa', txs: fake_txs })).toThrow('Invalid group ID!')
       state.transactions.aaa.basic.push(fake_grouped_tx)
-      expect(() => mutation(state, { room_id: 'aaa', group_id: fake_group_id})).toThrow('Nothing to modify!')
+      expect(() => mutation(state, { room_id: 'aaa', group_id: fake_group_id })).toThrow('Nothing to modify!')
       mutation(state, { room_id: 'aaa', group_id: fake_group_id, description: 'aaaa', txs: fake_txs })
       expect(state.transactions.aaa.basic[0].description).toEqual('aaaa')
       expect(state.transactions.aaa.basic[0].txs).toEqual(fake_txs)
@@ -174,6 +206,144 @@ describe('Test transaction Vuex store offline', () => {
       state.transactions.aaa.basic.push(fake_grouped_tx)
       mutation(state, { room_id: 'aaa', group_id: fake_group_id, state: 'frozen' })
       expect(state.transactions.aaa.basic[0].state).toEqual('frozen')
+    })
+    it('Test mutation_build_tx_graph_for_room', function () {
+      const mutation = store.mutations.mutation_build_tx_graph_for_room
+      const fake_group_id = uuidgen()
+      const fake_grouped_tx1: GroupedTransaction = {
+        from: user_aaa,
+        group_id: fake_group_id,
+        state: 'approved',
+        txs: [
+          {
+            to: user_bbb,
+            tx_id: uuidgen(),
+            amount: 30
+          }
+        ],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      const fake_grouped_tx2: GroupedTransaction = {
+        from: user_bbb,
+        group_id: fake_group_id,
+        state: 'approved',
+        txs: [
+          {
+            to: user_ccc,
+            tx_id: uuidgen(),
+            amount: 20
+          }
+        ],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      const fake_grouped_tx3: GroupedTransaction = {
+        from: user_ccc,
+        group_id: fake_group_id,
+        state: 'approved',
+        txs: [
+          {
+            to: user_aaa,
+            tx_id: uuidgen(),
+            amount: 20
+          }
+        ],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      const fake_grouped_tx4: GroupedTransaction = {
+        from: user_a,
+        group_id: fake_group_id,
+        state: 'approved',
+        txs: [
+          {
+            to: user_b,
+            tx_id: uuidgen(),
+            amount: 50
+          },
+          {
+            to: user_c,
+            tx_id: uuidgen(),
+            amount: 50
+          }
+        ],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      const fake_grouped_tx5: GroupedTransaction = {
+        from: user_b,
+        group_id: fake_group_id,
+        state: 'approved',
+        txs: [
+          {
+            to: user_d,
+            tx_id: uuidgen(),
+            amount: 100
+          }
+        ],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      const fake_grouped_tx6: GroupedTransaction = {
+        from: user_c,
+        group_id: fake_group_id,
+        state: 'approved',
+        txs: [
+          {
+            to: user_e,
+            tx_id: uuidgen(),
+            amount: 100
+          }
+        ],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      const fake_grouped_tx7: GroupedTransaction = {
+        from: user_d,
+        group_id: fake_group_id,
+        state: 'approved',
+        txs: [
+          {
+            to: user_a,
+            tx_id: uuidgen(),
+            amount: 25
+          },
+          {
+            to: user_f,
+            tx_id: uuidgen(),
+            amount: 75
+          }
+        ],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      state.transactions.aaa.basic.push(fake_grouped_tx1, fake_grouped_tx2, fake_grouped_tx3)
+      state.transactions.aaa.is_graph_dirty = true
+      state.transactions.aaa.graph = graph1_unoptimized
+      mutation(state, 'aaa')
+      expect(state.transactions.aaa.optimized_graph).toEqual(graph1_optimized)
+      state.transactions.aaa.basic = []
+      state.transactions.aaa.basic.push(fake_grouped_tx4, fake_grouped_tx5, fake_grouped_tx6, fake_grouped_tx7)
+      state.transactions.aaa.is_graph_dirty = true
+      state.transactions.aaa.graph = graph2_unoptimized
+      mutation(state, 'aaa')
+      expect(state.transactions.aaa.optimized_graph).toEqual(graph2_optimized)
+      expect(state.transactions.aaa.optimized_graph).toEqual(graph2_optimized)
     })
   })
   describe('Test actions', () => {

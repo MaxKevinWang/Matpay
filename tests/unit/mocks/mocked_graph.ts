@@ -37,3 +37,40 @@ export const graph2_optimized : TxGraph = {
     f: []
   }
 }
+
+export const graph3_unoptimized : TxGraph = {
+  graph: {
+    a: [['b', 10]],
+    b: [['c', 20]],
+    c: [['a', 20], ['d', 30]],
+    d: [['b', 30]]
+  }
+}
+
+export const graph3_optimized : TxGraph = {
+  graph: {
+    a: [],
+    b: [],
+    c: [['a', 10], ['b', 20]]
+  }
+}
+
+export const graph4_unoptimized : TxGraph = {
+  graph: {
+    a: [['c', 10], ['e', 20]],
+    b: [['a', 5]],
+    c: [['d', 30]],
+    d: [['c', 5], ['e', 20]],
+    e: [['c', 30], ['b', 10]]
+  }
+}
+
+export const graph4_optimized : TxGraph = {
+  graph: {
+    a: [['c', 10], ['e', 15]],
+    b: [],
+    c: [['d', 5]],
+    d: [['c', 5], ['e', 20]],
+    e: [['c', 10], ['b', 5]]
+  }
+}
