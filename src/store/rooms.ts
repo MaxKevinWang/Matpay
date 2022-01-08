@@ -58,6 +58,12 @@ export const rooms_store = {
     mutation_set_name_for_joined_room (state: State, payload: { room_id: MatrixRoomID, name: string }) {
       const rooms = state.joined_rooms.filter(r => r.room_id === payload.room_id)
       rooms[0].name = payload.name
+    },
+    mutation_reset_state (state: State) {
+      Object.assign(state, {
+        joined_rooms: [],
+        invited_rooms: []
+      })
     }
   },
   actions: <ActionTree<State, any>>{

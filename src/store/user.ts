@@ -38,6 +38,12 @@ export const user_store = {
       permission: MatrixRoomPermissionConfiguration
     }) {
       state.permissions[payload.room_id] = cloneDeep(payload.permission)
+    },
+    mutation_reset_state (state: State) {
+      Object.assign(state, {
+        users_info: {},
+        permissions: {}
+      })
     }
   },
   actions: <ActionTree<State, any>> {

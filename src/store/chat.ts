@@ -53,6 +53,11 @@ export const chat_store = {
         }
       }
       state.chat_log[payload.room_id].messages.splice(index, 0, payload.msg)
+    },
+    mutation_reset_state (state: State) {
+      Object.assign(state, {
+        chat_log: {}
+      })
     }
   },
   actions: <ActionTree<State, any>>{

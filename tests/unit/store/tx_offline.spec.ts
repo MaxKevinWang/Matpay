@@ -17,7 +17,13 @@ import {
 } from '../mocks/mocked_user'
 import user from '@/store/user'
 import { Room } from '@/models/room.model'
-import { graph1_optimized, graph1_unoptimized, graph2_optimized, graph2_unoptimized } from '../mocks/mocked_graph'
+import {
+  graph1_optimized,
+  graph1_unoptimized,
+  graph2_optimized,
+  graph2_unoptimized, graph3_optimized,
+  graph3_unoptimized, graph4_optimized, graph4_unoptimized
+} from '../mocks/mocked_graph'
 
 interface State {
   transactions: Record<MatrixRoomID, {
@@ -332,6 +338,170 @@ describe('Test transaction Vuex store offline', () => {
         timestamp: new Date(),
         pending_approvals: []
       }
+      const fake_grouped_tx8: GroupedTransaction = {
+        from: user_a,
+        group_id: fake_group_id,
+        state: 'approved',
+        txs: [
+          {
+            to: user_b,
+            tx_id: uuidgen(),
+            amount: 10
+          }
+        ],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      const fake_grouped_tx9: GroupedTransaction = {
+        from: user_b,
+        group_id: fake_group_id,
+        state: 'approved',
+        txs: [
+          {
+            to: user_c,
+            tx_id: uuidgen(),
+            amount: 20
+          }
+        ],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      const fake_grouped_tx10: GroupedTransaction = {
+        from: user_c,
+        group_id: fake_group_id,
+        state: 'approved',
+        txs: [
+          {
+            to: user_a,
+            tx_id: uuidgen(),
+            amount: 20
+          },
+          {
+            to: user_d,
+            tx_id: uuidgen(),
+            amount: 30
+          }
+        ],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      const fake_grouped_tx11: GroupedTransaction = {
+        from: user_d,
+        group_id: fake_group_id,
+        state: 'approved',
+        txs: [
+          {
+            to: user_b,
+            tx_id: uuidgen(),
+            amount: 30
+          }
+        ],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      const fake_grouped_tx12: GroupedTransaction = {
+        from: user_a,
+        group_id: fake_group_id,
+        state: 'approved',
+        txs: [
+          {
+            to: user_c,
+            tx_id: uuidgen(),
+            amount: 10
+          },
+          {
+            to: user_e,
+            tx_id: uuidgen(),
+            amount: 20
+          }
+        ],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      const fake_grouped_tx13: GroupedTransaction = {
+        from: user_b,
+        group_id: fake_group_id,
+        state: 'approved',
+        txs: [
+          {
+            to: user_a,
+            tx_id: uuidgen(),
+            amount: 5
+          }
+        ],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      const fake_grouped_tx14: GroupedTransaction = {
+        from: user_c,
+        group_id: fake_group_id,
+        state: 'approved',
+        txs: [
+          {
+            to: user_d,
+            tx_id: uuidgen(),
+            amount: 30
+          }
+        ],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      const fake_grouped_tx15: GroupedTransaction = {
+        from: user_d,
+        group_id: fake_group_id,
+        state: 'approved',
+        txs: [
+          {
+            to: user_c,
+            tx_id: uuidgen(),
+            amount: 5
+          },
+          {
+            to: user_e,
+            tx_id: uuidgen(),
+            amount: 20
+          }
+        ],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      const fake_grouped_tx16: GroupedTransaction = {
+        from: user_e,
+        group_id: fake_group_id,
+        state: 'approved',
+        txs: [
+          {
+            to: user_c,
+            tx_id: uuidgen(),
+            amount: 10
+          },
+          {
+            to: user_b,
+            tx_id: uuidgen(),
+            amount: 5
+          }
+        ],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
       state.transactions.aaa.basic.push(fake_grouped_tx1, fake_grouped_tx2, fake_grouped_tx3)
       state.transactions.aaa.is_graph_dirty = true
       state.transactions.aaa.graph = graph1_unoptimized
@@ -343,7 +513,172 @@ describe('Test transaction Vuex store offline', () => {
       state.transactions.aaa.graph = graph2_unoptimized
       mutation(state, 'aaa')
       expect(state.transactions.aaa.optimized_graph).toEqual(graph2_optimized)
-      expect(state.transactions.aaa.optimized_graph).toEqual(graph2_optimized)
+      state.transactions.aaa.basic = []
+      state.transactions.aaa.basic.push(fake_grouped_tx8, fake_grouped_tx9, fake_grouped_tx10, fake_grouped_tx11)
+      state.transactions.aaa.is_graph_dirty = true
+      state.transactions.aaa.graph = graph3_unoptimized
+      mutation(state, 'aaa')
+      expect(state.transactions.aaa.optimized_graph).toEqual(graph3_optimized)
+      state.transactions.aaa.basic = []
+      state.transactions.aaa.basic.push(fake_grouped_tx12, fake_grouped_tx13, fake_grouped_tx14, fake_grouped_tx15, fake_grouped_tx16)
+      state.transactions.aaa.is_graph_dirty = true
+      state.transactions.aaa.graph = graph4_unoptimized
+      mutation(state, 'aaa')
+      expect(state.transactions.aaa.optimized_graph).toEqual(graph4_optimized)
+    })
+  })
+  describe('Test getters', () => {
+    let state: State = {
+      transactions: {
+        aaa: {
+          basic: [],
+          pending_approvals: [],
+          graph: {
+            graph: {}
+          },
+          optimized_graph: {
+            graph: {}
+          },
+          is_graph_dirty: false,
+          rejected: {}
+        }
+      }
+    }
+    beforeEach(() => {
+      state = { // clear mocks
+        transactions: {
+          aaa: {
+            basic: [],
+            pending_approvals: [],
+            graph: {
+              graph: {}
+            },
+            optimized_graph: {
+              graph: {}
+            },
+            is_graph_dirty: false,
+            rejected: {}
+          }
+        }
+      }
+    })
+    it('Test getter get_grouped_transactions_for_room', function () {
+      const getter = store.getters.get_grouped_transactions_for_room(state, null, null, null)
+      const fake_grouped_tx: GroupedTransaction = {
+        from: user_1,
+        group_id: uuidgen(),
+        state: 'approved',
+        txs: [],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      state.transactions.aaa.basic.push(fake_grouped_tx)
+      expect(getter('aaa')).toEqual(state.transactions.aaa.basic)
+    })
+    it('Test getter get_pending_approvals_for_room', function () {
+      const getter = store.getters.get_pending_approvals_for_room(state, null, null, null)
+      const fake_pending_approval: PendingApproval = {
+        event_id: 'e01',
+        from: user_1,
+        group_id: uuidgen(),
+        type: 'create',
+        txs: [],
+        description: '',
+        approvals: {},
+        timestamp: new Date()
+      }
+      state.transactions.aaa.pending_approvals.push(fake_pending_approval)
+      expect(getter('aaa')).toEqual(state.transactions.aaa.pending_approvals)
+    })
+    it('Test getter get_existing_group_ids_for_room', function () {
+      const getter = store.getters.get_existing_group_ids_for_room(state, null, null, null)
+      const fake_group_id1 = uuidgen()
+      const fake_group_id2 = uuidgen()
+      const fake_pending_approval: PendingApproval = {
+        event_id: 'e01',
+        from: user_1,
+        group_id: fake_group_id2,
+        type: 'create',
+        txs: [],
+        description: '',
+        approvals: {},
+        timestamp: new Date()
+      }
+      const fake_grouped_tx: GroupedTransaction = {
+        from: user_1,
+        group_id: fake_group_id1,
+        state: 'approved',
+        txs: [],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      state.transactions.aaa.basic.push(fake_grouped_tx)
+      state.transactions.aaa.pending_approvals.push(fake_pending_approval)
+      expect(getter('aaa')).toEqual(new Set([fake_group_id1, fake_group_id2]))
+    })
+    it('Test getter get_existing_tx_ids_for_room', function () {
+      const getter = store.getters.get_existing_tx_ids_for_room(state, null, null, null)
+      const fake_group_id1 = uuidgen()
+      const fake_group_id2 = uuidgen()
+      const fake_tx_id1 = uuidgen()
+      const fake_tx_id2 = uuidgen()
+      const fake_pending_approval: PendingApproval = {
+        event_id: 'e01',
+        from: user_1,
+        group_id: fake_group_id2,
+        type: 'create',
+        txs: [
+          {
+            to: user_a,
+            tx_id: fake_tx_id2,
+            amount: 25
+          }
+        ],
+        description: '',
+        approvals: {},
+        timestamp: new Date()
+      }
+      const fake_grouped_tx: GroupedTransaction = {
+        from: user_1,
+        group_id: fake_group_id1,
+        state: 'approved',
+        txs: [
+          {
+            to: user_a,
+            tx_id: fake_tx_id1,
+            amount: 25
+          }
+        ],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      state.transactions.aaa.basic.push(fake_grouped_tx)
+      state.transactions.aaa.pending_approvals.push(fake_pending_approval)
+      expect(getter('aaa')).toEqual(new Set([fake_tx_id1, fake_tx_id2]))
+    })
+    it('Test getter get_open_balance_against_user_for_room', function () {
+      const getter = store.getters.get_open_balance_against_user_for_room(state, null, null, null)
+      state.transactions.aaa.is_graph_dirty = true
+      expect(() => getter('aaa', user_1, user_2)).toThrow('Graph is not clean. Call corresponding actions first')
+      state.transactions.aaa.optimized_graph = graph1_optimized
+      state.transactions.aaa.is_graph_dirty = false
+      expect(getter('aaa', user_aaa.user_id, user_bbb.user_id)).toEqual(-10)
+      expect(getter('aaa', user_bbb.user_id, user_aaa.user_id)).toEqual(10)
+    })
+    it('Test getter get_total_open_balance_for_user_for_room', function () {
+      const getter = store.getters.get_total_open_balance_for_user_for_room(state, null, null, null)
+      state.transactions.aaa.is_graph_dirty = true
+      expect(() => getter('aaa', user_a.user_id)).toThrow('Graph is not clean. Call corresponding actions first')
+      state.transactions.aaa.optimized_graph = graph2_optimized
+      state.transactions.aaa.is_graph_dirty = false
+      expect(getter('aaa', user_a.user_id)).toEqual(-75)
+      expect(getter('aaa', user_b.user_id)).toEqual(-50)
     })
   })
   describe('Test actions', () => {
@@ -1362,15 +1697,24 @@ describe('Test transaction Vuex store offline', () => {
             get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
             get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
           }
-          state.transactions[room_id].pending_approvals.push({
-            event_id: 'e01',
-            type: 'create',
+          const user_not_in_room = {
+            user_id: '@test-4:dsn.tm.kit.edu',
+            displayname: 'DSN Test Account out of any room'
+          }
+          state.transactions[room_id].basic.push({
+            from: user_not_in_room,
+            state: 'approved',
             group_id: uuidgen(),
-            txs: [],
-            approvals: {},
-            from: user_1,
+            txs: [
+              {
+                to: user_1,
+                tx_id: uuidgen(),
+                amount: 50
+              }
+            ],
             description: 'dfsdgs',
-            timestamp: new Date()
+            timestamp: new Date(),
+            pending_approvals: []
           })
           const event: TxSettleEvent = {
             type: 'com.matpay.settle',
@@ -1402,15 +1746,20 @@ describe('Test transaction Vuex store offline', () => {
             get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
             get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
           }
-          state.transactions[room_id].pending_approvals.push({
-            event_id: 'e01',
-            type: 'create',
-            group_id: uuidgen(),
-            txs: [],
-            approvals: {},
+          state.transactions[room_id].basic.push({
             from: user_1,
+            state: 'approved',
+            group_id: uuidgen(),
+            txs: [
+              {
+                to: user_2,
+                tx_id: uuidgen(),
+                amount: 50
+              }
+            ],
             description: 'dfsdgs',
-            timestamp: new Date()
+            timestamp: new Date(),
+            pending_approvals: []
           })
           const event: TxSettleEvent = {
             type: 'com.matpay.settle',
@@ -1424,8 +1773,6 @@ describe('Test transaction Vuex store offline', () => {
               amount: 50
             }
           }
-          // This is how you can add transactions to the draft Xuyang =>
-          state.transactions[room_id].graph.graph[user_1.user_id] = new Array([user_2.user_id, 50])
           await expect(action({
             state,
             commit: jest.fn(),
@@ -1444,15 +1791,20 @@ describe('Test transaction Vuex store offline', () => {
             get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
             get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
           }
-          state.transactions[room_id].pending_approvals.push({
-            event_id: 'e01',
-            type: 'create',
+          state.transactions[room_id].basic.push({
+            from: user_2,
+            state: 'approved',
             group_id: uuidgen(),
-            txs: [],
-            approvals: {},
-            from: user_1,
+            txs: [
+              {
+                to: user_1,
+                tx_id: uuidgen(),
+                amount: -5
+              }
+            ],
             description: 'dfsdgs',
-            timestamp: new Date()
+            timestamp: new Date(),
+            pending_approvals: []
           })
           const event: TxSettleEvent = {
             type: 'com.matpay.settle',
@@ -1514,15 +1866,20 @@ describe('Test transaction Vuex store offline', () => {
             get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
             get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
           }
-          state.transactions[room_id].pending_approvals.push({
-            event_id: 'e01',
-            type: 'create',
+          state.transactions[room_id].basic.push({
+            from: user_2,
+            state: 'approved',
             group_id: uuidgen(),
-            txs: [],
-            approvals: {},
-            from: user_1,
+            txs: [
+              {
+                to: user_1,
+                tx_id: uuidgen(),
+                amount: 50
+              }
+            ],
             description: 'dfsdgs',
-            timestamp: new Date()
+            timestamp: new Date(),
+            pending_approvals: []
           })
           const event: TxSettleEvent = {
             type: 'com.matpay.settle',
