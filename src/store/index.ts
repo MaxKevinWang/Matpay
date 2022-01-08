@@ -27,7 +27,6 @@ export default createStore({
         switch (type) {
           case 'auth/mutation_logout': {
             // stop syncing
-            debugger
             if (interval_id) {
               clearInterval(interval_id)
             }

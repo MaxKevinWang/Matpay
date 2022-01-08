@@ -6,7 +6,7 @@ interface State {
   user_id: string
   homeserver: string
   access_token: string
-  device_id?: string
+  device_id: string | undefined
 }
 
 describe('Test Vuex Store auth', () => {
@@ -14,7 +14,8 @@ describe('Test Vuex Store auth', () => {
     let state: State = {
       access_token: '',
       homeserver: '',
-      user_id: ''
+      user_id: '',
+      device_id: undefined
     }
     beforeEach(() => {
       state = {
