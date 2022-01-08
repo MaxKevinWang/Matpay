@@ -17,7 +17,13 @@ import {
 } from '../mocks/mocked_user'
 import user from '@/store/user'
 import { Room } from '@/models/room.model'
-import { graph1_optimized, graph1_unoptimized, graph2_optimized, graph2_unoptimized } from '../mocks/mocked_graph'
+import {
+  graph1_optimized,
+  graph1_unoptimized,
+  graph2_optimized,
+  graph2_unoptimized, graph3_optimized,
+  graph3_unoptimized, graph4_optimized, graph4_unoptimized
+} from '../mocks/mocked_graph'
 
 interface State {
   transactions: Record<MatrixRoomID, {
@@ -332,6 +338,170 @@ describe('Test transaction Vuex store offline', () => {
         timestamp: new Date(),
         pending_approvals: []
       }
+      const fake_grouped_tx8: GroupedTransaction = {
+        from: user_a,
+        group_id: fake_group_id,
+        state: 'approved',
+        txs: [
+          {
+            to: user_b,
+            tx_id: uuidgen(),
+            amount: 10
+          }
+        ],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      const fake_grouped_tx9: GroupedTransaction = {
+        from: user_b,
+        group_id: fake_group_id,
+        state: 'approved',
+        txs: [
+          {
+            to: user_c,
+            tx_id: uuidgen(),
+            amount: 20
+          }
+        ],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      const fake_grouped_tx10: GroupedTransaction = {
+        from: user_c,
+        group_id: fake_group_id,
+        state: 'approved',
+        txs: [
+          {
+            to: user_a,
+            tx_id: uuidgen(),
+            amount: 20
+          },
+          {
+            to: user_d,
+            tx_id: uuidgen(),
+            amount: 30
+          }
+        ],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      const fake_grouped_tx11: GroupedTransaction = {
+        from: user_d,
+        group_id: fake_group_id,
+        state: 'approved',
+        txs: [
+          {
+            to: user_b,
+            tx_id: uuidgen(),
+            amount: 30
+          }
+        ],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      const fake_grouped_tx12: GroupedTransaction = {
+        from: user_a,
+        group_id: fake_group_id,
+        state: 'approved',
+        txs: [
+          {
+            to: user_c,
+            tx_id: uuidgen(),
+            amount: 10
+          },
+          {
+            to: user_e,
+            tx_id: uuidgen(),
+            amount: 20
+          }
+        ],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      const fake_grouped_tx13: GroupedTransaction = {
+        from: user_b,
+        group_id: fake_group_id,
+        state: 'approved',
+        txs: [
+          {
+            to: user_a,
+            tx_id: uuidgen(),
+            amount: 5
+          }
+        ],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      const fake_grouped_tx14: GroupedTransaction = {
+        from: user_c,
+        group_id: fake_group_id,
+        state: 'approved',
+        txs: [
+          {
+            to: user_d,
+            tx_id: uuidgen(),
+            amount: 30
+          }
+        ],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      const fake_grouped_tx15: GroupedTransaction = {
+        from: user_d,
+        group_id: fake_group_id,
+        state: 'approved',
+        txs: [
+          {
+            to: user_c,
+            tx_id: uuidgen(),
+            amount: 5
+          },
+          {
+            to: user_e,
+            tx_id: uuidgen(),
+            amount: 20
+          }
+        ],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      const fake_grouped_tx16: GroupedTransaction = {
+        from: user_e,
+        group_id: fake_group_id,
+        state: 'approved',
+        txs: [
+          {
+            to: user_c,
+            tx_id: uuidgen(),
+            amount: 10
+          },
+          {
+            to: user_b,
+            tx_id: uuidgen(),
+            amount: 5
+          }
+        ],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
       state.transactions.aaa.basic.push(fake_grouped_tx1, fake_grouped_tx2, fake_grouped_tx3)
       state.transactions.aaa.is_graph_dirty = true
       state.transactions.aaa.graph = graph1_unoptimized
@@ -343,7 +513,18 @@ describe('Test transaction Vuex store offline', () => {
       state.transactions.aaa.graph = graph2_unoptimized
       mutation(state, 'aaa')
       expect(state.transactions.aaa.optimized_graph).toEqual(graph2_optimized)
-      expect(state.transactions.aaa.optimized_graph).toEqual(graph2_optimized)
+      state.transactions.aaa.basic = []
+      state.transactions.aaa.basic.push(fake_grouped_tx8, fake_grouped_tx9, fake_grouped_tx10, fake_grouped_tx11)
+      state.transactions.aaa.is_graph_dirty = true
+      state.transactions.aaa.graph = graph3_unoptimized
+      mutation(state, 'aaa')
+      expect(state.transactions.aaa.optimized_graph).toEqual(graph3_optimized)
+      state.transactions.aaa.basic = []
+      state.transactions.aaa.basic.push(fake_grouped_tx12, fake_grouped_tx13, fake_grouped_tx14, fake_grouped_tx15, fake_grouped_tx16)
+      state.transactions.aaa.is_graph_dirty = true
+      state.transactions.aaa.graph = graph4_unoptimized
+      mutation(state, 'aaa')
+      expect(state.transactions.aaa.optimized_graph).toEqual(graph4_optimized)
     })
   })
   describe('Test getters', () => {
