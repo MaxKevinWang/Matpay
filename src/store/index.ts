@@ -10,6 +10,7 @@ import { MatrixRoomEvent, MatrixRoomStateEvent } from '@/interface/rooms_event.i
 import { TxMessageEvent } from '@/interface/tx_event.interface'
 
 const normal_stores = ['rooms', 'user', 'tx', 'chat']
+let interval_id : number | null = null
 export default createStore({
   modules: {
     auth: auth_store,
@@ -24,6 +25,17 @@ export default createStore({
       store.subscribe((mutation, state) => {
         const type = mutation.type
         switch (type) {
+          case 'auth/mutation_logout': {
+            // stop syncing
+            if (interval_id) {
+              clearInterval(interval_id)
+            }
+            // remove all existing states
+            for (const st of normal_stores.concat(['sync'])) {
+              store.commit(`${st}/mutation_reset_state`)
+            }
+            break
+          }
           case 'sync/mutation_create_new_room': {
             const payload: MatrixRoomID = mutation.payload
             for (const st of normal_stores) {
@@ -77,8 +89,10 @@ export default createStore({
           }
           case 'sync/mutation_init_state_complete': {
             store.dispatch('rooms/action_parse_state_events_for_all_rooms')
-            setInterval(() => {
-              store.dispatch('sync/action_update_state')
+            interval_id = setInterval(() => {
+              if (store.getters['auth/is_logged_in']) {
+                store.dispatch('sync/action_update_state')
+              }
             }, 5000)
             break
           }

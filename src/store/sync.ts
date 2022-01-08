@@ -4,7 +4,6 @@ import axios from 'axios'
 import { MatrixEventID, MatrixRoomID } from '@/models/id.model'
 import { MatrixRoomEvent, MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
 import { RoomEventFilter } from '@/interface/filter.interface'
-import { TxMessageEvent } from '@/interface/tx_event.interface'
 import { GETRoomEventsResponse } from '@/interface/api.interface'
 import { MatrixError } from '@/interface/error.interface'
 
@@ -70,6 +69,18 @@ export const sync_store = {
     },
     mutation_room_sync_state_incomplete (state: State, payload: MatrixRoomID) {
       state.room_sync_complete[payload] = false
+    },
+    mutation_reset_state (state: State) {
+      Object.assign(state, {
+        next_batch: '',
+        current_response: null,
+        processed_events_id: new Set(),
+        room_events: {},
+        room_state_events: {},
+        init_state_complete: false,
+        room_prev_batch_id: {},
+        room_sync_complete: {}
+      })
     }
   },
   actions: <ActionTree<State, any>>{

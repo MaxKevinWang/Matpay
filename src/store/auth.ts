@@ -7,7 +7,7 @@ interface State {
   user_id: string
   homeserver: string
   access_token: string
-  device_id?: string
+  device_id: string | undefined
 }
 
 export const auth_store = {
@@ -17,7 +17,7 @@ export const auth_store = {
       user_id: localStorage.getItem('user_id') || '',
       homeserver: localStorage.getItem('homeserver') || '',
       access_token: localStorage.getItem('access_token') || '',
-      device_id: localStorage.getItem('device_id') || ''
+      device_id: localStorage.getItem('device_id') || undefined
     }
   },
   mutations: <MutationTree<State>>{

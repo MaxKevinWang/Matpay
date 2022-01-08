@@ -1,8 +1,8 @@
-import { ActionTree, GetterTree, MutationTree } from 'vuex'
+import { ActionTree, GetterTree, mapActions, MutationTree } from 'vuex'
 import { GroupedTransaction, PendingApproval, SimpleTransaction, TxGraph } from '@/models/transaction.model'
 import { GroupID, MatrixEventID, MatrixRoomID, MatrixUserID, TxID } from '@/models/id.model'
 import { RoomUserInfo, User } from '@/models/user.model'
-import { uuidgen } from '@/utils/utils'
+import { optimize_graph, uuidgen } from '@/utils/utils'
 import {
   TxApproveEvent,
   TxCreateEvent,
@@ -98,7 +98,7 @@ export const tx_store = {
         }
       }
       // Optimize immediately after th graph is built
-      throw new Error('Not yet implementation')
+      state.transactions[payload].optimized_graph = optimize_graph(state.transactions[payload].graph)
       state.transactions[payload].is_graph_dirty = false
     },
     mutation_mark_user_as_approved_for_room (state: State, payload: {
@@ -167,6 +167,11 @@ export const tx_store = {
       }
       tx[0].state = payload.state
       state.transactions[payload.room_id].is_graph_dirty = true
+    },
+    mutation_reset_state (state: State) {
+      Object.assign(state, {
+        transactions: {}
+      })
     }
   },
   actions: <ActionTree<State, any>>{
@@ -654,7 +659,7 @@ export const tx_store = {
         }
         case 'com.matpay.settle': {
           const tx_event_settle = tx_event as TxSettleEvent
-          // First check if there are tx in th room
+          // First check if there are tx in the room
           if (state.transactions[room_id].basic.length === 0) {
             return false
           }
@@ -664,14 +669,17 @@ export const tx_store = {
           if (oweing_user.length === 0) {
             return false
           }
-          const tx_in_graph: Array<[MatrixUserID, number]> = state.transactions[room_id].graph.graph[tx_event_settle.content.user_id]
-          const receiver: Array<[boolean, number]> = receiver_is_not_sender(tx_in_graph, tx_event_settle)
+          // If the graph is dirty it needs to be optimized first.
+          if (state.transactions[room_id].is_graph_dirty === true) {
+            await dispatch('action_optimize_graph_and_prepare_balance_for_room')
+          }
           // Sending user is on receiving side && event_id matches previous event
-          if (!tx_in_graph || receiver[0][0] === false) {
+          const balance_between_users = getters.get_open_balance_against_user_for_room(room_id, tx_event_settle.content.user_id, tx_event_settle.sender)
+          if (balance_between_users === 0) {
             return false
           }
-          // amount is greater than 0 and smaller or same as the open balance
-          if (tx_event_settle.content.amount <= 0 || tx_event_settle.content.amount > tx_in_graph[receiver[0][1]][1]) {
+          // Amount is greater than 0 and smaller or same as the open balance
+          if (tx_event_settle.content.amount <= 0 || tx_event_settle.content.amount > balance_between_users) {
             return false
           }
           // Send new settlement transaction
@@ -702,19 +710,6 @@ export const tx_store = {
           throw new Error('Invalid transaction event type!')
         }
       }
-      // Loops to all tx an user has and checks if the sender of the settle event is somewhere on the receiving side
-      // Returns true if the user is on the receiving side and the index of that element
-      function receiver_is_not_sender (tx_in_graph: Array<[MatrixUserID, number]>, tx_event_settle: TxSettleEvent): Array<[boolean, number]> {
-        if (!tx_in_graph) {
-          return new Array([false, 0])
-        }
-        for (let index = 0; index < tx_in_graph.length; index++) {
-          if (tx_in_graph[index][0] === tx_event_settle.sender) {
-            return new Array([true, index])
-          }
-        }
-        return new Array([false, 0])
-      }
     },
     async action_optimize_graph_and_prepare_balance_for_room ({
       state,
@@ -725,7 +720,9 @@ export const tx_store = {
     }, payload: {
       room_id: MatrixRoomID
     }) {
-      throw new Error('Not implemented yet')
+      if (state.transactions[payload.room_id].is_graph_dirty) {
+        commit('mutation_build_tx_graph_for_room', payload.room_id)
+      }
     }
   },
   getters: <GetterTree<State, any>>{
@@ -786,16 +783,36 @@ export const tx_store = {
       if (state.transactions[room_id].is_graph_dirty) {
         throw new Error('Graph is not clean. Call corresponding actions first')
       } else {
-        // actually calculate balance
-        return 0
+        let balance = 0
+        for (const from of Object.keys(state.transactions[room_id].optimized_graph.graph)) {
+          for (const [to, amount] of state.transactions[room_id].optimized_graph.graph[from]) {
+            if (from === source_user_id && to === target_user_id) {
+              balance -= amount
+            }
+            if (to === source_user_id && from === target_user_id) {
+              balance += amount
+            }
+          }
+        }
+        return balance
       }
     },
-    get_total_open_balance_for_user_for_room: (state: State, getters) => (room_id: MatrixRoomID, source_user_id: MatrixUserID) => {
+    get_total_open_balance_for_user_for_room: (state: State) => (room_id: MatrixRoomID, source_user_id: MatrixUserID) => {
       if (state.transactions[room_id].is_graph_dirty) {
         throw new Error('Graph is not clean. Call corresponding actions first')
       } else {
-        // call the other getter for every other user
-        return 0
+        let balance = 0
+        for (const from of Object.keys(state.transactions[room_id].optimized_graph.graph)) {
+          for (const [to, amount] of state.transactions[room_id].optimized_graph.graph[from]) {
+            if (from === source_user_id) {
+              balance -= amount
+            }
+            if (to === source_user_id) {
+              balance += amount
+            }
+          }
+        }
+        return balance
       }
     }
   }
