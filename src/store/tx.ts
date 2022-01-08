@@ -584,6 +584,7 @@ export const tx_store = {
               return false
             }
           }
+          // TODO: implement modify event parsing here
           return true
           break
         }
@@ -598,10 +599,9 @@ export const tx_store = {
             return false
           }
           // A user can only approve once
-          for (const e of existing_pending_approval) {
-            if (e.approvals[tx_event_approve.sender]) {
-              return false
-            }
+          const e = existing_pending_approval.filter(i => i.event_id === tx_event_approve.content.event_id)[0]
+          if (e.approvals[tx_event_approve.sender]) {
+            return false
           }
           const event_id = tx_event_approve.content.event_id
           // Mark as validated
