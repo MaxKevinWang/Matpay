@@ -1192,15 +1192,24 @@ describe('Test transaction Vuex store offline', () => {
             get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
             get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
           }
-          state.transactions[room_id].pending_approvals.push({
-            event_id: 'e01',
-            type: 'create',
+          const user_not_in_room = {
+            user_id: '@test-4:dsn.tm.kit.edu',
+            displayname: 'DSN Test Account out of any room'
+          }
+          state.transactions[room_id].basic.push({
+            from: user_not_in_room,
+            state: 'approved',
             group_id: uuidgen(),
-            txs: [],
-            approvals: {},
-            from: user_1,
+            txs: [
+              {
+                to: user_1,
+                tx_id: uuidgen(),
+                amount: 50
+              }
+            ],
             description: 'dfsdgs',
-            timestamp: new Date()
+            timestamp: new Date(),
+            pending_approvals: []
           })
           const event: TxSettleEvent = {
             type: 'com.matpay.settle',
@@ -1232,15 +1241,20 @@ describe('Test transaction Vuex store offline', () => {
             get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
             get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
           }
-          state.transactions[room_id].pending_approvals.push({
-            event_id: 'e01',
-            type: 'create',
-            group_id: uuidgen(),
-            txs: [],
-            approvals: {},
+          state.transactions[room_id].basic.push({
             from: user_1,
+            state: 'approved',
+            group_id: uuidgen(),
+            txs: [
+              {
+                to: user_2,
+                tx_id: uuidgen(),
+                amount: 50
+              }
+            ],
             description: 'dfsdgs',
-            timestamp: new Date()
+            timestamp: new Date(),
+            pending_approvals: []
           })
           const event: TxSettleEvent = {
             type: 'com.matpay.settle',
@@ -1254,8 +1268,6 @@ describe('Test transaction Vuex store offline', () => {
               amount: 50
             }
           }
-          // This is how you can add transactions to the draft Xuyang =>
-          state.transactions[room_id].graph.graph[user_1.user_id] = new Array([user_2.user_id, 50])
           await expect(action({
             state,
             commit: jest.fn(),
@@ -1274,15 +1286,20 @@ describe('Test transaction Vuex store offline', () => {
             get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
             get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
           }
-          state.transactions[room_id].pending_approvals.push({
-            event_id: 'e01',
-            type: 'create',
+          state.transactions[room_id].basic.push({
+            from: user_2,
+            state: 'approved',
             group_id: uuidgen(),
-            txs: [],
-            approvals: {},
-            from: user_1,
+            txs: [
+              {
+                to: user_1,
+                tx_id: uuidgen(),
+                amount: -5
+              }
+            ],
             description: 'dfsdgs',
-            timestamp: new Date()
+            timestamp: new Date(),
+            pending_approvals: []
           })
           const event: TxSettleEvent = {
             type: 'com.matpay.settle',
@@ -1344,15 +1361,20 @@ describe('Test transaction Vuex store offline', () => {
             get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
             get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
           }
-          state.transactions[room_id].pending_approvals.push({
-            event_id: 'e01',
-            type: 'create',
+          state.transactions[room_id].basic.push({
+            from: user_2,
+            state: 'approved',
             group_id: uuidgen(),
-            txs: [],
-            approvals: {},
-            from: user_1,
+            txs: [
+              {
+                to: user_1,
+                tx_id: uuidgen(),
+                amount: 50
+              }
+            ],
             description: 'dfsdgs',
-            timestamp: new Date()
+            timestamp: new Date(),
+            pending_approvals: []
           })
           const event: TxSettleEvent = {
             type: 'com.matpay.settle',
