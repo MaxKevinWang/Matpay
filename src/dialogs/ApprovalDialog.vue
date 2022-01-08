@@ -52,7 +52,11 @@
             </div>
           </div>
         </div>
-        <div class="modal-footer">
+        <div class="row" v-if="reference.approval.approvals[this.user_id]">
+          <div class="col-2" />
+          <div class="col-10"><p>You have already approved this transaction.</p></div>
+        </div>
+        <div class="modal-footer" v-if="!reference.approval.approvals[this.user_id] && is_current_user_participant">
           <button type="button" class="btn btn-danger" @click="on_reject_click()">Reject</button>
           <button type="button" class="btn btn-primary" @click="on_approve_click()">Approve</button>
         </div>
@@ -87,6 +91,13 @@ export default defineComponent({
     }
   },
   computed: {
+    ...mapGetters('auth', [
+      'user_id'
+    ]),
+    is_current_user_participant () {
+      return this.reference?.approval.from.user_id === this.user_id ||
+        (this.reference?.approval.txs.map(u => u.to.user_id).includes(this.user_id))
+    }
   },
   components: {
   },
