@@ -3,7 +3,7 @@ import axios from 'axios'
 import { test_account1, test_homeserver } from '../../test_utils'
 import { room_01_room_id, room_01_user_info } from '../mocks/mocked_user'
 import { tx1 } from '../mocks/mocked_tx'
-import { deepcopy } from '@/utils/utils'
+import { cloneDeep } from 'lodash'
 
 describe('Test transaction Vuex store', () => {
   describe('Test actions', () => {
@@ -33,7 +33,7 @@ describe('Test transaction Vuex store', () => {
             return 0
           }
         }
-        const tx1_create = deepcopy(tx1)
+        const tx1_create = cloneDeep(tx1)
         tx1.group_id = ''
         tx1.txs[0].tx_id = ''
         tx1.state = 'defined'

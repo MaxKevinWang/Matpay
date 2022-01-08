@@ -58,7 +58,7 @@ describe('Test user store', function () {
     // Error: Unexpected token u in JSON at position 0. Something is undefined
     it('Test mutation_set_users_for_room', function () {
       const mutation = store.mutations.mutation_set_users_for_room
-      mutation(state, { ABC: room_01_user_info })
+      mutation(state, { room_id, room_01_user_info })
       expect(state.users_info[room_id]).toEqual(room_01_user_info)
     })
     it('Test mutation_set_permission_for_room', function () {

@@ -7,8 +7,8 @@ import {
   MatrixRoomPermissionConfiguration,
   MatrixRoomStateEvent
 } from '@/interface/rooms_event.interface'
-import { deepcopy } from '@/utils/utils'
 import { MatrixError } from '@/interface/error.interface'
+import { cloneDeep } from 'lodash'
 
 interface State {
   users_info: Record<MatrixRoomID, Array<RoomUserInfo>>,
@@ -31,13 +31,13 @@ export const user_store = {
       room_id: MatrixRoomID,
       users_info: Array<RoomUserInfo>
     }) {
-      state.users_info[payload.room_id] = deepcopy(payload.users_info)
+      state.users_info[payload.room_id] = cloneDeep(payload.users_info)
     },
     mutation_set_permission_for_room (state: State, payload: {
       room_id: MatrixRoomID,
       permission: MatrixRoomPermissionConfiguration
     }) {
-      state.permissions[payload.room_id] = deepcopy(payload.permission)
+      state.permissions[payload.room_id] = cloneDeep(payload.permission)
     }
   },
   actions: <ActionTree<State, any>> {
