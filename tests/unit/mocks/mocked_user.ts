@@ -53,6 +53,7 @@ export const room_01_room_id = '!EvvZcelEXcSOJBxJov:dsn.tm.kit.edu'
 export const room_01_user_info: Array<RoomUserInfo> = [{
   user: user_1,
   displayname: 'DSN Test Account No 1',
+  avatar_url: '',
   is_self: true,
   user_type: 'Member',
   balance: 0
