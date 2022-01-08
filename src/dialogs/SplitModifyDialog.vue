@@ -27,7 +27,6 @@
 import { defineComponent, PropType } from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 import { RoomUserInfo, User } from '@/models/user.model'
-import { deepcopy } from '@/utils/utils'
 import { Modal, Popover } from 'bootstrap'
 import CreateTxDialog from '@/dialogs/CreateTxDialog.vue'
 import { SimpleTransaction } from '@/models/transaction.model'

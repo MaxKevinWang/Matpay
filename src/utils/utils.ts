@@ -2,9 +2,6 @@ import { v4 as uuidv4 } from 'uuid'
 import { TxGraph } from '@/models/transaction.model'
 import { MatrixUserID } from '@/models/id.model'
 import { cloneDeep } from 'lodash'
-export function deepcopy<T> (i: T): T {
-  return JSON.parse(JSON.stringify(i))
-}
 
 export function uuidgen (): string {
   return uuidv4()
@@ -45,7 +42,7 @@ function dfs (graph: Record<MatrixUserID, Array<[MatrixUserID, number]>>,
   for (const target_vertex of graph[current.slice(-1)[0]]) {
     if (target_vertex[0] === current[0]) {
       // cycle detected
-      cycles.push(deepcopy(current).concat(target_vertex[0]))
+      cycles.push(cloneDeep(current).concat(target_vertex[0]))
     }
     if (!visited[target_vertex[0]]) {
       visited[target_vertex[0]] = true

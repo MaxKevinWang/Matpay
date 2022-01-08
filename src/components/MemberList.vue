@@ -18,9 +18,9 @@ import { defineComponent, PropType } from 'vue'
 import UserCard from '@/components/UserCard.vue'
 import { mapActions, mapGetters } from 'vuex'
 import { RoomUserInfo } from '@/models/user.model'
-import { deepcopy } from '@/utils/utils'
 import UserInviteDialog from '@/dialogs/UserInviteDialog.vue'
 import ConfirmDialog from '@/dialogs/ConfirmDialog.vue'
+import { cloneDeep } from 'lodash'
 
 export default defineComponent({
   name: 'MemberList',
@@ -67,7 +67,7 @@ export default defineComponent({
       'action_change_user_membership_on_room'
     ]),
     show_member_detail () {
-      const users_tmp = deepcopy(this.users_info)
+      const users_tmp = cloneDeep(this.users_info)
       if (users_tmp) {
         // put yourself always at the first
         for (let i = 0; i < users_tmp.length; i++) {
