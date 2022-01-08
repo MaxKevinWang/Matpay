@@ -167,6 +167,11 @@ export const tx_store = {
       }
       tx[0].state = payload.state
       state.transactions[payload.room_id].is_graph_dirty = true
+    },
+    mutation_reset_state (state: State) {
+      Object.assign(state, {
+        transactions: {}
+      })
     }
   },
   actions: <ActionTree<State, any>>{
