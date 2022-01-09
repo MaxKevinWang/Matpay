@@ -7,27 +7,36 @@
     </div>
   </div>
   <div>
-    <div class="fixed-bottom input-group mb-3">
-      <input type="text" v-model="chat_message" class="form-control" placeholder="Send a message" aria-describedby="button-addon2">
-      <button class="btn btn-light" type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="Create Transaction" @click="on_tx_clicked()">
-        <i class="bi bi-receipt"></i>
-      </button>
-      <router-link :to="{name: 'room_history', params: {room_id: room_id}}" class="btn btn-light" type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="History">
-        <i class="bi bi-clock-history"></i>
-      </router-link>
-      <button class="btn btn-primary" type="button" :disabled="!this.chat_message" @click="on_send_click">Send</button>
+    <div class="input-group mb-3 position-fixed bottom-0">
+      <div class="d-flex">
+        <div class="col-12">
+          <input type="text" v-model="chat_message" class="form-control" placeholder="Send a message"
+                 aria-describedby="button-addon2">
+        </div>
+        <div class="d-flex">
+          <button class="btn btn-light" type="button" data-bs-toggle="tooltip" data-bs-placement="top"
+                  title="Create Transaction" @click="on_tx_clicked()">
+            <i class="bi bi-receipt"></i>
+          </button>
+          <router-link :to="{name: 'room_history', params: {room_id: room_id}}" class="btn btn-light" type="button"
+                       data-bs-toggle="tooltip" data-bs-placement="top" title="History">
+            <i class="bi bi-clock-history"></i>
+          </router-link>
+          <button class="btn btn-primary" type="button" :disabled="!this.chat_message" @click="on_send_click">Send
+          </button>
+        </div>
+      </div>
     </div>
   </div>
   <CreateTxDialog ref="create_tx_dialog" :room_id="room_id" :users_info="users_info"/>
 </template>
 
 <script lang="ts">
-import { User, RoomUserInfo } from '@/models/user.model'
+import { RoomUserInfo } from '@/models/user.model'
 import { defineComponent, PropType } from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 import { ChatLog } from '@/models/chat.model'
 import ChatMessageBox from '@/components/ChatMessageBox.vue'
-import { Popover } from 'bootstrap'
 import TxApprovedMessageBox from '@/components/TxApprovedMessageBox.vue'
 import TxPendingMessageBox from '@/components/TxPendingMessageBox.vue'
 import CreateTxDialog from '@/dialogs/CreateTxDialog.vue'
@@ -59,7 +68,7 @@ export default defineComponent({
     room_id (): string {
       return this.$route.params.room_id as string
     },
-    chat_log () : ChatLog {
+    chat_log (): ChatLog {
       const messages = (this.get_chat_log_for_room(this.room_id) as ChatLog).messages
       return {
         messages: [...messages].reverse()
@@ -97,11 +106,4 @@ export default defineComponent({
 })
 </script>
 <style scoped>
-  .flex {
-    background: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    position:relative;
-  }
 </style>
