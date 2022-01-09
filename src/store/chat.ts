@@ -45,14 +45,11 @@ export const chat_store = {
           messages.splice(index, 1)
         }
       }
-      // Insertion sort in reverse timestamp order, latest first
-      let index = 0
-      for (let i = 0; i < messages.length; i++) {
-        if (messages[i].timestamp.getTime() >= payload.msg.timestamp.getTime()) {
-          index = i
-        }
-      }
-      state.chat_log[payload.room_id].messages.splice(index, 0, payload.msg)
+      state.chat_log[payload.room_id].messages.push(payload.msg)
+      // Sort
+      state.chat_log[payload.room_id].messages.sort(
+        (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
+      )
     },
     mutation_reset_state (state: State) {
       Object.assign(state, {
