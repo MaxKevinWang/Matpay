@@ -12,9 +12,9 @@
       <button class="btn btn-light" type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="Create Transaction" @click="on_tx_clicked()">
         <i class="bi bi-receipt"></i>
       </button>
-      <button class="btn btn-light" type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="History">
+      <router-link :to="{name: 'room_history', params: {room_id: room_id}}" class="btn btn-light" type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="History">
         <i class="bi bi-clock-history"></i>
-      </button>
+      </router-link>
       <button class="btn btn-primary" type="button" :disabled="!this.chat_message" @click="on_send_click">Send</button>
     </div>
   </div>

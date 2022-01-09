@@ -27,7 +27,7 @@ const routes: Array<RouteRecordRaw> = [
     component: RoomDetail
   },
   {
-    path: '/history/:room_id',
+    path: '/history/:room_id/:current_group_id?',
     name: 'room_history',
     component: RoomTxHistory
   }

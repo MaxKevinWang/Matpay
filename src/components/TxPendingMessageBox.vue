@@ -12,7 +12,7 @@
           <p>{{this.reference.approval.from.displayname + " paid " + to_currency_display(sum_amount(this.reference.approval))}}</p>
         </div>
         <div class="col">
-          <button href="#" class="btn btn-primary" @click="approval_click()">details</button>
+          <button href="#" class="btn btn-primary" @click="approval_click()">Details</button>
         </div>
       </div>
     </div>

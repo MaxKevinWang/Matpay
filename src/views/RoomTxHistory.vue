@@ -27,6 +27,7 @@ import { defineComponent } from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 import TxList from '@/components/TxList.vue'
 import TxDetail from '@/components/TxDetail.vue'
+import { validate } from 'uuid'
 
 export default defineComponent({
   name: 'RoomTxHistory',
@@ -45,6 +46,9 @@ export default defineComponent({
     ]),
     room_id (): string {
       return this.$route.params.room_id as string
+    },
+    current_group_id (): string {
+      return this.$route.params.current_group_id as string
     },
     ...mapGetters('tx', [
       'get_grouped_transactions_for_room'
@@ -73,6 +77,13 @@ export default defineComponent({
     }).then(() => {
       this.room_name = this.get_room_name(this.room_id)
       this.tx_list = this.get_grouped_transactions_for_room(this.room_id)
+      if (validate(this.current_group_id)) {
+        const filter_txs = this.tx_list.filter(i => i.group_id === this.current_group_id)
+        if (filter_txs.length > 0) {
+          this.tx = filter_txs[0]
+          this.show_detail = true
+        }
+      }
       this.is_fully_loaded = true
     })
   }

@@ -12,7 +12,9 @@
           <p>{{this.reference.grouped_tx.from.displayname + " paid " + to_currency_display(sum_amount(this.reference.grouped_tx))}}</p>
         </div>
         <div class="col">
-         <a href="#" class="btn btn-primary">details</a>
+         <router-link :to="{ name: 'room_history', params: {room_id: this.room_id, current_group_id: this.reference.grouped_tx.group_id}}" class="btn btn-primary">
+           Details
+         </router-link>
         </div>
       </div>
     </div>
