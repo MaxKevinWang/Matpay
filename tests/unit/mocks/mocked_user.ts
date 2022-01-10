@@ -65,6 +65,7 @@ export const room_01_user_info: Array<RoomUserInfo> = [{
   balance: 0
 }, {
   user: user_2,
+  avatar_url: '',
   displayname: 'DSN Test Account No 2',
   is_self: false,
   user_type: 'Member',
