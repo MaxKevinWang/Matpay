@@ -98,9 +98,11 @@ export const rooms_store = {
     }, payload: MatrixSyncInvitedRooms) {
       for (const [room_id, invite_state] of Object.entries(payload)) {
         let room_name = ''
-        const name_events = invite_state.invite_state.events.filter(i => i.type === 'm.room.name')
-        if (name_events.length > 0) {
-          room_name = (name_events[0] as MatrixRoomStateEvent).content.name as string
+        if (invite_state.invite_state.events) {
+          const name_events = invite_state.invite_state.events.filter(i => i.type === 'm.room.name')
+          if (name_events.length > 0) {
+            room_name = (name_events[0] as MatrixRoomStateEvent).content.name as string
+          }
         }
         commit('mutation_add_invited_room', {
           room_id: room_id,
