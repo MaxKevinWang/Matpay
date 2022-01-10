@@ -7,7 +7,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          {{ confirm_message }}
+          <p style="white-space: pre-wrap;">{{ confirm_message }}</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-danger" @click="on_confirm">Yes</button>

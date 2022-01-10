@@ -97,14 +97,25 @@ export default defineComponent({
     on_kick (user_id: string) {
       this.current_operation = 'kick'
       this.current_operation_user_id = user_id
-      this.$refs.confirm_dialog.prompt_confirm('Are you sure you want to kick user?', this.on_confirm)
+      const prompt = `
+      Are you sure you want to kick user?
+      Removing a user breaks transaction integrity. Existing transactions may not work as expected.
+      This room may not be used to add further transactions later.
+      `
+      this.$refs.confirm_dialog.prompt_confirm(prompt, this.on_confirm)
     },
     on_ban (user_id: string) {
       this.current_operation = 'ban'
       this.current_operation_user_id = user_id
-      this.$refs.confirm_dialog.prompt_confirm('Are you sure you want to ban user?', this.on_confirm)
+      const prompt = `
+      Are you sure you want to ban user?
+      Removing a user breaks transaction integrity. Existing transactions may not work as expected.
+      This room may not be used to add further transactions later.
+      `
+      this.$refs.confirm_dialog.prompt_confirm(prompt, this.on_confirm)
     },
     async on_confirm () {
+      /*
       try {
         await this.action_change_user_membership_on_room({
           room_id: this.room_id,
@@ -115,6 +126,12 @@ export default defineComponent({
       } catch (error) {
         this.$emit('on-error', error)
       }
+      */
+      // TODO: disallow room operations after kicking any member.
+      // The current code now only performs a redirection to avoid cascading errors.
+      this.$router.push({
+        name: 'rooms'
+      })
     }
   },
   watch: {
