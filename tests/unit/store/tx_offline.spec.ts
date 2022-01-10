@@ -213,7 +213,7 @@ describe('Test transaction Vuex store offline', () => {
       mutation(state, { room_id: 'aaa', group_id: fake_group_id, state: 'frozen' })
       expect(state.transactions.aaa.basic[0].state).toEqual('frozen')
     })
-    xit('Test mutation_build_tx_graph_for_room', function () {
+    it('Test mutation_build_tx_graph_for_room', function () {
       const mutation = store.mutations.mutation_build_tx_graph_for_room
       const fake_group_id = uuidgen()
       const fake_grouped_tx1: GroupedTransaction = {
