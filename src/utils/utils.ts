@@ -48,7 +48,7 @@ function dfs (graph: Record<MatrixUserID, Array<[MatrixUserID, number]>>,
       visited[target_vertex[0]] = true
       dfs(graph, current.concat(target_vertex[0]), visited, cycles)
       visited[target_vertex[0]] = false
-      current.pop()
+      // current.pop()
     }
   }
 }
