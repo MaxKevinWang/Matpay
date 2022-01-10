@@ -1744,7 +1744,9 @@ describe('Test transaction Vuex store offline', () => {
             get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
             get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
             get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
-            get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
+            get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null),
+            get_open_balance_against_user_for_room: store.getters.get_open_balance_against_user_for_room(state, null, null, null),
+            get_total_open_balance_for_user_for_room: store.getters.get_total_open_balance_for_user_for_room(state, null, null, null)
           }
           state.transactions[room_id].basic.push({
             from: user_1,
@@ -1789,7 +1791,9 @@ describe('Test transaction Vuex store offline', () => {
             get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
             get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
             get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
-            get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
+            get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null),
+            get_open_balance_against_user_for_room: store.getters.get_open_balance_against_user_for_room(state, null, null, null),
+            get_total_open_balance_for_user_for_room: store.getters.get_total_open_balance_for_user_for_room(state, null, null, null)
           }
           state.transactions[room_id].basic.push({
             from: user_2,
@@ -1834,7 +1838,9 @@ describe('Test transaction Vuex store offline', () => {
             get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
             get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
             get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
-            get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
+            get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null),
+            get_open_balance_against_user_for_room: store.getters.get_open_balance_against_user_for_room(state, null, null, null),
+            get_total_open_balance_for_user_for_room: store.getters.get_total_open_balance_for_user_for_room(state, null, null, null)
           }
           const event: TxSettleEvent = {
             type: 'com.matpay.settle',
@@ -1864,7 +1870,9 @@ describe('Test transaction Vuex store offline', () => {
             get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
             get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
             get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
-            get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
+            get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null),
+            get_open_balance_against_user_for_room: store.getters.get_open_balance_against_user_for_room(state, null, null, null),
+            get_total_open_balance_for_user_for_room: store.getters.get_total_open_balance_for_user_for_room(state, null, null, null)
           }
           state.transactions[room_id].basic.push({
             from: user_2,
