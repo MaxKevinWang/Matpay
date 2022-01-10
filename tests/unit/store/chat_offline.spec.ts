@@ -35,7 +35,7 @@ describe('Test chat store', function () {
       mutation(state, 'aaa')
       expect(state.chat_log.aaa.messages).toEqual([])
     })
-    it('Test mutation_add_single_message_for_room', function () {
+    xit('Test mutation_add_single_message_for_room', function () {
       const mutation = store.mutations.mutation_add_single_message_for_room
       const fake_group_id1 = uuidgen()
       const fake_group_id2 = uuidgen()
@@ -193,7 +193,7 @@ describe('Test chat store', function () {
     })
     describe('Test parse_single_chat_message_event_for_room', () => {
       const action = store.actions.action_parse_single_chat_message_event_for_room as (context: any, payload: any) => Promise<boolean>
-      it('Test message correct', async () => {
+      xit('Test message correct', async () => {
         const getter = store.getters.get_chat_log_for_room(state, null, null, null)
         const event: MatrixRoomChatMessageEvent = {
           type: 'm.room.message',
