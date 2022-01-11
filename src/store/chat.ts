@@ -133,7 +133,7 @@ export const chat_store = {
     }) {
       const room_id = payload.room_id
       const message = payload.message
-      if (!message || message.length === 0) {
+      if (message.length === 0) {
         throw new Error('The chat message cannot be empty!')
       }
       const homeserver = rootGetters['auth/homeserver']

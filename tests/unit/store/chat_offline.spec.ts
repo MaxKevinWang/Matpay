@@ -6,6 +6,11 @@ import { room_01_user_info, user_1 } from '../mocks/mocked_user'
 import { MatrixRoomChatMessageEvent } from '@/interface/rooms_event.interface'
 import { GroupedTransaction, PendingApproval, SimpleTransaction } from '@/models/transaction.model'
 import { uuidgen } from '@/utils/utils'
+import axios, { Axios, AxiosInstance, AxiosPromise, AxiosResponse, AxiosStatic } from 'axios'
+import { MatrixError } from '@/interface/error.interface'
+
+jest.mock('axios')
+const mockedAxios = axios as jest.Mocked<typeof axios>
 
 interface State {
   chat_log: Record<MatrixRoomID, ChatLog>,
@@ -227,7 +232,113 @@ describe('Test chat store', function () {
           room_id: room_id,
           message_event: event
         })
-        expect(commit_called).toBeTrue()
+        expect(commit_called).toBeTruthy()
+      })
+    })
+    describe('Test action_parse_single_pending_approval_for_room', () => {
+      const action = store.actions.action_parse_single_pending_approval_for_room as (context: any, payload: any) => Promise<boolean>
+      it('Test message correct', async () => {
+        const getter = store.getters.get_chat_log_for_room(state, null, null, null)
+        const fake_pending_approval: PendingApproval = {
+          event_id: 'e01',
+          from: user_1,
+          group_id: uuidgen(),
+          type: 'create',
+          txs: [],
+          description: '',
+          approvals: {},
+          timestamp: new Date()
+        }
+        let commit_called = false
+        const commit = (commit_string: string, payload: {
+          room_id: MatrixRoomID,
+          msg: TxPendingPlaceholder
+        }) => {
+          if (commit_string === 'mutation_add_single_message_for_room' && payload.msg.approval === fake_pending_approval && payload.msg.timestamp === fake_pending_approval.timestamp) {
+            commit_called = true
+          }
+        }
+        await action({
+          state,
+          commit: commit,
+          dispatch: jest.fn(),
+          getters: getter,
+          rootGetters: rootGetters
+        }, {
+          room_id: room_id,
+          pending_approval: fake_pending_approval
+        })
+        expect(commit_called).toBeTruthy()
+      })
+    })
+    describe('Test action_parse_single_grouped_tx_for_room', () => {
+      const action = store.actions.action_parse_single_grouped_tx_for_room as (context: any, payload: any) => Promise<boolean>
+      it('Test message correct', async () => {
+        const getter = store.getters.get_chat_log_for_room(state, null, null, null)
+        const fake_grouped_tx: GroupedTransaction = {
+          from: user_1,
+          group_id: uuidgen(),
+          state: 'approved',
+          txs: [],
+          description: '',
+          participants: [],
+          timestamp: new Date(),
+          pending_approvals: []
+        }
+        let commit_called = false
+        const commit = (commit_string: string, payload: {
+          room_id: MatrixRoomID,
+          msg: TxApprovedPlaceholder
+        }) => {
+          if (commit_string === 'mutation_add_single_message_for_room' && payload.msg.grouped_tx === fake_grouped_tx && payload.msg.timestamp === fake_grouped_tx.timestamp) {
+            commit_called = true
+          }
+        }
+        await action({
+          state,
+          commit: commit,
+          dispatch: jest.fn(),
+          getters: getter,
+          rootGetters: rootGetters
+        }, {
+          room_id: room_id,
+          grouped_tx: fake_grouped_tx
+        })
+        expect(commit_called).toBeTruthy()
+      })
+    })
+    describe('Test action_send_chat_message_for_room', () => {
+      const action = store.actions.action_send_chat_message_for_room as (context: any, payload: any) => Promise<boolean>
+      it('Test empty message', async () => {
+        const getter = store.getters.get_chat_log_for_room(state, null, null, null)
+        await expect(() => action({
+          state,
+          commit: jest.fn(),
+          dispatch: jest.fn(),
+          getters: getter,
+          rootGetters: rootGetters
+        }, {
+          room_id: room_id,
+          message: ''
+        })).rejects.toThrow('The chat message cannot be empty!')
+      })
+      it('Test wrong response', async () => {
+        const resp = {
+          status: 400,
+          data: ''
+        }
+        const getter = store.getters.get_chat_log_for_room(state, null, null, null)
+        mockedAxios.get.mockImplementation(() => Promise.resolve(resp))
+        await expect(() => action({
+          state,
+          commit: jest.fn(),
+          dispatch: jest.fn(),
+          getters: getter,
+          rootGetters: rootGetters
+        }, {
+          room_id: room_id,
+          message: 'string'
+        })).rejects.toThrow()
       })
     })
   })
