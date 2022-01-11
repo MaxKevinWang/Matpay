@@ -8,6 +8,8 @@
         }}
       </div>
       <div class="status">{{ this.is_self ? 'Yourself, ' + this.user_type : this.user_type }}</div>
+      <button class="btn btn-danger btn-sm me-1" @click="on_context_click('kick')">Kick</button>
+      <button class="btn btn-danger btn-sm" @click="on_context_click('ban')">Ban</button>
     </div>
     <!-- Right Click Menu -->
     <RightClickMenu :display="show_right_click_menu" ref="menu" v-if="can_i_kick_user && !is_self">
