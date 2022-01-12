@@ -59,8 +59,8 @@ export const rooms_store = {
       const rooms = state.joined_rooms.filter(r => r.room_id === payload.room_id)
       rooms[0].name = payload.name
     },
-    mutation_remove_invite_room (state: State, payload: MatrixRoomID) {
-      state.invited_rooms = state.invited_rooms.filter(i => i.room_id !== payload)
+    mutation_remove_invite_room (state: State, payload: {room_id: MatrixRoomID}) {
+      state.invited_rooms = state.invited_rooms.filter(i => i.room_id !== payload.room_id)
     },
     mutation_reset_state (state: State) {
       Object.assign(state, {
