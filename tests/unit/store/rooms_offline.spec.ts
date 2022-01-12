@@ -292,6 +292,22 @@ describe('Test rooms store', function () {
       }, { room_name: 'test_name' })
       expect(state.joined_rooms.filter(i => i.room_id === room_01_room_id)[0].name).toEqual('test_name')
     })
+    it('Test Test action_create_room_2', async () => {
+      const resp = {
+        status: 400,
+        data: 'mocked_id'
+      }
+      mockedAxios.get.mockImplementation(() => Promise.resolve(resp))
+      const action = store.actions.action_create_room as (context: any, payload: any) => Promise<any>
+      await expect(() => action({
+        state,
+        commit: jest.fn(),
+        dispatch: jest.fn(),
+        rootGetters: rootGetters
+      }, {
+        room_name: 'test_name'
+      })).rejects.toThrow()
+    })
     it('Test action_accept_invitation_for_room_1', async function () {
       state.joined_rooms.push({
         room_id: 'aaa',
@@ -332,6 +348,22 @@ describe('Test rooms store', function () {
       expect(dispatch_called.aaa).toEqual(true)
       expect(dispatch_called.bbb).toEqual(true)
       expect(dispatch_called.ccc).toEqual(true)
+    })
+    it('Test action_accept_invitation_for_room_2', async () => {
+      const resp = {
+        status: 400,
+        data: 'mocked_id'
+      }
+      mockedAxios.get.mockImplementation(() => Promise.resolve(resp))
+      const action = store.actions.action_accept_invitation_for_room as (context: any, payload: any) => Promise<any>
+      await expect(() => action({
+        state,
+        commit: jest.fn(),
+        dispatch: jest.fn(),
+        rootGetters: rootGetters
+      }, {
+        room_name: 'test_name'
+      })).rejects.toThrow()
     })
   })
   describe('Test store getters', function () {
