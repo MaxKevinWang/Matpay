@@ -59,8 +59,8 @@ export const rooms_store = {
       const rooms = state.joined_rooms.filter(r => r.room_id === payload.room_id)
       rooms[0].name = payload.name
     },
-    mutation_remove_invite_room (state: State, payload: MatrixRoomID) {
-      state.invited_rooms = state.invited_rooms.filter(i => i.room_id !== payload)
+    mutation_remove_invite_room (state: State, payload: {room_id: MatrixRoomID}) {
+      state.invited_rooms = state.invited_rooms.filter(i => i.room_id !== payload.room_id)
     },
     mutation_reset_state (state: State) {
       Object.assign(state, {
@@ -157,9 +157,6 @@ export const rooms_store = {
     }, payload: {
       room_id: MatrixRoomID
     }) {
-      if (!payload.room_id) {
-        throw new Error('Invalid room id!')
-      }
       const homeserver = rootGetters['auth/homeserver']
       const response = await axios.post<POSTRoomCreateResponse>(`${homeserver}/_matrix/client/r0/rooms/${payload.room_id}/join`,
         null,
@@ -171,6 +168,25 @@ export const rooms_store = {
       await dispatch('sync/action_resync_initial_state_for_room', {
         room_id: payload.room_id
       }, { root: true })
+      // remove invitation from state
+      commit('mutation_remove_invite_room', payload.room_id)
+    },
+    async action_reject_invitation_for_room ({
+      state,
+      commit,
+      dispatch,
+      getters,
+      rootGetters
+    }, payload: {
+      room_id: MatrixRoomID
+    }) {
+      const homeserver = rootGetters['auth/homeserver']
+      const response = await axios.post<Record<string, never>>(`${homeserver}/_matrix/client/r0/rooms/${payload.room_id}/leave`,
+        null,
+        { validateStatus: () => true })
+      if (response.status !== 200) {
+        throw new Error((response.data as unknown as MatrixError).error)
+      }
       // remove invitation from state
       commit('mutation_remove_invite_room', payload.room_id)
     }

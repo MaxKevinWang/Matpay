@@ -338,7 +338,7 @@ describe('Test chat store', function () {
         }, {
           room_id: room_id,
           message: 'string'
-        })).rejects.toThrow()
+        })).rejects.toThrow((resp.data as unknown as MatrixError).error)
       })
     })
   })
