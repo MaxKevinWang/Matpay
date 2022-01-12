@@ -59,6 +59,9 @@ export const rooms_store = {
       const rooms = state.joined_rooms.filter(r => r.room_id === payload.room_id)
       rooms[0].name = payload.name
     },
+    mutation_remove_invite_room (state: State, payload: MatrixRoomID) {
+      state.invited_rooms = state.invited_rooms.filter(i => i.room_id !== payload)
+    },
     mutation_reset_state (state: State) {
       Object.assign(state, {
         joined_rooms: [],
@@ -140,8 +143,9 @@ export const rooms_store = {
         throw new Error((response.data as unknown as MatrixError).error)
       }
       // Resync joined rooms
-      // TODO: create structure directly instead of full resync
-      await dispatch('sync/action_resync_initial_state', null, { root: true })
+      await dispatch('sync/action_resync_initial_state_for_room', {
+        room_id: response.data.room_id
+      }, { root: true })
       return response.data.room_id
     },
     async action_accept_invitation_for_room ({
@@ -164,8 +168,11 @@ export const rooms_store = {
         throw new Error((response.data as unknown as MatrixError).error)
       }
       // Resync joined rooms
-      // TODO: create structure directly instead of full resync
-      await dispatch('sync/action_resync_initial_state', null, { root: true })
+      await dispatch('sync/action_resync_initial_state_for_room', {
+        room_id: payload.room_id
+      }, { root: true })
+      // remove invitation from state
+      commit('mutation_remove_invite_room', payload.room_id)
     }
   },
   getters: <GetterTree<State, any>>{

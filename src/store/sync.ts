@@ -58,6 +58,9 @@ export const sync_store = {
     mutation_init_state_complete (state: State) {
       state.init_state_complete = true
     },
+    mutation_init_state_incomplete (state: State) {
+      state.init_state_complete = false
+    },
     mutation_set_room_prev_batch (state: State, payload: {
       room_id: MatrixRoomID,
       prev_batch: string
@@ -284,15 +287,33 @@ export const sync_store = {
         }
       }
     },
-    async action_resync_initial_state ({
+    async action_resync_initial_state_for_room ({
       state,
       commit,
       dispatch,
       rootGetters
+    }, payload: {
+      room_id: MatrixRoomID
     }) {
-      // A brute force implementation for resyncing after room creation and invitation accepting.
-      commit('mutation_room_sync_state_incomplete')
-      dispatch('action_sync_initial_state')
+      /*
+      This action is used to resync the state information for a specific room, typically after room creation.
+       */
+      if (state.init_state_complete) {
+        const homeserver = rootGetters['auth/homeserver']
+        commit('mutation_init_state_incomplete')
+        commit('mutation_create_new_room', payload.room_id)
+        // only state events
+        const state_response = await axios.get<MatrixRoomStateEvent[]>(`${homeserver}/_matrix/client/r0/rooms/${payload.room_id}/state`)
+        for (const event of state_response.data) {
+          if (!state.processed_events_id.has(event.event_id)) {
+            commit('mutation_process_event', {
+              room_id: payload.room_id,
+              event: event
+            })
+          }
+        }
+        commit('mutation_init_state_complete')
+      }
     }
   },
   getters: <GetterTree<State, any>>{

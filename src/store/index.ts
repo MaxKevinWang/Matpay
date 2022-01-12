@@ -36,6 +36,13 @@ export default createStore({
             }
             break
           }
+          case 'auth/mutation_init_state_incomplete': {
+            // stop syncing
+            if (interval_id) {
+              clearInterval(interval_id)
+            }
+            break
+          }
           case 'sync/mutation_create_new_room': {
             const payload: MatrixRoomID = mutation.payload
             for (const st of normal_stores) {
