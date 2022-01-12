@@ -1,6 +1,9 @@
 <template>
   <div class="container">
     <h2>Rooms</h2>
+    <div class="alert alert-danger" role="alert" v-if="error">
+      {{ error }}
+    </div>
     <div class="alert alert-danger" role="alert" v-if="!room_exists && !is_loading">
       No rooms joined.
     </div>
@@ -46,9 +49,7 @@
         <td>{{ room.name ? room.name : 'NO NAME' }}</td>
         <td>
           <button class="btn btn-success" @click="accept_invitation(room.room_id)">Accept</button>
-          <!--
           <button class="btn btn-warning" @click="reject_invitation(room.room_id)">Reject</button>
-          -->
         </td>
       </tr>
       </tbody>
@@ -83,7 +84,8 @@ export default defineComponent({
   data () {
     return {
       rooms: [] as RoomTableRow[],
-      is_loading: true
+      is_loading: true,
+      error: null as string | null
     }
   },
   components: {
@@ -107,7 +109,8 @@ export default defineComponent({
   methods: {
     ...mapActions('rooms', [
       'action_create_room',
-      'action_accept_invitation_for_room'
+      'action_accept_invitation_for_room',
+      'action_reject_invitation_for_room'
     ]),
     ...mapActions('sync', [
       'action_sync_initial_state'
@@ -182,7 +185,7 @@ export default defineComponent({
           }
         })
       } catch (e) {
-        console.log(e)
+        this.error = e
       }
     },
     async accept_invitation (room_id: string) {
@@ -197,7 +200,16 @@ export default defineComponent({
           }
         })
       } catch (e) {
-        console.log(e)
+        this.error = e
+      }
+    },
+    async reject_invitation (room_id: string) {
+      try {
+        await this.action_reject_invitation_for_room({
+          room_id: room_id
+        })
+      } catch (e) {
+        this.error = e
       }
     }
   },
