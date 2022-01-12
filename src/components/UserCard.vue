@@ -1,23 +1,22 @@
 <template>
   <SettlementDialog ref="settle_dialog" :room_id="room_id" :balance="open_balance" :user_clicked="user_prop" />
-  <div :id="'usercard_' + user_id" @click="on_user_card_click()">
+  <div :id="'usercard_' + user_id">
     <img :src="this.avatar" alt="avatar" class="avatar">
-    <div class="about" @contextmenu="open_right_click_menu">
+    <div class="about">
       <div :class="['name', {'self_name': this.is_self }, {'admin': this.user_type === 'Admin'}]">{{
           this.displayname
         }}
       </div>
       <div class="status">{{ this.is_self ? 'Yourself, ' + this.user_type : this.user_type }}</div>
-      <button class="btn btn-danger btn-sm me-1" @click="on_context_click('kick')">Kick</button>
-      <button class="btn btn-danger btn-sm" @click="on_context_click('ban')">Ban</button>
+      <div v-if="!this.is_self">
+        <button class="btn btn-danger btn-sm me-1" v-if="can_i_kick_user" @click="on_permission_click('kick')">Kick</button>
+        <button class="btn btn-danger btn-sm me-1" v-if="can_i_kick_user" @click="on_permission_click('ban')">Ban</button>
+        <button class="btn btn-primary btn-sm" @click="on_settle_click()">Settle</button>
+      </div>
+      <div v-if="this.is_self">
+        <button class="btn btn-danger btn-sm me-1" @click="on_leave_click">Leave Room</button>
+      </div>
     </div>
-    <!-- Right Click Menu -->
-    <RightClickMenu :display="show_right_click_menu" ref="menu" v-if="can_i_kick_user && !is_self">
-      <ul class="list-group list-group-flush">
-        <li class="list-group-item" @click="on_context_click('kick')">Kick User</li>
-        <li class="list-group-item" @click="on_context_click('ban')">Ban User</li>
-      </ul>
-    </RightClickMenu>
   </div>
 </template>
 
@@ -96,12 +95,7 @@ export default defineComponent({
         }
       }
     },
-    open_right_click_menu (e: MouseEvent) {
-      e.preventDefault()
-      const menu_ref = this.$refs.menu as { open: (e: MouseEvent) => void } | null
-      menu_ref?.open(e)
-    },
-    on_context_click (operation: 'kick' | 'ban') {
+    on_permission_click (operation: 'kick' | 'ban') {
       this.show_right_click_menu = false
       if (operation === 'kick') {
         this.$emit('on-kick', this.user_id)
@@ -109,7 +103,7 @@ export default defineComponent({
         this.$emit('on-ban', this.user_id)
       }
     },
-    async on_user_card_click () {
+    async on_settle_click () {
       if (!this.is_self) {
         let open_balance = 0
         try {
@@ -132,7 +126,6 @@ export default defineComponent({
     }
   },
   components: {
-    RightClickMenu,
     SettlementDialog
   }
 })
