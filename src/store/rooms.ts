@@ -165,7 +165,9 @@ export const rooms_store = {
         throw new Error((response.data as unknown as MatrixError).error)
       }
       // Resync joined rooms
-      await dispatch('sync/action_resync_initial_state', null, { root: true })
+      await dispatch('sync/action_resync_initial_state_for_room', {
+        room_id: payload.room_id
+      }, { root: true })
     }
   },
   getters: <GetterTree<State, any>>{
