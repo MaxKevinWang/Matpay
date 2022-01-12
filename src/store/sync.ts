@@ -261,7 +261,6 @@ export const sync_store = {
               commit('mutation_create_new_room', room_id)
             }
           }
-          // TODO: process invited rooms
           // Then pass single events
           for (const [room_id, room_data] of Object.entries(response.data.rooms.join)) {
             const timeline = room_data.timeline
@@ -284,6 +283,11 @@ export const sync_store = {
               }
             }
           }
+        }
+        // Parse invited rooms
+        // Note: **NONE** state events are parsed in this stage.
+        if (response.data.rooms && response.data.rooms.invite) {
+          dispatch('rooms/action_parse_invited_rooms', response.data.rooms.invite, { root: true })
         }
       }
     },
