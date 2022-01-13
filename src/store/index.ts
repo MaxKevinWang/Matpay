@@ -11,7 +11,7 @@ import { TxMessageEvent } from '@/interface/tx_event.interface'
 
 const normal_stores = ['rooms', 'user', 'tx', 'chat']
 let interval_id : number | null = null
-function newStore () {
+export function newStore () {
   return createStore({
     modules: {
       auth: auth_store,
@@ -125,7 +125,7 @@ function newStore () {
         })
       }
     ],
-    strict: process.env.NODE_ENV !== 'production' // Strict Mode
+    strict: process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test' // Strict Mode
   })
 }
 
