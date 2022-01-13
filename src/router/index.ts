@@ -4,6 +4,7 @@ import Login from '@/tabs/Login.vue'
 import Rooms from '@/tabs/Rooms.vue'
 import RoomDetail from '@/views/RoomDetail.vue'
 import RoomTxHistory from '@/views/RoomTxHistory.vue'
+import Register from '@/views/Register.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -30,6 +31,11 @@ const routes: Array<RouteRecordRaw> = [
     path: '/history/:room_id/:current_group_id?',
     name: 'room_history',
     component: RoomTxHistory
+  },
+  {
+    path: '/register',
+    name: 'register',
+    component: Register
   }
 ]
 

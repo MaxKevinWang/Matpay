@@ -22,8 +22,7 @@
       </div>
       <input class="btn btn-primary" @click="login()" value="Login" id="login">
     </form>
-
-    Don't have an account? <a href="#">Register here.</a>
+    Don't have an account? <router-link to="register">Register here.</router-link>
   </div>
 </template>
 <script lang="ts">
