@@ -127,9 +127,13 @@ describe('Test chat store', function () {
       state.chat_log.aaa.messages = []
       fake_msg_TX_Approved.timestamp.setTime(100)
       fake_msg.timestamp.setTime(200)
+      fake_msg_pending_approval.timestamp.setTime(300)
       state.chat_log.aaa.messages.push(fake_msg)
       mutation(state, { room_id: 'aaa', msg: fake_msg_TX_Approved })
-      expect(state.chat_log.aaa.messages[0]).toEqual(fake_msg)
+      mutation(state, { room_id: 'aaa', msg: fake_msg_pending_approval })
+      expect(state.chat_log.aaa.messages[0]).toEqual(fake_msg_TX_Approved)
+      expect(state.chat_log.aaa.messages[1]).toEqual(fake_msg)
+      expect(state.chat_log.aaa.messages[2]).toEqual(fake_msg_pending_approval)
     })
     it('Test mutation_reset_state', function () {
       const mutation = store.mutations.mutation_reset_state
