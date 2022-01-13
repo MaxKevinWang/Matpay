@@ -188,7 +188,7 @@ export const rooms_store = {
         throw new Error((response.data as unknown as MatrixError).error)
       }
       // remove invitation from state
-      commit('mutation_remove_invite_room', payload.room_id)
+      commit('mutation_remove_invite_room', payload)
     }
   },
   getters: <GetterTree<State, any>>{
