@@ -129,7 +129,7 @@ describe('Test chat store', function () {
       fake_msg.timestamp.setTime(200)
       state.chat_log.aaa.messages.push(fake_msg)
       mutation(state, { room_id: 'aaa', msg: fake_msg_TX_Approved })
-      expect(state.chat_log.aaa.messages[0]).toEqual(fake_msg_TX_Approved)
+      expect(state.chat_log.aaa.messages[0]).toEqual(fake_msg)
     })
     it('Test mutation_reset_state', function () {
       const mutation = store.mutations.mutation_reset_state
