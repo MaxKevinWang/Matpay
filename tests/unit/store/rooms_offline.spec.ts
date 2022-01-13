@@ -321,6 +321,22 @@ describe('Test rooms store', function () {
         room_name: 'test_name'
       })).rejects.toThrow()
     })
+    it('Test action_create_room_3', async function () {
+      const resp = {
+        status: 200,
+        data: 'mocked_id'
+      }
+      const action = store.actions.action_create_room as (context: any, payload: any) => Promise<any>
+      mockedAxios.post.mockImplementation(() => Promise.resolve(resp))
+      await expect(() => action({
+        state,
+        commit: jest.fn(),
+        dispatch: jest.fn(),
+        rootGetters: rootGetters
+      }, {
+        room_name: undefined
+      })).rejects.toThrow()
+    })
     it('Test action_accept_invitation_for_room_1', async function () {
       state.joined_rooms.push({
         room_id: 'aaa',
