@@ -345,7 +345,7 @@ describe('Test rooms store', function () {
         bbb: false,
         ccc: false
       }
-      const dispatch = (dispatch_name: string, payload: { room_id: MatrixRoomID}) => {
+      const dispatch = (dispatch_name: string, payload: { room_id: MatrixRoomID }) => {
         if (dispatch_name === 'sync/action_resync_initial_state_for_room') {
           dispatch_called[payload.room_id] = true
         }
@@ -377,6 +377,47 @@ describe('Test rooms store', function () {
       }, {
         room_name: 'test_name'
       })).rejects.toThrow()
+    })
+    it('Test action_reject_invitation_for_room)', async function () {
+      state.joined_rooms.push({
+        room_id: 'aaa',
+        name: '',
+        state_events: []
+      }, {
+        room_id: 'bbb',
+        name: '',
+        state_events: []
+      },
+      {
+        room_id: 'ccc',
+        name: '',
+        state_events: []
+      })
+      const resp = {
+        status: 200,
+        data: ''
+      }
+      const commit_called: Record<MatrixRoomID, boolean> = {
+        aaa: false,
+        bbb: false,
+        ccc: false
+      }
+      const commit = (commit_name: string, payload: { room_id: MatrixRoomID, name: string }) => {
+        if (commit_name === 'mutation_remove_invite_room') {
+          commit_called[payload.room_id] = true
+        }
+      }
+      const action = store.actions.action_reject_invitation_for_room as (context: any, payload: any) => Promise<any>
+      mockedAxios.post.mockImplementation(() => Promise.resolve(resp))
+      await action({
+        state,
+        commit,
+        dispatch: jest.fn(),
+        rootGetters: rootGetters
+      }, { room_id: 'aaa' })
+      expect(commit_called.aaa).toEqual(true)
+      expect(commit_called.bbb).toEqual(false)
+      expect(commit_called.ccc).toEqual(false)
     })
   })
   describe('Test store getters', function () {
