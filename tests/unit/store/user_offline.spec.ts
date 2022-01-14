@@ -1,10 +1,9 @@
 import store from '@/store/user'
-import { RoomUserInfo, User } from '@/models/user.model'
-import { MatrixEventID, MatrixRoomID, MatrixUserID } from '@/models/id.model'
+import { RoomUserInfo } from '@/models/user.model'
+import { MatrixRoomID } from '@/models/id.model'
 import { MatrixRoomMemberStateEvent, MatrixRoomPermissionConfiguration } from '@/interface/rooms_event.interface'
 import { room_01_permission, room_01_room_id, room_01_user_info, user_1, user_2 } from '../mocks/mocked_user'
-import axios, { AxiosResponse } from 'axios'
-import { Dispatch, DispatchOptions } from 'vuex'
+import axios from 'axios'
 
 jest.mock('axios')
 const mockedAxios = axios as jest.Mocked<typeof axios>
