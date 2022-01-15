@@ -9,7 +9,7 @@ import { MatrixError } from '@/interface/error.interface'
 
 interface State {
   next_batch: string,
-  current_response: MatrixSyncResponse | null,
+  // current_response: MatrixSyncResponse | null,
   processed_events_id: Set<MatrixEventID>,
   room_events: Record<MatrixRoomID, Array<MatrixRoomEvent>>,
   room_state_events: Record<MatrixRoomID, Array<MatrixRoomStateEvent>>,
@@ -23,7 +23,7 @@ export const sync_store = {
   state (): State {
     return {
       next_batch: '',
-      current_response: null,
+      // current_response: null,
       processed_events_id: new Set(),
       room_events: {},
       room_state_events: {},
@@ -37,7 +37,7 @@ export const sync_store = {
       state.next_batch = payload.next_batch
     },
     mutation_set_current_response (state: State, payload: MatrixSyncResponse) {
-      state.current_response = payload
+      // state.current_response = payload
     },
     mutation_create_new_room (state: State, payload: MatrixRoomID) {
       state.room_events[payload] = []
@@ -190,7 +190,8 @@ export const sync_store = {
             params: {
               from: prev_batch,
               dir: 'b',
-              filter: filter_tx_only ? JSON.stringify(filter_tx_only) : undefined
+              filter: filter_tx_only ? JSON.stringify(filter_tx_only) : undefined,
+              limit: 10
             },
             validateStatus: () => true
           })
