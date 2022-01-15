@@ -23,14 +23,15 @@ axios.interceptors.request.use(function (config) {
 })
 const app = createApp(App)
 app.use(store).use(router)
-app.config.globalProperties.sum_amount = (item: GroupedTransaction | PendingApproval | SimpleTransaction[]) : number => {
+export const sum_amount = (item: GroupedTransaction | PendingApproval | SimpleTransaction[]) : number => {
   if (Array.isArray(item)) {
     return item.reduce((sum, tx) => sum + tx.amount, 0)
   } else {
     return item.txs.reduce((sum, tx) => sum + tx.amount, 0)
   }
 }
-app.config.globalProperties.split_percentage = (item: GroupedTransaction | PendingApproval | SimpleTransaction[]) : Record<TxID, number> => {
+app.config.globalProperties.sum_amount = sum_amount
+export const split_percentage = (item: GroupedTransaction | PendingApproval | SimpleTransaction[]) : Record<TxID, number> => {
   const result: Record<TxID, number> = {}
   if (Array.isArray(item)) {
     const sum = item.reduce((sum, tx) => sum + tx.amount, 0)
@@ -45,7 +46,9 @@ app.config.globalProperties.split_percentage = (item: GroupedTransaction | Pendi
   }
   return result
 }
-app.config.globalProperties.to_currency_display = (num: number) : string => {
+app.config.globalProperties.split_percentage = split_percentage
+export const to_currency_display = (num: number) : string => {
   return (num / 100).toFixed(2) + '€'
 }
+app.config.globalProperties.to_currency_display = to_currency_display
 app.mount('#app')
