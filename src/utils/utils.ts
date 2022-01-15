@@ -1,10 +1,36 @@
 import { v4 as uuidv4 } from 'uuid'
-import { TxGraph } from '@/models/transaction.model'
-import { MatrixUserID } from '@/models/id.model'
+import { GroupedTransaction, PendingApproval, SimpleTransaction, TxGraph } from '@/models/transaction.model'
+import { MatrixUserID, TxID } from '@/models/id.model'
 import { cloneDeep } from 'lodash'
 
 export function uuidgen (): string {
   return uuidv4()
+}
+
+export const sum_amount = (item: GroupedTransaction | PendingApproval | SimpleTransaction[]) : number => {
+  if (Array.isArray(item)) {
+    return item.reduce((sum, tx) => sum + tx.amount, 0)
+  } else {
+    return item.txs.reduce((sum, tx) => sum + tx.amount, 0)
+  }
+}
+export const split_percentage = (item: GroupedTransaction | PendingApproval | SimpleTransaction[]) : Record<TxID, number> => {
+  const result: Record<TxID, number> = {}
+  if (Array.isArray(item)) {
+    const sum = item.reduce((sum, tx) => sum + tx.amount, 0)
+    for (const simple_tx of item) {
+      result[simple_tx.tx_id] = simple_tx.amount / sum
+    }
+  } else {
+    const sum = item.txs.reduce((sum, tx) => sum + tx.amount, 0)
+    for (const simple_tx of item.txs) {
+      result[simple_tx.tx_id] = simple_tx.amount / sum
+    }
+  }
+  return result
+}
+export const to_currency_display = (num: number) : string => {
+  return (num / 100).toFixed(2) + '€'
 }
 
 export function optimize_graph (graph: TxGraph) : TxGraph {

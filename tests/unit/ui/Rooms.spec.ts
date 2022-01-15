@@ -3,7 +3,7 @@ import { Room } from '@/models/room.model'
 import { config, mount, shallowMount } from '@vue/test-utils'
 import Rooms from '@/tabs/Rooms.vue'
 import { nextTick } from 'vue'
-import { split_percentage, sum_amount, to_currency_display } from '@/main'
+import { split_percentage, sum_amount, to_currency_display } from '@/utils/utils'
 describe('Test Rooms Tab', () => {
   beforeAll(() => {
     config.global.mocks = {
