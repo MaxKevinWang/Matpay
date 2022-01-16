@@ -269,6 +269,7 @@ export const tx_store = {
         create_event,
         { validateStatus: () => true }
       )
+      console.log('Create event sent, timestamp:' + new Date().getTime())
       if (response.status !== 200) {
         throw new Error((response.data as unknown as MatrixError).error)
       }
@@ -328,6 +329,7 @@ export const tx_store = {
         approve_event,
         { validateStatus: () => true }
       )
+      console.log('Approve event sent, timestamp:' + new Date().getTime())
       if (response.status !== 200) {
         throw new Error((response.data as unknown as MatrixError).error)
       }
@@ -417,6 +419,8 @@ export const tx_store = {
       switch (tx_event.type) {
         case 'com.matpay.create': {
           const tx_event_create = tx_event as TxCreateEvent
+          console.log('Create event received, timestamp:' + tx_event_create.origin_server_ts)
+          console.log('Event: ', tx_event_create)
           // no previous tx with the same group id
           const existing_group_ids: Set<GroupID> = getters.get_existing_group_ids_for_room(room_id)
           if (existing_group_ids.has(tx_event_create.content.group_id)) {
@@ -590,6 +594,8 @@ export const tx_store = {
         }
         case 'com.matpay.approve': {
           const tx_event_approve = tx_event as TxApproveEvent
+          console.log('Approve event received, timestamp:' + tx_event_approve.origin_server_ts)
+          console.log('Event: ', tx_event_approve)
           const existing_pending_approval: PendingApproval[] = getters.get_pending_approvals_for_room(room_id)
           const compare_event_ids = new Set(
             existing_pending_approval.filter(x => x.event_id === tx_event_approve.content.event_id)

@@ -6,6 +6,7 @@ import { MatrixRoomEvent, MatrixRoomStateEvent } from '@/interface/rooms_event.i
 import { RoomEventFilter } from '@/interface/filter.interface'
 import { GETRoomEventsResponse } from '@/interface/api.interface'
 import { MatrixError } from '@/interface/error.interface'
+import { TxEvent } from '@/interface/tx_event.interface'
 
 interface State {
   next_batch: string,
@@ -16,7 +17,8 @@ interface State {
   init_state_complete: boolean,
   room_tx_prev_batch_id: Record<MatrixRoomID, string>,
   room_message_prev_batch_id: Record<MatrixRoomID, string | null>
-  room_tx_sync_complete: Record<MatrixRoomID, boolean>
+  room_tx_sync_complete: Record<MatrixRoomID, boolean>,
+  cached_tx_events: Record<MatrixRoomID, Array<TxEvent>>
 }
 
 export const sync_store = {
@@ -31,7 +33,8 @@ export const sync_store = {
       init_state_complete: false,
       room_tx_prev_batch_id: {},
       room_message_prev_batch_id: {},
-      room_tx_sync_complete: {}
+      room_tx_sync_complete: {},
+      cached_tx_events: {}
     }
   },
   mutations: <MutationTree<State>>{
@@ -46,6 +49,13 @@ export const sync_store = {
       state.room_state_events[payload] = []
       state.room_tx_prev_batch_id[payload] = ''
       state.room_tx_sync_complete[payload] = false
+      state.cached_tx_events[payload] = []
+    },
+    mutation_add_cached_tx_event (state: State, payload: {
+      room_id: MatrixRoomID,
+      event: TxEvent
+    }) {
+      state.cached_tx_events[payload.room_id].push(payload.event)
     },
     mutation_process_event (state: State, payload: {
       room_id: MatrixRoomID,
@@ -152,6 +162,19 @@ export const sync_store = {
             })
             // then all events
             for (const event of timeline.events) {
+              if ([ // Don't parse tx events at this stage, cache them
+                'com.matpay.create',
+                'com.matpay.modify',
+                'com.matpay.approve',
+                'com.matpay.settle',
+                'com.matpay.rejected'
+              ].includes(event.type)) {
+                commit('mutation_add_cached_tx_event', {
+                  room_id: room_id,
+                  event: event as TxEvent
+                })
+                continue
+              }
               if (!state.processed_events_id.has(event.event_id)) {
                 commit('mutation_process_event', {
                   room_id: room_id,
@@ -190,7 +213,7 @@ export const sync_store = {
           ]
         }
         let prev_batch = state.room_tx_prev_batch_id[room_id]
-        const events: MatrixRoomEvent[] = []
+        let events: MatrixRoomEvent[] = []
         let current_length = 0
         // repeatedly polling message API for earlier events
         do {
@@ -215,8 +238,10 @@ export const sync_store = {
             current_length = 0
           }
         } while (current_length !== 0)
+        // merge the cached events
+        events = events.concat(state.cached_tx_events[room_id])
         // reverse, event processing
-        events.reverse()
+        events.sort((a, b) => a.origin_server_ts - b.origin_server_ts)
         console.log('Start processing events')
         for (const event of events) {
           if (!state.processed_events_id.has(event.event_id)) {
@@ -277,11 +302,8 @@ export const sync_store = {
             room_id: room_id,
             prev_batch: response.data.end
           })
-          console.log('Start processing events')
           for (const event of response.data.chunk) {
             if (!state.processed_events_id.has(event.event_id)) {
-              console.log('Processing event: ')
-              console.log(event)
               commit('mutation_process_event', {
                 room_id: room_id,
                 event: event
