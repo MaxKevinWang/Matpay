@@ -8,7 +8,7 @@
         Transaction data won't be available before all messages are downloaded.
       </button>
     </div>
-    <div class="row" v-if="this.is_fully_loaded">
+    <div class="row" v-if="this.is_tx_fully_loaded">
       <h4>History: {{ room_name }}</h4>
       <h6>Your balance: </h6>
       <div class="col-4" v-if="tx_list.length >= 1">
@@ -37,7 +37,7 @@ export default defineComponent({
       tx_list: [] as Array<GroupedTransaction>,
       tx: {} as GroupedTransaction,
       show_detail: false as boolean,
-      is_fully_loaded: false
+      is_tx_fully_loaded: false
     }
   },
   computed: {
@@ -58,7 +58,7 @@ export default defineComponent({
   methods: {
     ...mapActions('sync', [
       'action_sync_initial_state',
-      'action_sync_full_events_for_room'
+      'action_sync_full_tx_events_for_room'
     ]),
     on_click (tx: GroupedTransaction) {
       if (JSON.stringify(this.tx) === JSON.stringify(tx) && this.show_detail) {
@@ -71,9 +71,8 @@ export default defineComponent({
   },
   async created () {
     await this.action_sync_initial_state()
-    this.action_sync_full_events_for_room({
-      room_id: this.room_id,
-      tx_only: false
+    this.action_sync_full_tx_events_for_room({
+      room_id: this.room_id
     }).then(() => {
       this.room_name = this.get_room_name(this.room_id)
       this.tx_list = this.get_grouped_transactions_for_room(this.room_id)
@@ -84,7 +83,7 @@ export default defineComponent({
           this.show_detail = true
         }
       }
-      this.is_fully_loaded = true
+      this.is_tx_fully_loaded = true
     })
   }
 })

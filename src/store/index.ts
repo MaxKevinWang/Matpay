@@ -86,7 +86,7 @@ export function newStore () {
                 'com.matpay.approve',
                 'com.matpay.settle'
               ].includes(room_event.type)) {
-                if (store.state.sync.room_sync_complete[room_id]) {
+                if (store.state.sync.room_tx_sync_complete[room_id]) {
                   store.dispatch('tx/action_parse_single_tx_event_for_room', {
                     room_id: room_id,
                     tx_event: room_event as TxMessageEvent
@@ -106,7 +106,7 @@ export function newStore () {
               }, 5000)
               break
             }
-            case 'sync/mutation_room_sync_state_complete': {
+            case 'sync/mutation_room_tx_sync_state_complete': {
               const room_id = mutation.payload as MatrixRoomID
               const tx_message_events = (store.state.sync.room_events[room_id] as Array<MatrixRoomEvent>)
                 .filter(e => new Set([

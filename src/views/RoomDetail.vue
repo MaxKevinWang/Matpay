@@ -14,11 +14,14 @@
       <div class="col-lg-9 chat-frame">
         <h4>Chat</h4>
         <div class="row">
-        <button v-if="!is_fully_loaded" class="btn btn-primary spinner" type="button" disabled>
+        <button v-if="!is_tx_fully_loaded" class="btn btn-primary spinner" type="button" disabled>
           <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
           Loading further messages...
           <br>
           Transaction data won't be available before all messages are downloaded.
+        </button>
+        <button v-if="!is_chat_sync_complete(room_id) && is_tx_fully_loaded" class="btn btn-primary mb-3" type="button" @click="on_load_chat">
+          Load previous chat messages
         </button>
         </div>
         <ChatComponent :users_info="users_info"/>
@@ -42,7 +45,7 @@ export default defineComponent({
       users_info: [] as Array<RoomUserInfo>,
       room_name: '' as string,
       error: '' as string,
-      is_fully_loaded: false
+      is_tx_fully_loaded: false
     }
   },
   computed: {
@@ -53,6 +56,9 @@ export default defineComponent({
     ]),
     ...mapGetters('user', [
       'get_users_info_for_room'
+    ]),
+    ...mapGetters('sync', [
+      'is_chat_sync_complete'
     ]),
     room_id (): string {
       return this.$route.params.room_id as string
@@ -65,7 +71,8 @@ export default defineComponent({
   methods: {
     ...mapActions('sync', [
       'action_sync_initial_state',
-      'action_sync_full_events_for_room'
+      'action_sync_full_tx_events_for_room',
+      'action_sync_batch_message_events_for_room'
     ]),
     update_member_list () {
       try {
@@ -82,15 +89,22 @@ export default defineComponent({
     },
     on_user_change () {
       this.update_member_list()
+    },
+    on_load_chat () {
+      this.action_sync_batch_message_events_for_room({
+        room_id: this.room_id
+      })
     }
   },
   async mounted () {
     await this.action_sync_initial_state()
-    this.action_sync_full_events_for_room({
-      room_id: this.room_id,
-      tx_only: false
+    this.action_sync_batch_message_events_for_room({
+      room_id: this.room_id
+    })
+    this.action_sync_full_tx_events_for_room({
+      room_id: this.room_id
     }).then(() => {
-      this.is_fully_loaded = true
+      this.is_tx_fully_loaded = true
     })
     this.update_member_list()
   }
