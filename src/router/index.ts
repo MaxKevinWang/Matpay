@@ -6,7 +6,7 @@ import RoomDetail from '@/views/RoomDetail.vue'
 import RoomTxHistory from '@/views/RoomTxHistory.vue'
 import Register from '@/views/Register.vue'
 
-const routes: Array<RouteRecordRaw> = [
+export const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
     name: 'home',
