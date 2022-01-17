@@ -1,7 +1,7 @@
 <template>
   <div class="container TxWindowView">
     <div class="row">
-      <button v-if="!is_fully_loaded" class="btn btn-primary spinner" type="button" disabled>
+      <button v-if="!is_tx_fully_loaded" class="btn btn-primary spinner" type="button" disabled>
         <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
         Loading further messages...
         <br>
