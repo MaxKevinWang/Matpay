@@ -20,7 +20,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" :disabled="balance >= 0">Settle</button>
+          <button type="button" class="btn btn-primary" :disabled="balance >= 0" @click="on_settle_click">Settle</button>
         </div>
       </div>
     </div>
@@ -47,6 +47,7 @@ export default defineComponent({
       type: Number as PropType<number>
     }
   },
+  emits: ['on-settle'],
   data () {
     return {
       modal_control: null as Modal | null,
@@ -68,6 +69,9 @@ export default defineComponent({
     hide () {
       this.modal_control?.hide()
       this.is_shown = false
+    },
+    on_settle_click () {
+      this.$emit('on-settle')
     }
   },
   mounted () {

@@ -18,7 +18,8 @@ interface State {
   room_tx_prev_batch_id: Record<MatrixRoomID, string>,
   room_message_prev_batch_id: Record<MatrixRoomID, string | null>
   room_tx_sync_complete: Record<MatrixRoomID, boolean>,
-  cached_tx_events: Record<MatrixRoomID, Array<TxEvent>>
+  cached_tx_events: Record<MatrixRoomID, Array<TxEvent>>,
+  room_latest_event: Record<MatrixRoomID, [MatrixEventID, number]> // the event with its timestamp
 }
 
 export const sync_store = {
@@ -34,7 +35,8 @@ export const sync_store = {
       room_tx_prev_batch_id: {},
       room_message_prev_batch_id: {},
       room_tx_sync_complete: {},
-      cached_tx_events: {}
+      cached_tx_events: {},
+      room_latest_event: {}
     }
   },
   mutations: <MutationTree<State>>{
@@ -50,6 +52,7 @@ export const sync_store = {
       state.room_tx_prev_batch_id[payload] = ''
       state.room_tx_sync_complete[payload] = false
       state.cached_tx_events[payload] = []
+      state.room_latest_event[payload] = ['', 0]
     },
     mutation_add_cached_tx_event (state: State, payload: {
       room_id: MatrixRoomID,
@@ -61,9 +64,14 @@ export const sync_store = {
       room_id: MatrixRoomID,
       event: MatrixRoomEvent
     }) {
-      state.room_events[payload.room_id].push(payload.event)
       if ('state_key' in payload.event) {
         state.room_state_events[payload.room_id].push(payload.event as MatrixRoomStateEvent)
+      } else {
+        state.room_events[payload.room_id].push(payload.event)
+      }
+      // Update current latest event
+      if (payload.event.origin_server_ts > state.room_latest_event[payload.room_id][1]) {
+        state.room_latest_event[payload.room_id] = [payload.event.event_id, payload.event.origin_server_ts]
       }
       state.processed_events_id.add(payload.event.event_id)
     },
@@ -430,6 +438,18 @@ export const sync_store = {
     },
     is_chat_sync_complete: (state: State) => (room_id: MatrixRoomID): boolean => {
       return !state.room_message_prev_batch_id[room_id]
+    },
+    get_last_message_event_id: (state: State) => (room_id: MatrixRoomID) : MatrixEventID => {
+      return state.room_latest_event[room_id][0]
+    },
+    get_timestamp_for_event: (state: State) => (room_id: MatrixRoomID, event_id: MatrixEventID) : number | null => {
+      // Used in settlement to mark previous transactions as frozen
+      const corresponding_events = state.room_events[room_id].filter(i => i.event_id === event_id)
+      if (corresponding_events.length <= 0) {
+        return null
+      } else {
+        return corresponding_events[0].origin_server_ts
+      }
     }
   }
 }
