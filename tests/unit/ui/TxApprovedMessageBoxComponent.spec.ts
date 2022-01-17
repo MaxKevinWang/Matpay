@@ -4,7 +4,6 @@ import { user_1, user_2, user_3 } from '../mocks/mocked_user'
 import { TxApprovedPlaceholder } from '@/models/chat.model'
 import { sum_amount, to_currency_display } from '@/utils/utils'
 import { createRouter, createWebHistory } from 'vue-router'
-import RoomTxHistory from '@/views/RoomTxHistory.vue'
 import RoomDetail from '@/views/RoomDetail.vue'
 
 describe('Test TxApprovedMessageBox Interface', () => {
@@ -46,39 +45,30 @@ describe('Test TxApprovedMessageBox Interface', () => {
     await expect(wrapper.findAll('p').filter(i => i.element.innerHTML.includes(user_1.displayname + ' paid ')).length).toBe(1)
   })
   it('Test pressing Details redirects', async () => {
-    jest.mock('@/views/RoomTxHistory.vue', () => ({
-      name: 'RoomTxHistory',
-      template: '<div />'
-      // script:
-    }))
-    const router = createRouter({
-      history: createWebHistory(),
-      routes: [
-        {
-          path: '/history/:room_id/:current_group_id?',
-          name: 'room_history',
-          component: RoomTxHistory
-        },
-        {
-          path: '/room/:room_id',
-          name: 'room_detail',
-          component: RoomDetail
-        }
-      ]
-    })
-    await router.push('/room/aaa')
-    await router.isReady()
+    const mockRoute = {
+      name: 'room_history',
+      params: {
+        room_id: 'aaa',
+        group_id: 'abc'
+      }
+    }
+    const mockRouter = {
+      push: jest.fn()
+    }
     const wrapper = mount(TxApprovedMessageBox, {
       props: {
         reference: reference,
         room_id: 'aaa'
       },
       global: {
-        plugins: [router]
+        mocks: {
+          $route: mockRoute,
+          $router: mockRouter
+        }
       }
     })
-    await wrapper.find('a').trigger('click')
-    await flushPromises()
-    expect(wrapper.html()).toContain('<div />')
+    await wrapper.find('router-link').trigger('click')
+    expect(mockRouter.push).toHaveBeenCalledTimes(1)
+    expect(mockRouter.push).toHaveBeenCalledWith('/history/aaa/abc')
   })
 })
