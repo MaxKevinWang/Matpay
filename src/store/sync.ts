@@ -3,8 +3,8 @@ import { MatrixSyncResponse } from '@/interface/sync.interface'
 import axios from 'axios'
 import { MatrixEventID, MatrixRoomID } from '@/models/id.model'
 import { MatrixRoomEvent, MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
-import { RoomEventFilter } from '@/interface/filter.interface'
-import { GETRoomEventsResponse } from '@/interface/api.interface'
+import { EventFilter, RoomEventFilter, RoomFilter } from '@/interface/filter.interface'
+import { GETRoomEventsResponse, POSTFilterCreateResponse } from '@/interface/api.interface'
 import { MatrixError } from '@/interface/error.interface'
 import { TxEvent } from '@/interface/tx_event.interface'
 
@@ -18,7 +18,9 @@ interface State {
   room_tx_prev_batch_id: Record<MatrixRoomID, string>,
   room_message_prev_batch_id: Record<MatrixRoomID, string | null>
   room_tx_sync_complete: Record<MatrixRoomID, boolean>,
-  cached_tx_events: Record<MatrixRoomID, Array<TxEvent>>
+  cached_tx_events: Record<MatrixRoomID, Array<TxEvent>>,
+  room_latest_event: Record<MatrixRoomID, [MatrixEventID, number]>, // the event with its timestamp
+  sync_filter: string
 }
 
 export const sync_store = {
@@ -34,7 +36,9 @@ export const sync_store = {
       room_tx_prev_batch_id: {},
       room_message_prev_batch_id: {},
       room_tx_sync_complete: {},
-      cached_tx_events: {}
+      cached_tx_events: {},
+      room_latest_event: {},
+      sync_filter: ''
     }
   },
   mutations: <MutationTree<State>>{
@@ -50,6 +54,7 @@ export const sync_store = {
       state.room_tx_prev_batch_id[payload] = ''
       state.room_tx_sync_complete[payload] = false
       state.cached_tx_events[payload] = []
+      state.room_latest_event[payload] = ['', 0]
     },
     mutation_add_cached_tx_event (state: State, payload: {
       room_id: MatrixRoomID,
@@ -61,9 +66,14 @@ export const sync_store = {
       room_id: MatrixRoomID,
       event: MatrixRoomEvent
     }) {
-      state.room_events[payload.room_id].push(payload.event)
       if ('state_key' in payload.event) {
         state.room_state_events[payload.room_id].push(payload.event as MatrixRoomStateEvent)
+      } else {
+        state.room_events[payload.room_id].push(payload.event)
+      }
+      // Update current latest event
+      if (payload.event.origin_server_ts > state.room_latest_event[payload.room_id][1]) {
+        state.room_latest_event[payload.room_id] = [payload.event.event_id, payload.event.origin_server_ts]
       }
       state.processed_events_id.add(payload.event.event_id)
     },
@@ -87,6 +97,9 @@ export const sync_store = {
     },
     mutation_room_tx_sync_state_complete (state: State, payload: MatrixRoomID) {
       state.room_tx_sync_complete[payload] = true
+    },
+    mutation_set_sync_filter (state: State, payload: string) {
+      state.sync_filter = payload
     },
     mutation_reset_state (state: State) {
       Object.assign(state, {
@@ -117,6 +130,35 @@ export const sync_store = {
     }) {
       if (!state.init_state_complete) {
         const homeserver = rootGetters['auth/homeserver']
+        const user_id = rootGetters['auth/user_id']
+        // create a filter
+        const response_filter = await axios.post<POSTFilterCreateResponse>(`${homeserver}/_matrix/client/r0/user/${user_id}/filter`, {
+          presence: {
+            not_types: ['*']
+          },
+          account_data: {
+            not_types: ['*']
+          },
+          room: {
+            ephemeral: {
+              not_types: ['*']
+            },
+            account_data: {
+              not_types: ['*']
+            },
+            timeline: {
+              types: [
+                'com.matpay.create',
+                'com.matpay.modify',
+                'com.matpay.approve',
+                'com.matpay.settle',
+                'com.matpay.rejected',
+                'm.room.*'
+              ]
+            }
+          }
+        })
+        commit('mutation_set_sync_filter', response_filter.data.filter_id)
         const response = await axios.get<MatrixSyncResponse>(`${homeserver}/_matrix/client/r0/sync`, {
           params: {
             full_state: true
@@ -342,12 +384,22 @@ export const sync_store = {
       timeout?: number
     }) {
       if (state.init_state_complete) {
+        const filter: RoomEventFilter = {
+          types: [
+            'com.matpay.create',
+            'com.matpay.modify',
+            'com.matpay.approve',
+            'com.matpay.settle',
+            'com.matpay.rejected'
+          ]
+        }
         const homeserver = rootGetters['auth/homeserver']
         const response = await axios.get<MatrixSyncResponse>(`${homeserver}/_matrix/client/r0/sync`, {
           params: {
             full_state: true,
             timeout: payload ? payload.timeout : undefined,
-            since: state.next_batch
+            since: state.next_batch,
+            filter: state.sync_filter
           }
         })
         commit('mutation_set_next_batch', { next_batch: response.data.next_batch })
@@ -430,6 +482,18 @@ export const sync_store = {
     },
     is_chat_sync_complete: (state: State) => (room_id: MatrixRoomID): boolean => {
       return !state.room_message_prev_batch_id[room_id]
+    },
+    get_last_message_event_id: (state: State) => (room_id: MatrixRoomID) : MatrixEventID => {
+      return state.room_latest_event[room_id][0]
+    },
+    get_timestamp_for_event: (state: State) => (room_id: MatrixRoomID, event_id: MatrixEventID) : number | null => {
+      // Used in settlement to mark previous transactions as frozen
+      const corresponding_events = state.room_events[room_id].filter(i => i.event_id === event_id)
+      if (corresponding_events.length <= 0) {
+        return null
+      } else {
+        return corresponding_events[0].origin_server_ts
+      }
     }
   }
 }

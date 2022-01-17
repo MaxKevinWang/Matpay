@@ -1,5 +1,5 @@
 <template>
-  <SettlementDialog ref="settle_dialog" :room_id="room_id" :balance="open_balance" :user_clicked="user_prop" />
+  <SettlementDialog ref="settle_dialog" :room_id="room_id" :balance="open_balance" :user_clicked="user_prop" @on-settle="on_settle"/>
   <div :id="'usercard_' + user_id">
     <img :src="this.avatar" alt="avatar" class="avatar">
     <div class="about">
@@ -57,7 +57,8 @@ export default defineComponent({
   },
   emits: [
     'on-kick',
-    'on-ban'
+    'on-ban',
+    'on-error'
   ],
   data () {
     return {
@@ -72,7 +73,8 @@ export default defineComponent({
   },
   methods: {
     ...mapActions('tx', [
-      'action_optimize_graph_and_prepare_balance_for_room'
+      'action_optimize_graph_and_prepare_balance_for_room',
+      'action_settle_for_room'
     ]),
     update_user_card () {
       if (this.user_prop) {
@@ -115,6 +117,17 @@ export default defineComponent({
         }
         this.open_balance = open_balance
         this.$refs.settle_dialog.show()
+      }
+    },
+    async on_settle () {
+      try {
+        await this.action_settle_for_room({
+          room_id: this.room_id,
+          target_user: this.user_prop?.user
+        })
+        this.$refs.settle_dialog.hide()
+      } catch (e) {
+        this.$emit('on-error', e)
       }
     }
   },

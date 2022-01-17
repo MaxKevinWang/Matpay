@@ -78,8 +78,7 @@ export const user_store = {
               displayname: '',
               avatar_url: event.content.avatar_url,
               user_type: 'Member',
-              is_self: false,
-              balance: 0
+              is_self: false
             }
           })
       }
@@ -114,8 +113,7 @@ export const user_store = {
             is_self: ids[0] === self_user_id,
             user_type: state.permissions[payload.room_id].users[ids[0]] >= 100
               ? 'Admin'
-              : state.permissions[payload.room_id].users[ids[0]] >= 50 ? 'Moderator' : 'Member',
-            balance: 0 // open balance counting not done here
+              : state.permissions[payload.room_id].users[ids[0]] >= 50 ? 'Moderator' : 'Member'
           })
         } else { // collision detected
           for (const repeated_id of ids) {
@@ -127,8 +125,7 @@ export const user_store = {
               is_self: repeated_id === self_user_id,
               user_type: state.permissions[payload.room_id].users[repeated_id] >= 100
                 ? 'Admin'
-                : state.permissions[payload.room_id].users[repeated_id] >= 50 ? 'Moderator' : 'Member',
-              balance: 0 // open balance counting not done here
+                : state.permissions[payload.room_id].users[repeated_id] >= 50 ? 'Moderator' : 'Member'
             })
           }
         }

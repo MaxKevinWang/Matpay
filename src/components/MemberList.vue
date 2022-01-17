@@ -2,7 +2,7 @@
   <h4>Members</h4>
   <ul class="list-unstyled card chat-list mt-2 mb-0">
     <li class="clearfix" v-for="user in users" :key="user.user.user_id">
-      <UserCard :room_id="room_id" :user_prop="user" :can_i_kick_user="can_i_kick_user" @on-kick="on_kick" @on-ban="on_ban"/>
+      <UserCard :room_id="room_id" :user_prop="user" :can_i_kick_user="can_i_kick_user" @on-kick="on_kick" @on-ban="on_ban" @on-error="on_error"/>
     </li>
     <li class="row">
       <button class="btn btn-primary" @click="on_invite_user_clicked()">Invite user</button>
@@ -79,6 +79,9 @@ export default defineComponent({
         this.users = users_tmp
       }
     },
+    on_error (error: string) {
+      this.$emit('on-error', error)
+    },
     on_invite_user_clicked () {
       // check permission
       const permission = this.get_permissions_for_room(this.room_id)
@@ -97,21 +100,13 @@ export default defineComponent({
     on_kick (user_id: string) {
       this.current_operation = 'kick'
       this.current_operation_user_id = user_id
-      const prompt = `
-      Are you sure you want to kick user?
-      Removing a user breaks transaction integrity. Existing transactions may not work as expected.
-      This room may not be used to add further transactions later.
-      `
+      const prompt = 'Are you sure you want to kick user?'
       this.$refs.confirm_dialog.prompt_confirm(prompt, this.on_confirm)
     },
     on_ban (user_id: string) {
       this.current_operation = 'ban'
       this.current_operation_user_id = user_id
-      const prompt = `
-      Are you sure you want to ban user?
-      Removing a user breaks transaction integrity. Existing transactions may not work as expected.
-      This room may not be used to add further transactions later.
-      `
+      const prompt = 'Are you sure you want to ban user?'
       this.$refs.confirm_dialog.prompt_confirm(prompt, this.on_confirm)
     },
     async on_confirm () {
@@ -127,7 +122,6 @@ export default defineComponent({
         this.$emit('on-error', error)
       }
       */
-      // TODO: disallow room operations after kicking any member.
       // The current code now only performs a redirection to avoid cascading errors.
       this.$router.push({
         name: 'rooms'

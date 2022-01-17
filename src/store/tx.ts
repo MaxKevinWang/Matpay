@@ -89,11 +89,18 @@ export const tx_store = {
             if (!state.transactions[payload].graph.graph[simple_tx.to.user_id]) {
               state.transactions[payload].graph.graph[simple_tx.to.user_id] = []
             }
-            // Add new adjacency list edge: from -> to
-            state.transactions[payload].graph.graph[grouped_tx.from.user_id].push([
-              simple_tx.to.user_id,
-              simple_tx.amount
-            ])
+            const existing_edge = state.transactions[payload].graph.graph[grouped_tx.from.user_id].filter(i => i[0] === simple_tx.to.user_id)
+            if (existing_edge.length > 0) {
+              // Edge already exists; add the weight instead of creating a new edge.
+              // This makes sure that the graph is not a multigraph.
+              existing_edge[0][1] += simple_tx.amount
+            } else {
+              // Add new adjacency list edge: from -> to
+              state.transactions[payload].graph.graph[grouped_tx.from.user_id].push([
+                simple_tx.to.user_id,
+                simple_tx.amount
+              ])
+            }
           }
         }
       }
@@ -166,7 +173,18 @@ export const tx_store = {
         throw new Error('Invalid group ID!')
       }
       tx[0].state = payload.state
-      state.transactions[payload.room_id].is_graph_dirty = true
+      if (payload.state === 'approved' || payload.state === 'settlement') {
+        state.transactions[payload.room_id].is_graph_dirty = true
+      }
+    },
+    mutation_mark_previous_txs_as_frozen (state: State, payload: {
+      room_id: MatrixRoomID,
+      timestamp: number
+    }) {
+      const previous_txs = state.transactions[payload.room_id].basic.filter(i => i.timestamp.getTime() <= payload.timestamp)
+      for (const tx of previous_txs) {
+        tx.state = 'frozen'
+      }
     },
     mutation_reset_state (state: State) {
       Object.assign(state, {
@@ -357,7 +375,35 @@ export const tx_store = {
       room_id: MatrixRoomID
       target_user: User
     }) {
-      throw new Error('TO BE IMPLEMENTED')
+      const room_id = payload.room_id
+      const target_user = payload.target_user
+      const room_users: Array<User> = (rootGetters['user/get_users_info_for_room'](room_id) as Array<RoomUserInfo>)
+        .map(u => u.user)
+      if (!room_users.map(i => i.user_id).includes(target_user.user_id)) {
+        throw new Error('Implementation error: target user not in room!')
+      }
+      // calculate open balance
+      const current_user_id : MatrixUserID = rootGetters['auth/user_id']
+      const open_balance : number = getters.get_open_balance_against_user_for_room(room_id, current_user_id, target_user.user_id)
+      if (open_balance >= 0) {
+        throw new Error('Implementation error: settlement not permitted with the target user!')
+      }
+      // prepare the event
+      const settle_event = {
+        amount: -open_balance,
+        user_id: target_user.user_id,
+        event_id: rootGetters['sync/get_last_message_event_id'](room_id)
+      }
+      const homeserver: string = rootGetters['auth/homeserver']
+      const response = await axios.put<PUTRoomEventSendResponse>(`${homeserver}/_matrix/client/r0/rooms/${room_id}/send/com.matpay.settle/${uuidgen()}`,
+        settle_event,
+        { validateStatus: () => true }
+      )
+      console.log('Settle event sent, timestamp:' + new Date().getTime())
+      if (response.status !== 200) {
+        throw new Error((response.data as unknown as MatrixError).error)
+      }
+      // TODO: notify other stores
     },
     async action_parse_rejected_events_for_room ({
       state,
@@ -665,51 +711,77 @@ export const tx_store = {
         }
         case 'com.matpay.settle': {
           const tx_event_settle = tx_event as TxSettleEvent
+          console.log('Settle event received, timestamp:' + tx_event_settle.origin_server_ts)
+          console.log('Event: ', tx_event_settle)
           // First check if there are tx in the room
           if (state.transactions[room_id].basic.length === 0) {
+            console.log('Checkpoint 1')
             return false
           }
           // User is in the room
           const room_members: RoomUserInfo[] = (rootGetters['user/get_users_info_for_room'](room_id) as Array<RoomUserInfo>)
           const oweing_user: RoomUserInfo[] = room_members.filter(id => id.user.user_id === tx_event_settle.content.user_id)
           if (oweing_user.length === 0) {
+            console.log('Checkpoint 2')
             return false
           }
           // If the graph is dirty it needs to be optimized first.
           if (state.transactions[room_id].is_graph_dirty === true) {
-            await dispatch('action_optimize_graph_and_prepare_balance_for_room')
+            await dispatch('action_optimize_graph_and_prepare_balance_for_room', {
+              room_id: room_id
+            })
           }
           // Sending user is on receiving side && event_id matches previous event
-          const balance_between_users = getters.get_open_balance_against_user_for_room(room_id, tx_event_settle.content.user_id, tx_event_settle.sender)
-          if (balance_between_users === 0) {
+          const balance_between_users = getters.get_open_balance_against_user_for_room(room_id, tx_event_settle.sender, tx_event_settle.content.user_id)
+          if (balance_between_users >= 0) {
+            console.log('Checkpoint 3')
             return false
           }
           // Amount is greater than 0 and smaller or same as the open balance
-          if (tx_event_settle.content.amount <= 0 || tx_event_settle.content.amount > balance_between_users) {
+          if (tx_event_settle.content.amount <= 0 || tx_event_settle.content.amount > -balance_between_users) {
+            console.log('Checkpoint 4')
             return false
           }
-          // Send new settlement transaction
-          const new_tx: GroupedTransaction = {
-            from: oweing_user[0].user,
-            txs: [
-              {
-                to: room_members.filter(id => id.user.user_id === tx_event_settle.sender)[0].user,
-                tx_id: uuidgen(),
-                amount: tx_event_settle.content.amount
-              }
-            ],
-            timestamp: new Date(),
-            group_id: '',
-            pending_approvals: [],
-            description: 'Settlement',
-            state: 'settlement'
+          // Mark previous txs as frozen
+          const frozen_begin : number | null = rootGetters['sync/get_timestamp_for_event'](room_id, tx_event_settle.content.event_id)
+          if (!frozen_begin) {
+            console.log('Checkpoint 5')
+            return false // Invalid event reference
+          } else {
+            console.log('Checkpoint 6')
+            // Actual marking
+            commit('mutation_mark_previous_txs_as_frozen', {
+              room_id: room_id,
+              timestamp: frozen_begin
+            })
+            // Add new settlement transaction
+            const from_user = oweing_user[0].user
+            const to_user = room_members.filter(id => id.user.user_id === tx_event_settle.sender)[0].user
+            const new_tx: GroupedTransaction = {
+              from: from_user,
+              txs: [
+                {
+                  to: to_user,
+                  tx_id: uuidgen(),
+                  amount: tx_event_settle.content.amount
+                }
+              ],
+              timestamp: new Date(tx_event_settle.origin_server_ts),
+              group_id: uuidgen(),
+              pending_approvals: [],
+              description: `Settlement between ${from_user.displayname} and ${to_user.displayname}`,
+              state: 'settlement'
+            }
+            commit('mutation_add_approved_grouped_transaction_for_room', {
+              room_id: room_id,
+              grouped_tx: new_tx
+            })
+            dispatch('chat/action_parse_single_grouped_tx_for_room', {
+              room_id: room_id,
+              grouped_tx: new_tx
+            }, { root: true })
+            return true
           }
-          commit('mutation_add_approved_grouped_transaction_for_room', {
-            room_id: room_id,
-            grouped_tx: new_tx
-          })
-          // TODO: Change transaction state to frozen for grouped transaction
-          return true
           break
         }
         default: {

@@ -55,21 +55,18 @@ export const room_01_user_info: Array<RoomUserInfo> = [{
   displayname: 'DSN Test Account No 1',
   avatar_url: '',
   is_self: true,
-  user_type: 'Member',
-  balance: 0
+  user_type: 'Member'
 }, {
   user: user_3,
   displayname: 'DSN Test Account No 3',
   is_self: false,
-  user_type: 'Admin',
-  balance: 0
+  user_type: 'Admin'
 }, {
   user: user_2,
   avatar_url: '',
   displayname: 'DSN Test Account No 2',
   is_self: false,
-  user_type: 'Member',
-  balance: 0
+  user_type: 'Member'
 }]
 export const room_01_permission: MatrixRoomPermissionConfiguration = {
   ban: 50,

@@ -31,3 +31,7 @@ export interface POSTRoomCreateResponse {
 export interface PUTRoomEventSendResponse {
   event_id: MatrixEventID
 }
+
+export interface POSTFilterCreateResponse {
+  filter_id: string
+}
