@@ -1,4 +1,4 @@
-<template>
+emplate>
   <div class="card" style="background-color: rgba(255, 193, 193,.5)">
     <div class="card-body">
       <div class="row">
