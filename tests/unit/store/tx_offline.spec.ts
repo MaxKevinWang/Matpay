@@ -88,6 +88,22 @@ describe('Test transaction Vuex store offline', () => {
       mutation(state, { room_id: 'aaa', rejected_events: fake_rejected_events })
       expect(state.transactions.aaa.rejected.ep01).toEqual(new Set([user_1.user_id, user_2.user_id]))
     })
+    it('Test mutation_reset_state', function () {
+      const mutation = store.mutations.mutation_reset_state
+      const fake_grouped_tx: GroupedTransaction = {
+        from: user_1,
+        group_id: uuidgen(),
+        state: 'approved',
+        txs: [],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      state.transactions.aaa.basic.push(fake_grouped_tx)
+      mutation(state)
+      expect(state.transactions).toEqual({})
+    })
     it('Test mutation_add_approved_grouped_transaction_for_room', function () {
       const mutation = store.mutations.mutation_add_approved_grouped_transaction_for_room
       const fake_grouped_tx: GroupedTransaction = {
@@ -102,6 +118,38 @@ describe('Test transaction Vuex store offline', () => {
       }
       mutation(state, { room_id: 'aaa', grouped_tx: fake_grouped_tx })
       expect(state.transactions.aaa.basic[0]).toEqual(fake_grouped_tx)
+    })
+    it('Test mutation_mark_previous_txs_as_frozen', function () {
+      const mutation = store.mutations.mutation_mark_previous_txs_as_frozen
+      const date = new Date()
+      const fake_grouped_tx1: GroupedTransaction = {
+        from: user_1,
+        group_id: uuidgen(),
+        state: 'approved',
+        txs: [],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      const fake_grouped_tx2: GroupedTransaction = {
+        from: user_1,
+        group_id: uuidgen(),
+        state: 'approved',
+        txs: [],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      fake_grouped_tx1.timestamp.setTime(100)
+      fake_grouped_tx2.timestamp.setTime(200)
+      date.setTime(300)
+      state.transactions.aaa.basic.push(fake_grouped_tx1)
+      state.transactions.aaa.basic.push(fake_grouped_tx2)
+      mutation(state, { room_id: 'aaa', timestamp: date })
+      expect(state.transactions.aaa.basic[0].state).toEqual('frozen')
+      expect(state.transactions.aaa.basic[1].state).toEqual('frozen')
     })
     it('Test mutation_add_pending_approval_for_room', function () {
       const mutation = store.mutations.mutation_add_pending_approval_for_room
