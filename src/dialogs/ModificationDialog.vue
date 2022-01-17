@@ -1,9 +1,9 @@
 <template>
-  <div class="modal fade" id="<...>-modal" tabindex="-1" aria-labelledby="<...>-label" aria-hidden="true">
+  <div class="modal fade" id="modification-modal" tabindex="-1" aria-labelledby="modification-label" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="<...>-label">Modification</h5>
+          <h5 class="modal-title" id="modification-label">Modification</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click="hide()"></button>
         </div>
         <div class="modal-body">
@@ -14,7 +14,7 @@
             <input type="text" v-model="description" class="form-control" placeholder="Description" aria-label="Description" aria-describedby="basic-addon1" id="input-description-modification">
           </div>
           <div class="input-group">
-            <span id="basic-addon1" class="input-group-text">
+            <span id="basic-addon2" class="input-group-text">
               <i class="bi bi-currency-euro"></i>
             </span>
             <input type="text" v-model="amount_input" class="form-control" placeholder="Amount" aria-label="Amount" aria-describedby="basic-addon1" id="input-amount-modification">
@@ -24,7 +24,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-primary" @click="on_confirm()">Submit</button>
+          <button id="modify-confirm" type="button" class="btn btn-primary" @click="on_confirm()">Submit</button>
         </div>
       </div>
     </div>
@@ -131,7 +131,7 @@ export default defineComponent({
     }
   },
   mounted () {
-    this.modal_control = new Modal(document.getElementById('<...>-modal') as HTMLElement, {
+    this.modal_control = new Modal(document.getElementById('modification-modal') as HTMLElement, {
       backdrop: false
     })
   },
