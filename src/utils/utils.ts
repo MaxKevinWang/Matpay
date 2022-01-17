@@ -34,12 +34,23 @@ export const to_currency_display = (num: number) : string => {
 }
 
 export function optimize_graph (graph: TxGraph) : TxGraph {
-  const cycles : Array<Array<MatrixUserID>> = []
-  for (const source of Object.keys(graph.graph)) {
-    dfs(graph.graph, [source], {}, cycles)
-  }
-  console.log(cycles)
   const optim_graph = cloneDeep(graph)
+  console.log('Start optim: ', optim_graph)
+  // remove self cycles before starting
+  for (const source of Object.keys(optim_graph.graph)) {
+    for (const [index, target] of optim_graph.graph[source].entries()) {
+      if (source === target[0]) {
+        optim_graph.graph[source].splice(index, 1)
+      }
+    }
+  }
+  console.log('After removing self cycle:', optim_graph)
+  const cycles : Array<Array<MatrixUserID>> = []
+  for (const source of Object.keys(optim_graph.graph)) {
+    dfs(optim_graph.graph, [source], {}, cycles)
+  }
+  console.log('After cycle removal: ', optim_graph)
+  console.log('Cycles: ', cycles)
   for (const cycle of cycles) {
     const amounts : Array<number> = []
     for (let i = 0; i < cycle.length - 1; i++) {
