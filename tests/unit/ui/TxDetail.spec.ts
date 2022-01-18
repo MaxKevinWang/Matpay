@@ -262,8 +262,10 @@ describe('Test TxDetail Component', () => {
           ]
         }
       })
-      expect(wrapper.find('#input-description-modification').element.innerHTML.includes('Title')).toBeTruthy()
-      expect(wrapper.find('#input-amount-modification').element.innerHTML.includes('10')).toBeTruthy()
+      const default_description = wrapper.find('#input-description-modification')
+      const default_amount = wrapper.find('#input-amount-modification')
+      expect((default_description.element as HTMLInputElement).value).toEqual('Title')
+      expect((default_amount.element as HTMLInputElement).value).toEqual('10')
     })
   })
 })
