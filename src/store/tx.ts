@@ -754,6 +754,7 @@ export const tx_store = {
               room_id: room_id,
               timestamp: frozen_begin
             })
+            // TODO: rollback invalid change: All changes between frozen_begin and origin_server_ts of settlement must be rolled back.
             // Add new settlement transaction
             const from_user = oweing_user[0].user
             const to_user = room_members.filter(id => id.user.user_id === tx_event_settle.sender)[0].user

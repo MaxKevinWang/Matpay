@@ -10,7 +10,11 @@
       <p>{{ simple_transaction.to.displayname }} owes {{ simple_transaction.amount / 100 }}€</p>
     </div>
     <div class="card-body" id="ModificationButton-body">
-      <button class="btn btn-primary" type="button" @click="modification_click()">Modify</button>
+      <button class="btn btn-primary" type="button"
+              :disabled="this.tx.state === 'settlement' || this.tx.state === 'frozen'"
+              @click="modification_click()">
+        Modify
+      </button>
     </div>
     <ModificationDialog ref="create_dialog" :tx="tx" :room_id="room_id" :users_info="this.get_users_info_for_room(this.room_id)"/>
   </div>
