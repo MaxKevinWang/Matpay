@@ -10,7 +10,12 @@
     </div>
     <div class="row" v-if="this.is_tx_fully_loaded">
       <h4>History: {{ room_name }}</h4>
-      <h6>Your balance: </h6>
+      <div v-if="balance >= 0">
+        <p>You owe in total: {{ to_currency_display(balance) }}</p>
+      </div>
+      <div v-if="balance < 0">
+        <p>Oweing you in total: {{ to_currency_display(-balance) }} </p>
+      </div>
       <div class="col-4" v-if="tx_list.length >= 1">
         <TxList :tx_list="tx_list" @on-click="on_click"/>
       </div>
@@ -41,6 +46,9 @@ export default defineComponent({
     }
   },
   computed: {
+    ...mapGetters('auth', [
+      'user_id'
+    ]),
     ...mapGetters('rooms', [
       'get_room_name'
     ]),
@@ -50,8 +58,12 @@ export default defineComponent({
     current_group_id (): string {
       return this.$route.params.current_group_id as string
     },
+    balance (): number {
+      return this.get_total_open_balance_for_user_for_room(this.room_id, this.user_id)
+    },
     ...mapGetters('tx', [
-      'get_grouped_transactions_for_room'
+      'get_grouped_transactions_for_room',
+      'get_total_open_balance_for_user_for_room'
     ])
   },
   components: { TxList, TxDetail },
@@ -59,6 +71,9 @@ export default defineComponent({
     ...mapActions('sync', [
       'action_sync_initial_state',
       'action_sync_full_tx_events_for_room'
+    ]),
+    ...mapActions('tx', [
+      'action_optimize_graph_and_prepare_balance_for_room'
     ]),
     on_click (tx: GroupedTransaction) {
       if (JSON.stringify(this.tx) === JSON.stringify(tx) && this.show_detail) {
@@ -74,6 +89,9 @@ export default defineComponent({
     this.action_sync_full_tx_events_for_room({
       room_id: this.room_id
     }).then(() => {
+      this.action_optimize_graph_and_prepare_balance_for_room({
+        room_id: this.room_id
+      })
       this.room_name = this.get_room_name(this.room_id)
       this.tx_list = this.get_grouped_transactions_for_room(this.room_id)
       if (validate(this.current_group_id)) {

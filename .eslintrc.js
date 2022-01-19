@@ -12,7 +12,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 2020,
     vueFeatures: {
-      'interpolationAsNonHTML': true
+      interpolationAsNonHTML: true
     }
   },
   rules: {

@@ -54,7 +54,7 @@
       </tr>
       </tbody>
     </table>
-    <button class="btn btn-primary" @click="on_create_room_click()">Create New Room...</button>
+    <button id="create-dialog-button" class="btn btn-primary" @click="on_create_room_click()">Create New Room...</button>
     <CreateRoomDialog ref="create_dialog" @on-create="on_create"/>
   </div>
 </template>
