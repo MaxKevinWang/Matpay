@@ -20,7 +20,7 @@
             <input type="text" v-model="amount_input" class="form-control" placeholder="Amount" aria-label="Amount" aria-describedby="basic-addon1" id="input-amount-modification">
           </div>
           <div>
-            <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="on_split_configuration_clicked()">Split Configuration</button>
+            <button type="button" class="btn btn-primary" @click="on_split_configuration_clicked()">Split Configuration</button>
           </div>
         </div>
         <div class="modal-footer">
@@ -29,7 +29,7 @@
       </div>
     </div>
   </div>
-  <SplitModifyDialog ref="split_dialog" :room_id="room_id" :users_info="users_info" :simple_txs="tx.txs"/>
+  <SplitModifyDialog ref="split_dialog" :room_id="room_id" :simple_txs="tx.txs" :current_split="split" @on-save-split="on_save_split"/>
 </template>
 
 <script lang="ts">
@@ -41,6 +41,7 @@ import { TxApprovedPlaceholder } from '@/models/chat.model'
 import { RoomUserInfo } from '@/models/user.model'
 import { GroupedTransaction, PendingApproval } from '@/models/transaction.model'
 import SplitModifyDialog from '@/dialogs/SplitModifyDialog.vue'
+import { MatrixUserID, TxID } from '@/models/id.model'
 
 export default defineComponent({
   name: 'ModificationDialog',
@@ -61,7 +62,8 @@ export default defineComponent({
       is_shown: false as boolean,
       description: '' as string,
       amount: 0 as number,
-      amount_input: '' as string
+      amount_input: '' as string,
+      split: {} as Record<TxID, number>
     }
   },
   computed: {
@@ -115,6 +117,9 @@ export default defineComponent({
         setTimeout(() => popover.hide(), 4000)
       }
     },
+    on_save_split (split: Record<TxID, number>) {
+      this.split = split
+    },
     on_confirm () {
       if (this.description.length >= 1 && this.is_number()) {
         this.amount = parseFloat(this.amount_input)
@@ -142,6 +147,15 @@ export default defineComponent({
           this.description = this.tx?.description
           this.amount = this.sum_amount(this.tx) / 100
           this.amount_input = this.amount.toString()
+          // calculate split here
+          const split = this.split_percentage(this.tx.txs)
+          this.split = (function () {
+            const split_string : Record<TxID, number> = {}
+            for (const [tx_id, split_number] of Object.entries(split)) {
+              split_string[tx_id] = (split_number * 100)
+            }
+            return split_string
+          }())
         }
       },
       immediate: true
