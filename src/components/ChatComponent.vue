@@ -7,22 +7,22 @@
     </div>
   </div>
   <div>
-    <div class="input-group mb-3 position-fixed bottom-0">
+    <div class="input-group mb-3 position-fixed bottom-0" >
       <div class="d-flex">
-        <div class="col-12">
+        <div class="col-12" id="sendInput">
           <input type="text" v-model="chat_message" class="form-control" placeholder="Send a message"
                  aria-describedby="button-addon2">
         </div>
-        <div class="d-flex">
+        <div class="d-flex" id="createButton">
           <button class="btn btn-light" type="button" data-bs-toggle="tooltip" data-bs-placement="top"
                   title="Create Transaction" @click="on_tx_clicked()">
             <i class="bi bi-receipt"></i>
           </button>
-          <router-link :to="{name: 'room_history', params: {room_id: room_id}}" class="btn btn-light" type="button"
+          <router-link :to="{name: 'room_history', params: {room_id: room_id}}" class="btn btn-light" id="historyButton" type="button"
                        data-bs-toggle="tooltip" data-bs-placement="top" title="History">
             <i class="bi bi-clock-history"></i>
           </router-link>
-          <button class="btn btn-primary" type="button" :disabled="!this.chat_message" @click="on_send_click">Send
+          <button class="btn btn-primary" id="sendButton" type="button" :disabled="!this.chat_message" @click="on_send_click">Send
           </button>
         </div>
       </div>
