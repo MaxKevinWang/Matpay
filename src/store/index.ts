@@ -98,11 +98,11 @@ export function newStore () {
             case 'sync/mutation_init_state_complete': {
               store.dispatch('rooms/action_parse_state_events_for_all_rooms')
               interval_id = setInterval(() => {
-                if (store.getters['auth/is_logged_in']) {
-                  store.dispatch('sync/action_update_state', {
-                    timeout: 5000
-                  })
-                }
+                // if (store.getters['auth/is_logged_in']) {
+                store.dispatch('sync/action_update_state', {
+                  timeout: 5000
+                })
+                // }
               }, 5000)
               break
             }
