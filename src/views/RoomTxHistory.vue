@@ -59,7 +59,9 @@ export default defineComponent({
       return this.$route.params.current_group_id as string
     },
     balance (): number {
-      return this.get_total_open_balance_for_user_for_room(this.room_id, this.user_id)
+      // return this.get_total_open_balance_for_user_for_room(this.room_id, this.user_id)
+      // TODO: fix this
+      return 0
     },
     ...mapGetters('tx', [
       'get_grouped_transactions_for_room',
