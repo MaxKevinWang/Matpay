@@ -316,7 +316,36 @@ export const tx_store = {
       tx_old: GroupedTransaction,
       tx_new: GroupedTransaction
     }) {
-      throw new Error('TO BE IMPLEMENTED')
+      const room_id = payload.room_id
+      const tx_old = payload.tx_old
+      const tx_new = payload.tx_new
+      const exist_tx_old = state.transactions[room_id].basic.filter(i => i.group_id === tx_old.group_id)
+      if (exist_tx_old.length <= 0) {
+        throw new Error('Implementation error: only modify existing tx!')
+      }
+      if (tx_old.state === 'frozen' || tx_old.state === 'settlement' || tx_new.state === 'frozen' || tx_new.state === 'settlement') {
+        throw new Error('Implementation error: cannot modify frozen or settlement txs!')
+      }
+      if (tx_old.group_id !== tx_new.group_id) {
+        throw new Error('Implementation error: keep the group_id same!')
+      }
+      // Further validations goes here
+      // construct event
+      const modify_event = {
+        txs: tx_new.txs,
+        group_id: tx_new.group_id,
+        description: tx_new.description
+      }
+      const homeserver: string = rootGetters['auth/homeserver']
+      const response = await axios.put<PUTRoomEventSendResponse>(`${homeserver}/_matrix/client/r0/rooms/${room_id}/send/com.matpay.modify/${uuidgen()}`,
+        modify_event,
+        { validateStatus: () => true }
+      )
+      console.log('Modify event sent, timestamp:' + new Date().getTime())
+      if (response.status !== 200) {
+        throw new Error((response.data as unknown as MatrixError).error)
+      }
+      // TODO: notify other stores
     },
     async action_approve_tx_for_room ({
       state,
