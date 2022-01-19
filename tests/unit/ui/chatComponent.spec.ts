@@ -53,13 +53,12 @@ describe('Test chatComponent', () => {
           chat: {
             namespaced: true,
             getters: {
-              get_chat_log_for_room: (room_id) => () => mock_chatlog.messages
+              get_chat_log_for_room: (room_id) => () => mock_chatlog
             }
           },
           rooms: {
             namespaced: true,
             getters: {
-
             }
           }
         }
@@ -74,8 +73,11 @@ describe('Test chatComponent', () => {
         }
       }
       )
-      expect(wrapper.find('#sendButton').attributes('‘disabled')).toBe(false)
       expect(wrapper.find('#sendButton').exists()).toBe(true)
+      expect(wrapper.find('#historyButton').exists()).toBe(true)
+      expect(wrapper.find('#sendInput').exists()).toBe(true)
+      expect(wrapper.find('#createButton').exists()).toBe(true)
+      expect(wrapper.find('#sendButton').isVisible()).toBe(true)
       expect(wrapper.find('#historyButton').isVisible()).toBe(true)
       expect(wrapper.find('#sendInput').isVisible()).toBe(true)
       expect(wrapper.find('#createButton').isVisible()).toBe(true)
