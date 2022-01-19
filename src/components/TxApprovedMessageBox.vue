@@ -3,18 +3,19 @@
     <div class="card-body">
       <div class="row">
         <div class="col">
-          <p>{{this.reference.timestamp.toLocaleDateString()}}</p>
+          <p>{{ this.reference.timestamp.toLocaleDateString() }}</p>
         </div>
         <div class="col">
-          <p>{{this.reference.grouped_tx.description}}</p>
+          <p>{{ this.reference.grouped_tx.description }}</p>
         </div>
         <div class="col">
-          <p>{{this.reference.grouped_tx.from.displayname + " paid " + to_currency_display(sum_amount(this.reference.grouped_tx))}}</p>
+          <p>
+            {{ this.reference.grouped_tx.from.displayname + ' paid ' + to_currency_display(sum_amount(this.reference.grouped_tx)) }}</p>
         </div>
         <div class="col">
-         <router-link :to="{ name: 'room_history', params: {room_id: this.room_id, current_group_id: this.reference.grouped_tx.group_id}}" class="btn btn-primary">
-           Details
-         </router-link>
+          <button @click="on_detail_click" class="btn btn-primary">
+            Details
+          </button>
         </div>
       </div>
     </div>
@@ -23,11 +24,11 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
-import { mapActions, mapGetters } from 'vuex'
+import { mapGetters } from 'vuex'
 import { User } from '@/models/user.model'
-import { GroupID, MatrixEventID, MatrixRoomID, MatrixUserID, TxID } from '@/models/id.model'
-import { GroupedTransaction, PendingApproval, SimpleTransaction } from '@/models/transaction.model'
-import { TxApprovedPlaceholder, TxPlaceholder } from '@/models/chat.model'
+import { MatrixRoomID } from '@/models/id.model'
+import { TxApprovedPlaceholder } from '@/models/chat.model'
+
 export default defineComponent({
   name: 'TxApprovedMessageBox',
   props: {
@@ -50,25 +51,17 @@ export default defineComponent({
     ...mapGetters('tx', [
       'get_grouped_transactions_for_room'
     ])
-    //  ...mapGetters('tx', [
-    //    'transaction'
-    //  ])
   },
   components: {},
   methods: {
-    calc_amount (tx: GroupedTransaction) : number {
-      let amount = 0
-      for (const simple_tx of tx.txs) {
-        amount += simple_tx.amount
-      }
-      return amount
-    },
-    calc_amount2 (tx: PendingApproval) : number {
-      let amount = 0
-      for (const simple_tx of tx.txs) {
-        amount += simple_tx.amount
-      }
-      return amount
+    on_detail_click () {
+      this.$router.push({
+        name: 'room_history',
+        params: {
+          room_id: this.room_id,
+          current_group_id: this.reference?.grouped_tx.group_id
+        }
+      })
     }
   }
 })
