@@ -329,7 +329,7 @@ export const tx_store = {
       if (tx_old.group_id !== tx_new.group_id) {
         throw new Error('Implementation error: keep the group_id same!')
       }
-      // Further validations goes here
+      // TODO: Further validations goes here
       // construct event
       const modify_event = {
         txs: tx_new.txs.map(i => {
