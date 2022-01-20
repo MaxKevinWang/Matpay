@@ -1,5 +1,5 @@
 <template>
-  <div class="card  text-center" v-if="tx !== undefined">
+  <div class="card text-center" v-if="tx !== undefined">
     <div class="card-header" id="TXDetail-header">
       <h3>Details</h3>
     </div>
@@ -16,7 +16,7 @@
         Modify
       </button>
     </div>
-    <ModificationDialog ref="create_dialog" :tx="tx" :room_id="room_id" :users_info="this.get_users_info_for_room(this.room_id)"/>
+    <ModificationDialog ref="create_dialog" @on-error="on_error" :tx="tx" :room_id="room_id" :users_info="this.get_users_info_for_room(this.room_id)"/>
   </div>
 </template>
 
@@ -36,6 +36,7 @@ export default defineComponent({
       type: String as PropType<string>
     }
   },
+  emits: ['on-error'],
   data () {
     return {
     }
@@ -51,6 +52,9 @@ export default defineComponent({
   methods: {
     modification_click () {
       this.$refs.create_dialog.show()
+    },
+    on_error (e: string) {
+      this.$emit('on-error', e)
     }
   }
 })

@@ -332,7 +332,13 @@ export const tx_store = {
       // Further validations goes here
       // construct event
       const modify_event = {
-        txs: tx_new.txs,
+        txs: tx_new.txs.map(i => {
+          return {
+            to: i.to.user_id,
+            amount: i.amount,
+            tx_id: i.tx_id
+          }
+        }),
         group_id: tx_new.group_id,
         description: tx_new.description
       }
@@ -585,14 +591,17 @@ export const tx_store = {
           const tx_event_modify = tx_event as TxModifyEvent
           // amount >= 0
           if (tx_event_modify.content.txs.map(i => i.amount).filter(i => i < 0).length > 0) {
+            console.log('Modify checkpoint 1')
             return false
           }
           // description not blank
           if (!tx_event_modify.content.description) {
+            console.log('Modify checkpoint 2')
             return false
           }
           // Check if group ID UUIDs
           if (!uuidValidate(tx_event_modify.content.group_id)) {
+            console.log('Modify checkpoint 3')
             return false
           }
           // Check if tx_ids UUIDs
@@ -600,12 +609,14 @@ export const tx_store = {
             tx_event_modify.content.txs.map(i => i.tx_id).filter(i => !uuidValidate(i))
           )
           if (check_tx_id.size > 0) {
+            console.log('Modify checkpoint 4')
             return false
           }
           // Semantic part
           // Create tx with the same group id
           const existing_group_ids: Set<GroupID> = getters.get_existing_group_ids_for_room(room_id)
           if (!existing_group_ids.has(tx_event_modify.content.group_id)) {
+            console.log('Modify checkpoint 5')
             return false
           }
           // Each tx_id has same one in the create event
@@ -614,6 +625,7 @@ export const tx_store = {
             tx_event_modify.content.txs.map(i => i.tx_id).filter(x => existing_tx_ids.has(x))
           )
           if (compare_tx_ids.size !== tx_event_modify.content.txs.length) {
+            console.log('Modify checkpoint 6')
             return false
           }
           // get old transaction
@@ -634,7 +646,8 @@ export const tx_store = {
               break
             }
           }
-          if (is_to === false && is_from === false) {
+          if (!is_to && !is_from) {
+            console.log('Modify checkpoint 7')
             return false
           }
           // At least one description
@@ -642,28 +655,67 @@ export const tx_store = {
           // AND To-sides of the transactions are not modified
           const description_changed = old_tx?.description !== tx_event_modify.content.description
           let simple_tx_changed = false
-          for (const u of tx_event_modify.content.txs) {
+          for (const user_in_event of tx_event_modify.content.txs) {
             if (old_tx?.txs) {
               for (const v of old_tx?.txs) {
-                if (u.tx_id === v.tx_id) {
-                  if (u.to !== v.to.user_id) {
+                if (user_in_event.tx_id === v.tx_id) {
+                  if (user_in_event.to !== v.to.user_id) {
+                    console.log('u.id:', user_in_event.to, 'v.id:', v.to.user_id)
+                    console.log('Modify checkpoint 8')
                     return false
                   }
-                  if (u.amount !== v.amount) {
+                  if (user_in_event.amount !== v.amount) {
                     simple_tx_changed = true
                     break
                   }
                 }
               }
             }
-            if (simple_tx_changed === false && description_changed === false) {
+            if (!simple_tx_changed && !description_changed) {
+              console.log('Modify checkpoint 9')
               return false
             }
             if (old_tx?.state === 'frozen') {
+              console.log('Modify checkpoint 10')
               return false
             }
           }
+          console.log('Modify checkpoint 11 (passed)')
           // TODO: implement modify event parsing here
+          // Construct pending approval
+          const room_users: Array<User> = (rootGetters['user/get_users_info_for_room'](room_id) as Array<RoomUserInfo>)
+            .map(u => u.user)
+          const txs = tx_event_modify.content.txs.map<SimpleTransaction>(i => {
+            return {
+              amount: i.amount,
+              tx_id: i.tx_id,
+              to: room_users.filter(j => j.user_id === i.to)[0]
+            }
+          })
+          const approvals = tx_event_modify.content.txs.reduce((prev: Record<MatrixRoomID, boolean>, cur) => {
+            prev[cur.to] = false
+            return prev
+          }, {} as Record<MatrixUserID, boolean>)
+          approvals[(old_tx as GroupedTransaction).from.user_id] = false
+          const new_pending_approval : PendingApproval = {
+            approvals: approvals,
+            description: tx_event_modify.content.description,
+            event_id: tx_event_modify.event_id,
+            from: (old_tx as GroupedTransaction).from,
+            group_id: (old_tx as GroupedTransaction).group_id,
+            timestamp: new Date(tx_event_modify.origin_server_ts),
+            txs: txs,
+            type: 'modify'
+          }
+          commit('mutation_add_pending_approval_for_room', {
+            room_id: room_id,
+            pending_approval: new_pending_approval
+          })
+          dispatch('chat/action_parse_single_pending_approval_for_room', {
+            room_id: room_id,
+            pending_approval: new_pending_approval
+          }, { root: true })
+          // TODO: notify other stores
           return true
           break
         }

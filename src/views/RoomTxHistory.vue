@@ -1,5 +1,8 @@
 <template>
   <div class="container TxWindowView">
+    <div class="alert alert-danger" role="alert" v-if="error !== ''">
+      {{ error }}
+    </div>
     <div class="row">
       <button v-if="!is_tx_fully_loaded" class="btn btn-primary spinner" type="button" disabled>
         <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
@@ -20,7 +23,7 @@
         <TxList :tx_list="tx_list" @on-click="on_click"/>
       </div>
       <div class="col-8" v-if="show_detail === true">
-        <TxDetail :tx="tx" :room_id="room_id"/>
+        <TxDetail :tx="tx" :room_id="room_id" @on-error="on_error"/>
       </div>
     </div>
   </div>
@@ -42,7 +45,8 @@ export default defineComponent({
       tx_list: [] as Array<GroupedTransaction>,
       tx: {} as GroupedTransaction,
       show_detail: false as boolean,
-      is_tx_fully_loaded: false
+      is_tx_fully_loaded: false,
+      error: '' as string
     }
   },
   computed: {
@@ -84,6 +88,9 @@ export default defineComponent({
         this.tx = tx
         this.show_detail = true
       }
+    },
+    on_error (e: string) {
+      this.error = e
     }
   },
   async created () {

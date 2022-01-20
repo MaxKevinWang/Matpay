@@ -39,9 +39,11 @@ import { mapActions, mapGetters } from 'vuex'
 import { Modal, Popover } from 'bootstrap'
 import { TxApprovedPlaceholder } from '@/models/chat.model'
 import { RoomUserInfo } from '@/models/user.model'
-import { GroupedTransaction, PendingApproval } from '@/models/transaction.model'
+import { GroupedTransaction, PendingApproval, SimpleTransaction } from '@/models/transaction.model'
 import SplitModifyDialog from '@/dialogs/SplitModifyDialog.vue'
 import { MatrixUserID, TxID } from '@/models/id.model'
+import { cloneDeep } from 'lodash'
+import Dinero from 'dinero.js'
 
 export default defineComponent({
   name: 'ModificationDialog',
@@ -66,12 +68,16 @@ export default defineComponent({
       split: {} as Record<TxID, number>
     }
   },
+  emits: ['on-error'],
   computed: {
   },
   components: {
     SplitModifyDialog
   },
   methods: {
+    ...mapActions('tx', [
+      'action_modify_tx_for_room'
+    ]),
     show () {
       this.modal_control?.show()
       this.is_shown = true
@@ -110,7 +116,7 @@ export default defineComponent({
     popover_no_number (number: boolean) {
       if (!number) {
         const popover = new Popover('#input-amount-modification', {
-          content: 'Amount has to be a number',
+          content: 'Amount has to be a positive number',
           container: 'body'
         })
         popover.show()
@@ -120,12 +126,35 @@ export default defineComponent({
     on_save_split (split: Record<TxID, number>) {
       this.split = split
     },
-    on_confirm () {
+    async on_confirm () {
       if (this.description.length >= 1 && this.is_number()) {
-        this.amount = parseFloat(this.amount_input)
+        this.amount = Number(this.amount_input) * 100 // Euro to cent
+        // Execute modification
+        if (this.tx) {
+          const tx_new = cloneDeep(this.tx)
+          tx_new.description = this.description
+          // Resplit
+          // This only works assuming JavaScript preserves deterministic object ordering!
+          const dinero_ratio = Object.values(this.split)
+          const split_result = Dinero({ amount: this.amount }).allocate(dinero_ratio)
+          for (const [index, tx_id] of Object.keys(this.split).entries()) {
+            tx_new.txs.filter(i => i.tx_id === tx_id)[0].amount = split_result[index].getAmount()
+          }
+          try {
+            await this.action_modify_tx_for_room({
+              room_id: this.room_id,
+              tx_old: this.tx,
+              tx_new: tx_new
+            })
+          } catch (e) {
+            this.$emit('on-error', e)
+            return
+          }
+        }
         this.amount_input = ''
         this.description = ''
         this.hide()
+        this.$emit('on-error', '')
       } else {
         this.popover_hint(this.description.length >= 1)
         this.popover_no_number(this.is_number())
