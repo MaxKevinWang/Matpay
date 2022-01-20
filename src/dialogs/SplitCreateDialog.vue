@@ -12,8 +12,15 @@
                    <span class="input-group-text" id="basic-addon3">
               <input class="form-check-input" type="checkbox" :id="user.user.displayname" :value="user.user.user_id" v-model="selected_members" >
             </span>
-            <label class="input-group-text" for="split-perc">{{ user.displayname }}</label>
-            <input v-model="this.selected_members_split[user.user.user_id]" type="text" class="form-control" placeholder="Split value" aria-label="Recipient's username" aria-describedby="basic-addon2" id="split-perc">
+            <label class="input-group-text" :for="`split-perc${selectorify(user.user.user_id)}`">{{ user.displayname }}</label>
+            <input
+              v-model="this.selected_members_split[user.user.user_id]"
+              type="text"
+              class="form-control"
+              placeholder="Split value"
+              aria-label="Recipient's username"
+              aria-describedby="basic-addon2"
+              :id="`split-perc${selectorify(user.user.user_id)}`">
             <span class="input-group-text" id="basic-addon2">%</span>
           </div>
         </div>
@@ -69,6 +76,12 @@ export default defineComponent({
   components: {
   },
   methods: {
+    selectorify (user_id: MatrixUserID) : string {
+      // transforms a user id to a valid selector
+      return user_id.substring(1)
+        .replaceAll(':', '_')
+        .replaceAll('.', '_')
+    },
     show () {
       this.modal_control?.show()
       this.is_shown = true
@@ -77,8 +90,11 @@ export default defineComponent({
       this.modal_control?.hide()
       this.is_shown = false
     },
-    popover_hint (error_msg: string) {
-      const popover = new Popover('#input-description', {
+    popover_hint (error_msg: string, user_id?: MatrixUserID) {
+      if (user_id) {
+        console.log(`#split-perc${this.selectorify(user_id)}`)
+      }
+      const popover = new Popover(user_id ? `#split-perc${this.selectorify(user_id)}` : '#basic-addon3', {
         content: error_msg,
         container: 'body'
       })
@@ -93,18 +109,18 @@ export default defineComponent({
       const split : Record<MatrixUserID, number> = {}
       for (const selected of this.selected_members) {
         if (!this.selected_members_split[selected]) {
-          this.popover_hint('Every selected user must have a split ratio!')
+          this.popover_hint('Every selected user must have a split ratio!', selected)
           return
         }
         const num = Number(this.selected_members_split[selected])
         if (Number.isNaN(num)) {
-          this.popover_hint('You can only input a number as the ratio!')
+          this.popover_hint('You can only input a number as the ratio!', selected)
           return
         }
         split[selected] = num
       }
       if (Object.values(split).reduce((sum, i) => sum + i, 0) !== 100) {
-        this.popover_hint('The sum of all splits does not equal to 100!')
+        this.popover_hint('The sum of all splits does not equal to 100!', this.selected_members[0])
         return
       }
       this.$emit('on-save-split', split)

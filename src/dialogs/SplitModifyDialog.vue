@@ -9,8 +9,15 @@
         <div class="modal-body">
           <p>Input split as a percentage between 0 and 100. The sum of all splits should be 100.</p>
           <div class="input-group mb-3 form-control" v-for="simple_tx in this.simple_txs" :key="simple_tx.tx_id">
-            <label class="input-group-text" for="split-perc">{{ simple_tx.to.displayname }}</label>
-            <input v-model="this.modified_split[simple_tx.tx_id]" type="text" class="form-control" placeholder="Split value" aria-label="Recipient's username" aria-describedby="basic-addon2" id="split-perc">
+            <label class="input-group-text" :for="`split-perc${simple_tx.tx_id}`">{{ simple_tx.to.displayname }}</label>
+            <input
+              v-model="this.modified_split[simple_tx.tx_id]"
+              type="text"
+              class="form-control"
+              placeholder="Split value"
+              aria-label="Recipient's username"
+              aria-describedby="basic-addon2"
+              :id="`split-perc${simple_tx.tx_id}`">
             <span class="input-group-text" id="basic-addon2">%</span>
           </div>
         </div>
@@ -66,8 +73,8 @@ export default defineComponent({
       this.modal_control?.hide()
       this.is_shown = false
     },
-    popover_hint (error_msg: string) {
-      const popover = new Popover('#split-perc', {
+    popover_hint (error_msg: string, tx_id: TxID) {
+      const popover = new Popover(`#split-perc${tx_id}`, {
         content: error_msg,
         container: 'body'
       })
@@ -78,18 +85,18 @@ export default defineComponent({
       const split : Record<MatrixUserID, number> = {}
       for (const [tx_id, split_string] of Object.entries(this.modified_split)) {
         if (split_string.length === 0) {
-          this.popover_hint('Every selected user must have a split ratio!')
+          this.popover_hint('Every selected user must have a split ratio!', tx_id)
           return
         }
         const num = Number(split_string)
         if (Number.isNaN(num)) {
-          this.popover_hint('You can only input a number as the ratio!')
+          this.popover_hint('You can only input a number as the ratio!', tx_id)
           return
         }
         split[tx_id] = num
       }
       if (Object.values(split).reduce((sum, i) => sum + i, 0) !== 100) {
-        this.popover_hint('The sum of all splits does not equal to 100!')
+        this.popover_hint('The sum of all splits does not equal to 100!', Object.keys(this.modified_split)[0])
         return
       }
       this.$emit('on-save-split', split)
