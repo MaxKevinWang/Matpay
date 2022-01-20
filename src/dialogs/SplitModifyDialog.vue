@@ -8,12 +8,12 @@
         </div>
         <div class="modal-body">
           <p>Input split as a percentage between 0 and 100. The sum of all splits should be 100.</p>
-          <div class="input-group mb-3 form-control" v-for="simple_tx in this.simple_txs" :key="simple_tx.tx_id">
+          <div class="input-group mb-3 form-control" v-for="simple_tx in this.simple_txs" :key="simple_tx.tx_id" :data-test="simple_tx.tx_id">
             <label class="input-group-text" :for="`split-perc${simple_tx.tx_id}`">{{ simple_tx.to.displayname }}</label>
             <input
               v-model="this.modified_split[simple_tx.tx_id]"
               type="text"
-              class="form-control"
+              class="form-control percentage-input"
               placeholder="Split value"
               aria-label="Recipient's username"
               aria-describedby="basic-addon2"
@@ -23,7 +23,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" @click="on_save_click">Save</button>
+          <button type="button" class="btn btn-primary" @click="on_save_click" id="save-trigger">Save</button>
         </div>
       </div>
     </div>
