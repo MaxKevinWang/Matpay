@@ -59,10 +59,10 @@ describe('Test Txlist Component', () => {
         ]
       }
     })
-    const tx1 = wrapper.findAll('[data-test="todo"]').filter(w => w.attributes('key') === fake_group_id1)
-    const tx2 = wrapper.findAll('[data-test="todo"]').filter(w => w.attributes('key') === fake_group_id2)
-    expect(wrapper.findAll('[data-test="todo"]')).toHaveLength(2)
-    expect(tx1).toBe(group_tx1)
-    expect(tx2).toBe(group_tx2)
+    const tx1 = wrapper.findAll('.list-tab').filter(w => w.attributes('data-test') === fake_group_id1)
+    const tx2 = wrapper.findAll('.list-tab').filter(w => w.attributes('data-test') === fake_group_id2)
+    expect(wrapper.findAll('.list-tab')).toHaveLength(2)
+    expect(tx1[0].element.innerHTML.includes('2022/1/15 Title: DSN Test Account No 1 paid 0€')).toBeTruthy()
+    expect(tx2[0].element.innerHTML.includes('2022/1/15 Title: DSN Test Account No 2 paid 0€')).toBeTruthy()
   })
 })
