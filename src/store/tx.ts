@@ -320,6 +320,10 @@ export const tx_store = {
       const tx_old = payload.tx_old
       const tx_new = payload.tx_new
       const exist_tx_old = state.transactions[room_id].basic.filter(i => i.group_id === tx_old.group_id)
+      const existing_tx_ids: Set<TxID> = getters.get_existing_tx_ids_for_room(room_id)
+      const compare_tx_ids = new Set(
+        tx_new.txs.map(i => i.tx_id).filter(x => existing_tx_ids.has(x))
+      )
       if (exist_tx_old.length <= 0) {
         throw new Error('Implementation error: only modify existing tx!')
       }
@@ -328,6 +332,40 @@ export const tx_store = {
       }
       if (tx_old.group_id !== tx_new.group_id) {
         throw new Error('Implementation error: keep the group_id same!')
+      }
+      if (compare_tx_ids.size !== tx_new.txs.length) {
+        throw new Error('Implementation error: every tx_id must have a corresponding one in the old tx')
+      }
+      // if something changed
+      const description_changed = tx_old.description !== tx_new.description
+      let simple_tx_changed = false
+      let from_to_same = false
+      for (const u of tx_new.txs) {
+        if (tx_old.txs) {
+          for (const v of tx_old.txs) {
+            if (u.tx_id === v.tx_id) {
+              if (u.to.user_id !== v.to.user_id) {
+                return false
+              }
+              if (u.amount !== v.amount) {
+                simple_tx_changed = true
+                break
+              }
+            }
+          }
+        }
+      }
+      // if (tx_new.from.user_id === u.to.user_id)
+      if (!simple_tx_changed && !description_changed) {
+        throw new Error('Implementation error: something must be changed in a modification')
+      }
+      for (const u of tx_new.txs) {
+        if (u.to === tx_new.from) {
+          from_to_same = true
+        }
+      }
+      if (from_to_same) {
+        throw new Error('Implementation error: the from & to users should not stay the same')
       }
       // TODO: Further validations goes here
       // construct event

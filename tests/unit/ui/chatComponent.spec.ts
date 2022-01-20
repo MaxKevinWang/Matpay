@@ -14,6 +14,7 @@ import ChatMessageBox from '@/components/ChatMessageBox.vue'
 import App from '@/App.vue'
 import router from '@/router'
 import { RoomUserInfo, User } from '@/models/user.model'
+import ModificationDialog from '@/dialogs/ModificationDialog.vue'
 
 describe('Test chatComponent', () => {
   let store = newStore()
@@ -81,6 +82,52 @@ describe('Test chatComponent', () => {
       expect(wrapper.find('#historyButton').isVisible()).toBe(true)
       expect(wrapper.find('#sendInput').isVisible()).toBe(true)
       expect(wrapper.find('#createButton').isVisible()).toBe(true)
+    })
+  })
+  describe('Test CreateTxDialog', () => {
+    it('Test empty input', async () => {
+      const wrapper = shallowMount(ModificationDialog, {
+        attachTo: document.querySelector('html') as HTMLElement,
+        global: {
+          plugins: [store]
+        },
+        props: {
+          tx: {
+            from: user_1,
+            group_id: uuidgen(),
+            state: 'approved',
+            txs: [
+              {
+                to: user_2,
+                tx_id: uuidgen(),
+                amount: 10
+              }
+            ],
+            description: 'Title',
+            participants: [],
+            timestamp: new Date('1/15/2022'),
+            pending_approvals: []
+          },
+          users_info: [
+            {
+              user: user_1,
+              displayname: user_1.displayname,
+              user_type: 'Member',
+              is_self: true,
+              avatar_url: ''
+            }, {
+              user: user_2,
+              displayname: user_2.displayname,
+              user_type: 'Member',
+              is_self: false,
+              avatar_url: ''
+            }
+          ]
+        }
+      })
+      await wrapper.find('#input-description-modification').setValue('')
+      await wrapper.find('#modify-confirm').trigger('click')
+      expect(popover_description_called).toBeTruthy()
     })
   })
 })
