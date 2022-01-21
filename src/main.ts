@@ -20,6 +20,24 @@ axios.interceptors.request.use(function (config) {
 }, function (error) {
   return Promise.reject(error)
 })
+// response interceptor: 401 => relogin
+axios.interceptors.response.use(function (response) {
+  return response
+}, function (error) {
+  if (error.response && error.response.status === 401) {
+    // discard all invalid credentials
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('user_id')
+    // force relogin
+    router.push({
+      name: 'login',
+      query: {
+        force: 1
+      }
+    })
+  }
+  return Promise.reject(error)
+})
 const app = createApp(App)
 app.use(store).use(router)
 app.config.globalProperties.sum_amount = sum_amount

@@ -35,7 +35,6 @@ export const auth_store = {
       state.access_token = ''
       localStorage.removeItem('access_token')
       localStorage.removeItem('user_id')
-      localStorage.removeItem('event_txn_id')
     }
   },
   actions: <ActionTree<State, any>>{
