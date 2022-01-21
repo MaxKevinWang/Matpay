@@ -63,9 +63,15 @@ export default defineComponent({
           password: this.password
         })
         await this.$router.push('/rooms')
+        this.error = ''
       } catch (reason) {
         this.error = reason
       }
+    }
+  },
+  mounted () {
+    if (this.$route.query.force) {
+      this.error = 'Error: your login has expired. Please relogin.'
     }
   }
 })
