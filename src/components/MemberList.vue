@@ -1,15 +1,17 @@
 <template>
-  <h4>Members</h4>
-  <ul class="list-unstyled card chat-list mt-2 mb-0">
-    <li class="clearfix" v-for="user in users" :key="user.user.user_id">
-      <UserCard :room_id="room_id" :user_prop="user" :can_i_kick_user="can_i_kick_user" @on-kick="on_kick" @on-ban="on_ban" @on-error="on_error"/>
-    </li>
-    <li class="row">
-      <button class="btn btn-primary" @click="on_invite_user_clicked()">Invite user</button>
-    </li>
-  </ul>
-  <UserInviteDialog ref="invite_dialog" :room_id="room_id"/>
-  <ConfirmDialog ref="confirm_dialog" />
+  <div id="fixed-member-list">
+    <h4>Members</h4>
+    <ul class="list-unstyled card chat-list mt-2 mb-0">
+      <li class="clearfix" v-for="user in users" :key="user.user.user_id">
+        <UserCard :room_id="room_id" :user_prop="user" :can_i_kick_user="can_i_kick_user" @on-kick="on_kick" @on-ban="on_ban" @on-error="on_error"/>
+      </li>
+      <li class="row">
+        <button class="btn btn-primary" @click="on_invite_user_clicked()">Invite user</button>
+      </li>
+    </ul>
+    <UserInviteDialog ref="invite_dialog" :room_id="room_id"/>
+    <ConfirmDialog ref="confirm_dialog" />
+  </div>
 </template>
 
 <script lang="ts">
@@ -160,6 +162,10 @@ li {
 li:hover {
   background: #efefef;
   cursor: pointer
+}
+
+#fixed-member-list {
+  position: fixed;
 }
 
 </style>
