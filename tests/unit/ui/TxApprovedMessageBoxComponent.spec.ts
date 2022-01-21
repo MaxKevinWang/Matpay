@@ -1,10 +1,8 @@
-import { config, flushPromises, mount } from '@vue/test-utils'
+import { config, shallowMount } from '@vue/test-utils'
 import TxApprovedMessageBox from '@/components/TxApprovedMessageBox.vue'
-import { user_1, user_2, user_3 } from '../mocks/mocked_user'
+import { room_01_room_id, user_1, user_2, user_3 } from '../mocks/mocked_user'
 import { TxApprovedPlaceholder } from '@/models/chat.model'
 import { sum_amount, to_currency_display } from '@/utils/utils'
-import { createRouter, createWebHistory } from 'vue-router'
-import RoomDetail from '@/views/RoomDetail.vue'
 
 describe('Test TxApprovedMessageBox Interface', () => {
   beforeAll(() => {
@@ -35,7 +33,7 @@ describe('Test TxApprovedMessageBox Interface', () => {
     }
   }
   it('Test correct display', async () => {
-    const wrapper = mount(TxApprovedMessageBox, {
+    const wrapper = shallowMount(TxApprovedMessageBox, {
       props: {
         reference: reference
       }
@@ -45,30 +43,23 @@ describe('Test TxApprovedMessageBox Interface', () => {
     await expect(wrapper.findAll('p').filter(i => i.element.innerHTML.includes(user_1.displayname + ' paid ')).length).toBe(1)
   })
   it('Test pressing Details redirects', async () => {
-    const mockRoute = {
-      name: 'room_history',
-      params: {
-        room_id: 'aaa',
-        group_id: 'abc'
-      }
-    }
-    const mockRouter = {
-      push: jest.fn()
-    }
-    const wrapper = mount(TxApprovedMessageBox, {
-      props: {
-        reference: reference,
-        room_id: 'aaa'
-      },
+    let redirected = false
+    const wrapper = shallowMount(TxApprovedMessageBox, {
       global: {
         mocks: {
-          $route: mockRoute,
-          $router: mockRouter
+          $router: {
+            push: () => {
+              redirected = true
+            }
+          }
         }
+      },
+      props: {
+        reference: reference,
+        room_id: room_01_room_id
       }
     })
-    await wrapper.find('router-link').trigger('click')
-    expect(mockRouter.push).toHaveBeenCalledTimes(1)
-    expect(mockRouter.push).toHaveBeenCalledWith('/history/aaa/abc')
+    await wrapper.find('button').trigger('click')
+    expect(redirected).toBe(true)
   })
 })
