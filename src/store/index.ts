@@ -7,7 +7,7 @@ import { chat_store } from '@/store/chat'
 import { tx_store } from '@/store/tx'
 import { MatrixRoomID } from '@/models/id.model'
 import { MatrixRoomEvent, MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
-import { TxMessageEvent } from '@/interface/tx_event.interface'
+import { TX_MESSAGE_EVENT_TYPES, TxMessageEvent } from '@/interface/tx_event.interface'
 
 const normal_stores = ['rooms', 'user', 'tx', 'chat']
 let is_long_poll_enabled = false
@@ -76,12 +76,7 @@ export function newStore () {
               if (['com.matpay.reject'].includes(room_event.type)) {
                 console.log('Parse rejection here')
               }
-              if ([
-                'com.matpay.create',
-                'com.matpay.modify',
-                'com.matpay.approve',
-                'com.matpay.settle'
-              ].includes(room_event.type)) {
+              if (TX_MESSAGE_EVENT_TYPES.includes(room_event.type)) {
                 if (store.state.sync.room_tx_sync_complete[room_id]) {
                   store.dispatch('tx/action_parse_single_tx_event_for_room', {
                     room_id: room_id,
@@ -109,12 +104,7 @@ export function newStore () {
             case 'sync/mutation_room_tx_sync_state_complete': {
               const room_id = mutation.payload as MatrixRoomID
               const tx_message_events = (store.state.sync.room_events[room_id] as Array<MatrixRoomEvent>)
-                .filter(e => new Set([
-                  'com.matpay.create',
-                  'com.matpay.modify',
-                  'com.matpay.approve',
-                  'com.matpay.settle'
-                ]).has(e.type))
+                .filter(e => new Set(TX_MESSAGE_EVENT_TYPES).has(e.type))
               store.dispatch('tx/action_parse_all_tx_events_for_room', {
                 room_id: room_id,
                 tx_events: tx_message_events

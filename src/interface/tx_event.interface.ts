@@ -69,3 +69,18 @@ export interface TxSettleEvent extends TxMessageEvent {
     event_id: MatrixEventID
   }
 }
+
+export const TX_EVENT_TYPES = [
+  'com.matpay.create',
+  'com.matpay.modify',
+  'com.matpay.approve',
+  'com.matpay.settle',
+  'com.matpay.rejected'
+]
+
+export const TX_MESSAGE_EVENT_TYPES = [
+  'com.matpay.create',
+  'com.matpay.modify',
+  'com.matpay.approve',
+  'com.matpay.settle'
+]

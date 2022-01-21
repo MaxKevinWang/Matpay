@@ -6,7 +6,7 @@ import { MatrixRoomEvent, MatrixRoomStateEvent } from '@/interface/rooms_event.i
 import { RoomEventFilter } from '@/interface/filter.interface'
 import { GETRoomEventsResponse, POSTFilterCreateResponse } from '@/interface/api.interface'
 import { MatrixError } from '@/interface/error.interface'
-import { TxEvent } from '@/interface/tx_event.interface'
+import { TX_EVENT_TYPES, TxEvent } from '@/interface/tx_event.interface'
 
 interface State {
   next_batch: string,
@@ -188,13 +188,7 @@ export const sync_store = {
             })
             // then all events
             for (const event of timeline.events) {
-              if ([ // Don't parse tx events at this stage, cache them
-                'com.matpay.create',
-                'com.matpay.modify',
-                'com.matpay.approve',
-                'com.matpay.settle',
-                'com.matpay.rejected'
-              ].includes(event.type)) {
+              if (TX_EVENT_TYPES.includes(event.type)) { // Don't parse tx events at this stage, cache them
                 commit('mutation_add_cached_tx_event', {
                   room_id: room_id,
                   event: event as TxEvent
@@ -230,13 +224,7 @@ export const sync_store = {
       if (state.init_state_complete && !state.room_tx_sync_complete[room_id]) {
         const homeserver = rootGetters['auth/homeserver']
         const filter_tx_only: RoomEventFilter = {
-          types: [
-            'com.matpay.create',
-            'com.matpay.modify',
-            'com.matpay.approve',
-            'com.matpay.settle',
-            'com.matpay.rejected'
-          ]
+          types: TX_EVENT_TYPES
         }
         let prev_batch = state.room_tx_prev_batch_id[room_id]
         let events: MatrixRoomEvent[] = []
@@ -398,8 +386,28 @@ export const sync_store = {
             // then all events
             for (const event of timeline.events) {
               console.log(event)
-              if (state.room_tx_sync_complete[room_id]) { // only update full synced rooms
+              if (TX_EVENT_TYPES.includes(event.type)) { // transaction events
+                // For transaction events, we are only able to process them after full sync
+                // So we differentiate 2 cases
+                if (state.room_tx_sync_complete[room_id]) {
+                  // For full synced rooms: parse immediately
+                  if (!state.processed_events_id.has(event.event_id)) {
+                    commit('mutation_process_event', {
+                      room_id: room_id,
+                      event: event
+                    })
+                  }
+                } else {
+                  // For not fully synced events: cache them
+                  // They will be processed after full sync
+                  commit('mutation_add_cached_tx_event', {
+                    room_id: room_id,
+                    event: event as TxEvent
+                  })
+                }
+              } else { // chat messages
                 if (!state.processed_events_id.has(event.event_id)) {
+                  // New chat messages are processed regardless of tx full sync status
                   commit('mutation_process_event', {
                     room_id: room_id,
                     event: event
