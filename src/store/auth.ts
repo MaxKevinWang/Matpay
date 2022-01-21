@@ -66,8 +66,7 @@ export const auth_store = {
             user_id: response_post.data.user_id,
             access_token: response_post.data.access_token,
             device_id: response_post.data.device_id,
-            homeserver: payload.homeserver,
-            event_txn_id: '0'
+            homeserver: payload.homeserver
           })
         } else {
           const error = response_post.data as unknown as MatrixError
@@ -88,7 +87,7 @@ export const auth_store = {
       return state.device_id
     },
     is_logged_in (state: State): boolean {
-      return state.access_token !== ''
+      return state.access_token !== '' && state.access_token !== undefined
     },
     user_id (state: State): string {
       return state.user_id

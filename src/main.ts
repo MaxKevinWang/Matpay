@@ -26,8 +26,7 @@ axios.interceptors.response.use(function (response) {
 }, function (error) {
   if (error.response && error.response.status === 401) {
     // discard all invalid credentials
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('user_id')
+    store.commit('auth/mutation_logout')
     // force relogin
     router.push({
       name: 'login',
