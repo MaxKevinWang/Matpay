@@ -18,7 +18,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" @click="on_invite()">Invite</button>
+          <button id="invite-confirm" type="button" class="btn btn-primary" @click="on_invite()">Invite</button>
         </div>
       </div>
     </div>

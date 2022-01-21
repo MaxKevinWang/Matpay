@@ -11,7 +11,7 @@
       <div class="d-flex">
         <div class="col-12" id="sendInput">
           <input type="text" v-model="chat_message" class="form-control" placeholder="Send a message"
-                 aria-describedby="button-addon2">
+                 aria-describedby="button-addon2" id="sendInputText">
         </div>
         <div class="d-flex" id="createButton">
           <button class="btn btn-light" type="button" data-bs-toggle="tooltip" data-bs-placement="top"

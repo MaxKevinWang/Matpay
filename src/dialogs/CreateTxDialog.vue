@@ -37,7 +37,7 @@
         </div>
         <div class="modal-footer">
           <p>Date: {{ new Date().toLocaleDateString() }}</p>
-          <button type="button" class="btn btn-primary" @click="on_confirm()">Confirm</button>
+          <button id="create-confirm" type="button" class="btn btn-primary" @click="on_confirm()">Confirm</button>
         </div>
       </div>
     </div>
