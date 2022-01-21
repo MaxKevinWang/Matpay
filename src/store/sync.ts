@@ -3,7 +3,7 @@ import { MatrixSyncResponse } from '@/interface/sync.interface'
 import axios from 'axios'
 import { MatrixEventID, MatrixRoomID } from '@/models/id.model'
 import { MatrixRoomEvent, MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
-import { EventFilter, RoomEventFilter, RoomFilter } from '@/interface/filter.interface'
+import { RoomEventFilter } from '@/interface/filter.interface'
 import { GETRoomEventsResponse, POSTFilterCreateResponse } from '@/interface/api.interface'
 import { MatrixError } from '@/interface/error.interface'
 import { TxEvent } from '@/interface/tx_event.interface'
@@ -133,28 +133,12 @@ export const sync_store = {
         const user_id = rootGetters['auth/user_id']
         // create a filter
         const response_filter = await axios.post<POSTFilterCreateResponse>(`${homeserver}/_matrix/client/r0/user/${user_id}/filter`, {
-          presence: {
-            not_types: ['*']
-          },
-          account_data: {
-            not_types: ['*']
-          },
           room: {
-            ephemeral: {
-              not_types: ['*']
-            },
-            account_data: {
-              not_types: ['*']
+            state: {
+              lazy_load_members: true
             },
             timeline: {
-              types: [
-                'com.matpay.create',
-                'com.matpay.modify',
-                'com.matpay.approve',
-                'com.matpay.settle',
-                'com.matpay.rejected',
-                'm.room.*'
-              ]
+              limit: 20
             }
           }
         })
@@ -384,19 +368,10 @@ export const sync_store = {
       timeout?: number
     }) {
       if (state.init_state_complete) {
-        const filter: RoomEventFilter = {
-          types: [
-            'com.matpay.create',
-            'com.matpay.modify',
-            'com.matpay.approve',
-            'com.matpay.settle',
-            'com.matpay.rejected'
-          ]
-        }
         const homeserver = rootGetters['auth/homeserver']
         const response = await axios.get<MatrixSyncResponse>(`${homeserver}/_matrix/client/r0/sync`, {
           params: {
-            full_state: true,
+            // full_state: true,
             timeout: payload ? payload.timeout : undefined,
             since: state.next_batch,
             filter: state.sync_filter
@@ -480,13 +455,14 @@ export const sync_store = {
     is_room_synced: (state: State) => (room_id: MatrixRoomID): boolean => {
       return state.room_tx_sync_complete[room_id]
     },
-    is_chat_sync_complete: (state: State) => (room_id: MatrixRoomID): boolean => {
-      return !state.room_message_prev_batch_id[room_id]
-    },
-    get_last_message_event_id: (state: State) => (room_id: MatrixRoomID) : MatrixEventID => {
+    is_chat_sync_complete:
+      (state: State) => (room_id: MatrixRoomID): boolean => {
+        return !state.room_message_prev_batch_id[room_id]
+      },
+    get_last_message_event_id: (state: State) => (room_id: MatrixRoomID): MatrixEventID => {
       return state.room_latest_event[room_id][0]
     },
-    get_timestamp_for_event: (state: State) => (room_id: MatrixRoomID, event_id: MatrixEventID) : number | null => {
+    get_timestamp_for_event: (state: State) => (room_id: MatrixRoomID, event_id: MatrixEventID): number | null => {
       // Used in settlement to mark previous transactions as frozen
       const corresponding_events = state.room_events[room_id].filter(i => i.event_id === event_id)
       if (corresponding_events.length <= 0) {

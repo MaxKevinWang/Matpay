@@ -10,7 +10,7 @@ import { MatrixRoomEvent, MatrixRoomStateEvent } from '@/interface/rooms_event.i
 import { TxMessageEvent } from '@/interface/tx_event.interface'
 
 const normal_stores = ['rooms', 'user', 'tx', 'chat']
-let interval_id : number | null = null
+let is_long_poll_enabled = false
 export function newStore () {
   return createStore({
     modules: {
@@ -28,9 +28,7 @@ export function newStore () {
           switch (type) {
             case 'auth/mutation_logout': {
               // stop syncing
-              if (interval_id) {
-                clearInterval(interval_id)
-              }
+              is_long_poll_enabled = false
               // remove all existing states
               for (const st of normal_stores.concat(['sync'])) {
                 store.commit(`${st}/mutation_reset_state`)
@@ -39,9 +37,7 @@ export function newStore () {
             }
             case 'auth/mutation_init_state_incomplete': {
               // stop syncing
-              if (interval_id) {
-                clearInterval(interval_id)
-              }
+              is_long_poll_enabled = false
               break
             }
             case 'sync/mutation_create_new_room': {
@@ -97,13 +93,17 @@ export function newStore () {
             }
             case 'sync/mutation_init_state_complete': {
               store.dispatch('rooms/action_parse_state_events_for_all_rooms')
-              interval_id = setInterval(() => {
-                // if (store.getters['auth/is_logged_in']) {
-                store.dispatch('sync/action_update_state', {
-                  timeout: 5000
-                })
-                // }
-              }, 5000)
+              // eslint-disable-next-line no-unmodified-loop-condition
+              is_long_poll_enabled = true
+              const long_poll = async function () {
+                if (is_long_poll_enabled) {
+                  await store.dispatch('sync/action_update_state', {
+                    timeout: 10000
+                  })
+                  setTimeout(long_poll, 1000)
+                }
+              }
+              long_poll()
               break
             }
             case 'sync/mutation_room_tx_sync_state_complete': {
@@ -114,7 +114,7 @@ export function newStore () {
                   'com.matpay.modify',
                   'com.matpay.approve',
                   'com.matpay.settle'
-                ]).has(e.type)) as Array<TxMessageEvent>
+                ]).has(e.type))
               store.dispatch('tx/action_parse_all_tx_events_for_room', {
                 room_id: room_id,
                 tx_events: tx_message_events
