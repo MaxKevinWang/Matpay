@@ -56,13 +56,15 @@ describe('Test SplitModifyDialog', () => {
     })
     const tx1 = wrapper.findAll('.input-group').filter(w => w.attributes('data-test') === fake_tx_id1)
     const tx2 = wrapper.findAll('.input-group').filter(w => w.attributes('data-test') === fake_tx_id2)
-    expect(tx1[0].element.innerHTML.includes('DSN Test Account No 2')).toBeTruthy()
-    expect(tx2[0].element.innerHTML.includes('DSN Test Account No 3')).toBeTruthy()
-    expect((tx1[0].find(`#split-perc${fake_tx_id1}`).element as HTMLInputElement).value).toEqual('50')
-    expect((tx2[0].find(`#split-perc${fake_tx_id2}`).element as HTMLInputElement).value).toEqual('50')
+    expect(tx1[0].element.innerHTML.includes('DSN Test Account No 2')).toEqual(true)
+    expect(tx2[0].element.innerHTML.includes('DSN Test Account No 3')).toEqual(true)
+    expect((tx1[0].find(`#split-perc${fake_tx_id1}`).element as HTMLInputElement).value).toEqual(50) // TODO: Still return empty string
+    expect((tx2[0].find(`#split-perc${fake_tx_id2}`).element as HTMLInputElement).value).toEqual(50)
   })
   it('Test whether error pops up if input is not number', async () => {
     const fake_tx_id1 = uuidgen()
+    const current_split : Record<TxID, number> = {}
+    current_split[fake_tx_id1] = 100
     const wrapper = shallowMount(SplitModifyDialog, {
       global: {
         plugins: [store]
@@ -75,18 +77,18 @@ describe('Test SplitModifyDialog', () => {
             amount: 10
           }
         ],
-        current_split: {
-          fake_tx_id1: 100
-        }
+        current_split: current_split
       }
     })
     const tx1 = wrapper.findAll('.input-group').filter(w => w.attributes('data-test') === fake_tx_id1)
     await tx1[0].find(`#split-perc${fake_tx_id1}`).setValue('asdasd')
     await wrapper.find('#save-trigger').trigger('click')
-    expect(popover_percentage).toBeTruthy()
+    expect(popover_percentage).toEqual(true)
   })
   it('Test whether error pops up if input is not number', async () => {
     const fake_tx_id1 = uuidgen()
+    const current_split : Record<TxID, number> = {}
+    current_split[fake_tx_id1] = 100
     const wrapper = shallowMount(SplitModifyDialog, {
       global: {
         plugins: [store]
@@ -99,14 +101,12 @@ describe('Test SplitModifyDialog', () => {
             amount: 10
           }
         ],
-        current_split: {
-          fake_tx_id1: 100
-        }
+        current_split: current_split
       }
     })
     await wrapper.find(`#split-perc${fake_tx_id1}`).setValue(50)
     await wrapper.find('#save-trigger').trigger('click')
-    expect(popover_percentage).toBeTruthy()
+    expect(popover_percentage).toEqual(true)
   })
   it('Test emit', async () => {
     const fake_tx_id1 = uuidgen()
