@@ -76,6 +76,6 @@ describe('Test RoomTxHistory', () => {
     await expect(wrapper.find('#history_room_name').element.innerHTML.includes('History: aaa')).toEqual(true)
   })
   it('Test balance display',async () => {
-    
+
   })
 })
