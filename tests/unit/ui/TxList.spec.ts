@@ -65,4 +65,29 @@ describe('Test Txlist Component', () => {
     expect(tx1[0].element.innerHTML.includes('2022/1/15 Title: DSN Test Account No 1 paid 0€')).toBeTruthy()
     expect(tx2[0].element.innerHTML.includes('2022/1/15 Title: DSN Test Account No 2 paid 0€')).toBeTruthy()
   })
+  it('Test emit', () => {
+    const fake_group_id1 = uuidgen()
+    const group_tx1: GroupedTransaction = {
+      from: user_1,
+      group_id: fake_group_id1,
+      state: 'approved',
+      txs: [],
+      description: 'Title',
+      participants: [],
+      timestamp: new Date('1/15/2022'),
+      pending_approvals: []
+    }
+    const wrapper = shallowMount(TxList, {
+      global: {
+        plugins: [store]
+      },
+      props: {
+        tx_list: [
+          group_tx1
+        ]
+      }
+    })
+    wrapper.find('button').trigger('click')
+    expect(wrapper.emitted()).toHaveProperty('on-click')
+  })
 })

@@ -53,16 +53,12 @@ describe('Test RoomTxHistory', () => {
       modules: {
         room: {
           getters: {
-            get_room_name: () => {
-              return 'aaa'
-            }
+            get_room_name: (room_id: 'aaa') => room_id
           }
         },
         tx: {
           getters: {
-            get_grouped_transactions_for_room: () => {
-              return {}
-            }
+            get_grouped_transactions_for_room: (state) => state.transactions.aaa.basic
           }
         },
         sync: {
