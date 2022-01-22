@@ -272,8 +272,9 @@ describe('Test TxDetail Component', () => {
       const store2 = createStore({
         modules: {
           tx: {
+            namespaced: true,
             actions: {
-              action_modify_tx_for_room: () => { throw new Error() }
+              action_modify_tx_for_room: () => { throw new Error('Error, something is fucked') }
             }
           }
         }
@@ -319,6 +320,7 @@ describe('Test TxDetail Component', () => {
       })
       await wrapper.find('#modify-confirm').trigger('click')
       expect(wrapper.emitted()).toHaveProperty('on-error')
+      expect((wrapper.emitted()['on-error'][0] as Array<Error>)[0]).toEqual(Error('Error, something is fucked'))
     })
   })
 })
