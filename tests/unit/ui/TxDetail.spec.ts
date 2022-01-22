@@ -133,6 +133,49 @@ describe('Test TxDetail Component', () => {
       })
       expect(wrapper.find('#ModificationButton-body').attributes('‘disabled')).toBeTruthy()
     })
+    it('Test emit on-error', async () => {
+      const store2 = createStore({
+        modules: {
+          tx: {
+            namespaced: true,
+            getters: {
+              action_modify_tx_for_room: () => { throw new Error('Error, something is fucked') }
+            }
+          },
+          user: {
+            namespaced: true,
+            getters: {
+              get_users_info_for_room: () => jest.fn()
+            }
+          }
+        }
+      })
+      const wrapper = shallowMount(TxDetail, {
+        global: {
+          plugins: [store2]
+        },
+        props: {
+          tx: {
+            from: user_1,
+            group_id: uuidgen(),
+            state: 'approved',
+            txs: [
+              {
+                to: user_2,
+                tx_id: uuidgen(),
+                amount: 10
+              }
+            ],
+            description: 'Title',
+            participants: [],
+            timestamp: new Date('1/15/2022'),
+            pending_approvals: []
+          }
+        }
+      })
+      expect(wrapper.emitted()).toHaveProperty('on-error')
+      expect((wrapper.emitted()['on-error'][0] as Array<Error>)[0]).toEqual(Error('Error, something is fucked'))
+    })
   })
   describe('Test ModificationDialog', () => {
     it('Test empty input', async () => {
