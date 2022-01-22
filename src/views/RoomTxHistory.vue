@@ -12,7 +12,7 @@
       </button>
     </div>
     <div class="row" v-if="this.is_tx_fully_loaded">
-      <h4>History: {{ room_name }}</h4>
+      <h4 id="history_room_name">History: {{ room_name }}</h4>
       <div v-if="balance >= 0">
         <p>You owe in total: {{ to_currency_display(balance) }}</p>
       </div>

@@ -108,4 +108,26 @@ describe('Test SplitModifyDialog', () => {
     await wrapper.find('#save-trigger').trigger('click')
     expect(popover_percentage).toBeTruthy()
   })
+  it('Test emit', async () => {
+    const fake_tx_id1 = uuidgen()
+    const wrapper = shallowMount(SplitModifyDialog, {
+      global: {
+        plugins: [store]
+      },
+      props: {
+        simple_txs: [
+          {
+            to: user_2,
+            tx_id: fake_tx_id1,
+            amount: 10
+          }
+        ],
+        current_split: {
+          fake_tx_id1: 100
+        }
+      }
+    })
+    await wrapper.find('#save-trigger').trigger('click')
+    expect(wrapper.emitted()).toHaveProperty('on-save-split')
+  })
 })

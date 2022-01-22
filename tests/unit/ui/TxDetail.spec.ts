@@ -12,6 +12,7 @@ import ModificationDialog from '@/dialogs/ModificationDialog.vue'
 import { test_account2 } from '../../test_utils'
 import bootstrap from 'bootstrap'
 import { nextTick } from 'vue'
+import { createStore } from 'vuex'
 
 jest.mock('bootstrap')
 const mockedBootstrap = bootstrap as jest.Mocked<typeof bootstrap>
@@ -266,6 +267,58 @@ describe('Test TxDetail Component', () => {
       const default_amount = wrapper.find('#input-amount-modification')
       expect((default_description.element as HTMLInputElement).value).toEqual('Title')
       expect((default_amount.element as HTMLInputElement).value).toEqual('10')
+    })
+    it('Test emit on-error', async () => {
+      const store2 = createStore({
+        modules: {
+          tx: {
+            actions: {
+              action_modify_tx_for_room: () => { throw new Error() }
+            }
+          }
+        }
+      })
+      const wrapper = shallowMount(ModificationDialog, {
+        attachTo: document.querySelector('html') as HTMLElement,
+        global: {
+          plugins: [store2]
+        },
+        props: {
+          tx: {
+            from: user_1,
+            group_id: uuidgen(),
+            state: 'approved',
+            txs: [
+              {
+                to: user_2,
+                tx_id: uuidgen(),
+                amount: 1000
+              }
+            ],
+            description: 'Title',
+            participants: [],
+            timestamp: new Date('1/15/2022'),
+            pending_approvals: []
+          },
+          users_info: [
+            {
+              user: user_1,
+              displayname: user_1.displayname,
+              user_type: 'Member',
+              is_self: true,
+              avatar_url: ''
+            }, {
+              user: user_2,
+              displayname: user_2.displayname,
+              user_type: 'Member',
+              is_self: false,
+              avatar_url: ''
+            }
+          ]
+        }
+      })
+      await wrapper.find('#modify-confirm').trigger('click')
+      expect(wrapper.emitted()).toHaveProperty('on-error')
     })
   })
 })
