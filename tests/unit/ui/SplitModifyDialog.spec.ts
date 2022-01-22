@@ -85,7 +85,7 @@ describe('Test SplitModifyDialog', () => {
     await wrapper.find('#save-trigger').trigger('click')
     expect(popover_percentage).toEqual(true)
   })
-  it('Test whether error pops up if input is not number', async () => {
+  it('Test whether error pops up if the sum is not 100', async () => {
     const fake_tx_id1 = uuidgen()
     const current_split : Record<TxID, number> = {}
     current_split[fake_tx_id1] = 100
