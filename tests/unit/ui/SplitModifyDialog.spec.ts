@@ -129,5 +129,6 @@ describe('Test SplitModifyDialog', () => {
     })
     await wrapper.find('#save-trigger').trigger('click')
     expect(wrapper.emitted()).toHaveProperty('on-save-split')
+    // expect((wrapper.emitted()['on-save-split'][0] as Record<TxID, number>)[fake_tx_id1]).toEqual(50)
   })
 })
