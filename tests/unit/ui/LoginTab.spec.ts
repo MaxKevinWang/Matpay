@@ -35,6 +35,11 @@ describe('Test login interface', () => {
             push: () => {
               redirected = true
             }
+          },
+          $route: {
+            query: {
+              force: 0
+            }
           }
         }
       }
@@ -71,7 +76,14 @@ describe('Test login interface', () => {
     })
     const wrapper = shallowMount(Login, {
       global: {
-        plugins: [store]
+        plugins: [store],
+        mocks: {
+          $route: {
+            query: {
+              force: 0
+            }
+          }
+        }
       }
     })
     await wrapper.find('#username').setValue(test_account2.username)
@@ -105,7 +117,14 @@ describe('Test login interface', () => {
     })
     const wrapper = shallowMount(Login, {
       global: {
-        plugins: [store]
+        plugins: [store],
+        mocks: {
+          $route: {
+            query: {
+              force: 0
+            }
+          }
+        }
       }
     })
     await wrapper.find('#username').setValue(test_account2.username)
