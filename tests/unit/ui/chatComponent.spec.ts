@@ -117,7 +117,8 @@ describe('Test chatComponent', () => {
             getters: {
               is_logged_in: () => true,
               user_id: jest.fn(),
-              homeserver: jest.fn()
+              homeserver: jest.fn(),
+              auth_id: () => 'fdsfsd'
             }
           },
           chat: {
@@ -133,7 +134,6 @@ describe('Test chatComponent', () => {
           }
         }
       })
-      store.state.auth.user_id = user_1.user_id
       const wrapper = shallowMount(ChatComponent, {
         attachTo: document.querySelector('html') as HTMLElement,
         global: {
@@ -150,8 +150,8 @@ describe('Test chatComponent', () => {
           users_info: [mocked_user_info1]
         }
       })
-      await wrapper.find('#sendInputText').setValue('aa')
-      expect(wrapper.find('#sendButton').attributes('disabled')).toBe(true)
+      await wrapper.find('#sendInputText').setValue('')
+      expect((wrapper.find('#sendButton').element as HTMLButtonElement).disabled).toBe(true)
     })
   })
   describe('Test CreateTxDialog', () => {

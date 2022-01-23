@@ -22,7 +22,7 @@
                        data-bs-toggle="tooltip" data-bs-placement="top" title="History">
             <i class="bi bi-clock-history"></i>
           </router-link>
-          <button class="btn btn-primary" id="sendButton" type="button" :disabled="!this.chat_message" @click="on_send_click">Send
+          <button class="btn btn-primary" id="sendButton" type="button" :disabled="!(this.chat_message)" @click="on_send_click">Send
           </button>
         </div>
       </div>
