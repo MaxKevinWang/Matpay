@@ -104,7 +104,7 @@ describe('Test TxDetail Component', () => {
           }
         }
       })
-      expect(wrapper.find('#ModificationButton-body').attributes('‘disabled')).toBe(false)
+      expect(wrapper.find('#ModificationButton-body').attributes('disabled')).toBeFalsy()
     })
     it('Test if the user can not click on modification button when he is not participant', async () => {
       store.state.auth.user_id = user_3.user_id
@@ -131,7 +131,34 @@ describe('Test TxDetail Component', () => {
           }
         }
       })
-      expect(wrapper.find('#ModificationButton-body').attributes('‘disabled')).toBeTruthy()
+      expect(wrapper.find('#ModificationButton-body').attributes('disabled')).toEqual(true)
+    })
+    it('Test if the user can not click on modification button tx is frozen', async () => {
+      store.state.auth.user_id = user_2.user_id
+      const wrapper = shallowMount(TxDetail, {
+        global: {
+          plugins: [store]
+        },
+        props: {
+          tx: {
+            from: user_1,
+            group_id: uuidgen(),
+            state: 'frozen',
+            txs: [
+              {
+                to: user_2,
+                tx_id: uuidgen(),
+                amount: 10
+              }
+            ],
+            description: 'Title',
+            participants: [],
+            timestamp: new Date('1/15/2022'),
+            pending_approvals: []
+          }
+        }
+      })
+      expect(wrapper.find('#ModificationButton-body').attributes('disabled')).toEqual(true)
     })
     it('Test emit on-error', async () => {
       const store2 = createStore({
