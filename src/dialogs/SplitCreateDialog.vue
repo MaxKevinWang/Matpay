@@ -76,12 +76,6 @@ export default defineComponent({
   components: {
   },
   methods: {
-    selectorify (user_id: MatrixUserID) : string {
-      // transforms a user id to a valid selector
-      return user_id.substring(1)
-        .replaceAll(':', '_')
-        .replaceAll('.', '_')
-    },
     show () {
       this.modal_control?.show()
       this.is_shown = true

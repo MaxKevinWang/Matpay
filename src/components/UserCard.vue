@@ -1,6 +1,6 @@
 <template>
   <SettlementDialog ref="settle_dialog" :room_id="room_id" :balance="open_balance" :user_clicked="user_prop" @on-settle="on_settle"/>
-  <div :id="'usercard_' + user_id">
+  <div :id="'usercard_' + selectorify(user_id)">
     <img :src="this.avatar" alt="avatar" class="avatar">
     <div class="about">
       <div :class="['name', {'self_name': this.is_self }, {'admin': this.user_type === 'Admin'}]">{{
