@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <div class="row text-center">
+    <div class="row">
       <div class="col-4">
         <h3>How to register</h3>
         MatPay itself does not support registration and storing account information. To create
