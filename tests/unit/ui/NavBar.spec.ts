@@ -19,7 +19,7 @@ describe('Test navbar', function () {
     })
     const wrapper = shallowMount(App, {
       global: {
-        plugins: [router, store]
+        plugins: [store]
       }
     })
     expect(wrapper.find('#room-link').html()).toContain('rooms')
@@ -39,7 +39,7 @@ describe('Test navbar', function () {
     })
     const wrapper = shallowMount(App, {
       global: {
-        plugins: [router, store]
+        plugins: [store]
       }
     })
     expect(wrapper.find('#logout_button').isVisible()).toEqual(true)
@@ -60,7 +60,7 @@ describe('Test navbar', function () {
     })
     const wrapper = shallowMount(App, {
       global: {
-        plugins: [router, store]
+        plugins: [store]
       }
     })
     expect(wrapper.find('#login_button').isVisible()).toEqual(true)

@@ -85,7 +85,7 @@ describe('Test SplitModifyDialog', () => {
     await wrapper.find('#save-trigger').trigger('click')
     expect(popover_percentage).toEqual(true)
   })
-  it('Test whether error pops up if input is not number', async () => {
+  it('Test whether error pops up if the sum is not 100', async () => {
     const fake_tx_id1 = uuidgen()
     const current_split : Record<TxID, number> = {}
     current_split[fake_tx_id1] = 100
@@ -105,6 +105,29 @@ describe('Test SplitModifyDialog', () => {
       }
     })
     await wrapper.find(`#split-perc${fake_tx_id1}`).setValue('50')
+    await wrapper.find('#save-trigger').trigger('click')
+    expect(popover_percentage).toEqual(true)
+  })
+  it('Test empty input', async () => {
+    const fake_tx_id1 = uuidgen()
+    const current_split : Record<TxID, number> = {}
+    current_split[fake_tx_id1] = 100
+    const wrapper = shallowMount(SplitModifyDialog, {
+      global: {
+        plugins: [store]
+      },
+      props: {
+        simple_txs: [
+          {
+            to: user_2,
+            tx_id: fake_tx_id1,
+            amount: 10
+          }
+        ],
+        current_split: current_split
+      }
+    })
+    await wrapper.find(`#split-perc${fake_tx_id1}`).setValue('')
     await wrapper.find('#save-trigger').trigger('click')
     expect(popover_percentage).toEqual(true)
   })

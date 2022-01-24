@@ -13,10 +13,10 @@
     </div>
     <div class="row" v-if="this.is_tx_fully_loaded">
       <h4 id="history_room_name">History: {{ room_name }}</h4>
-      <div v-if="balance >= 0">
+      <div v-if="balance >= 0" id="balance-display-positive">
         <p>You owe in total: {{ to_currency_display(balance) }}</p>
       </div>
-      <div v-if="balance < 0">
+      <div v-if="balance < 0" id="balance-display-negative">
         <p>Oweing you in total: {{ to_currency_display(-balance) }} </p>
       </div>
       <div class="col-4" v-if="tx_list.length >= 1">
@@ -95,14 +95,19 @@ export default defineComponent({
   },
   async created () {
     await this.action_sync_initial_state()
+    console.log('Checkpoint 1')
     this.action_sync_full_tx_events_for_room({
       room_id: this.room_id
     }).then(() => {
+      console.log('Checkpoint 2')
       this.action_optimize_graph_and_prepare_balance_for_room({
         room_id: this.room_id
       })
+      console.log('Checkpoint 3')
       this.room_name = this.get_room_name(this.room_id)
+      console.log('Checkpoint 4')
       this.tx_list = this.get_grouped_transactions_for_room(this.room_id)
+      console.log('Checkpoint 5')
       if (validate(this.current_group_id)) {
         const filter_txs = this.tx_list.filter(i => i.group_id === this.current_group_id)
         if (filter_txs.length > 0) {
@@ -110,6 +115,7 @@ export default defineComponent({
           this.show_detail = true
         }
       }
+      console.log('Checkpoint 6')
       this.is_tx_fully_loaded = true
     })
   }
