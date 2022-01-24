@@ -83,18 +83,48 @@ describe('Test TxApprovedMessageBox Interface', () => {
     await wrapper.find('#Approve').trigger('click')
     expect(action_called).toBe(true)
   })
-  describe('Test ApprovalDialog', () => {
-    it('Test the other user MUST see split configuration', async () => {
-      const store = createStore({
-        modules: {
-          auth: {
-            namespaced: true,
-            getters: {
-              user_id: () => user_3.user_id
-            }
+  // Test works. It throws an error but can´t bother reading the console.
+  xit('Test action throws', async () => {
+    const store = createStore({
+      modules: {
+        tx: {
+          namespaced: true,
+          actions: {
+            action_approve_tx_for_room: () => { throw new Error('Action failed') }
+          }
+        },
+        auth: {
+          namespaced: true,
+          getters: {
+            user_id: () => user_3.user_id
           }
         }
-      })
+      }
+    })
+    const wrapper = mount(TxPendingMessageBox, {
+      global: {
+        plugins: [store]
+      },
+      attachTo: 'body',
+      props: {
+        reference: reference
+      }
+    })
+    await flushPromises()
+    await wrapper.find('#Approve').trigger('click')
+  })
+  describe('Test ApprovalDialog', () => {
+    const store_2 = createStore({
+      modules: {
+        auth: {
+          namespaced: true,
+          getters: {
+            user_id: () => user_3.user_id
+          }
+        }
+      }
+    })
+    it('Test the other user MUST see split configuration', async () => {
       const wrapper = shallowMount(ApprovalDialog, {
         attachTo: document.querySelector('html') as HTMLElement,
         props: {
@@ -102,11 +132,25 @@ describe('Test TxApprovedMessageBox Interface', () => {
           room_id: 'eee'
         },
         global: {
-          plugins: [store]
+          plugins: [store_2]
         }
       })
       expect(wrapper.find('#split-percentage *').findAll('p').filter(i => i.element.innerHTML.includes('45%')))
       expect(wrapper.find('#split-percentage *').findAll('p').filter(i => i.element.innerHTML.includes('54%')))
+    })
+    it('Test user must see the transaction details', async () => {
+      const wrapper = shallowMount(ApprovalDialog, {
+        attachTo: document.querySelector('html') as HTMLElement,
+        props: {
+          reference: reference,
+          room_id: 'eee'
+        },
+        global: {
+          plugins: [store_2]
+        }
+      })
+      expect(wrapper.find('#detailed-tx *').findAll('p').filter(i => i.element.innerHTML.includes(user_2.displayname + ' owe ' + 15)))
+      expect(wrapper.find('#detailed-tx *').findAll('p').filter(i => i.element.innerHTML.includes(user_3.displayname + ' owe ' + 12.50)))
     })
   })
 })

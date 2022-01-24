@@ -30,7 +30,7 @@
                   <i class="bi bi-person-dash" data-bs-toggle="tooltip" data-bs-placement="top" title="Not Approved"></i>
                 </div>
               </div>
-              <div class="col-8">
+              <div class="col-8" id="detailed-tx">
                 <p>{{ simple_tx.to.displayname + ' owe ' + to_currency_display(simple_tx.amount) }}</p>
               </div>
               <div class="col-2" id="split-percentage">
