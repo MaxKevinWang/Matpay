@@ -1,14 +1,17 @@
-import { config, shallowMount } from '@vue/test-utils'
+import { config, flushPromises, mount, shallowMount } from '@vue/test-utils'
 import TxPendingMessageBox from '@/components/TxPendingMessageBox.vue'
 import { room_01_room_id, user_1, user_2, user_3 } from '../mocks/mocked_user'
 import { TxPlaceholder } from '@/models/chat.model'
-import { sum_amount, to_currency_display } from '@/utils/utils'
+import { split_percentage, sum_amount, to_currency_display } from '@/utils/utils'
+import { createStore } from 'vuex'
+import ApprovalDialog from '@/dialogs/ApprovalDialog.vue'
 
 describe('Test TxApprovedMessageBox Interface', () => {
   beforeAll(() => {
     config.global.mocks = {
       sum_amount: sum_amount,
-      to_currency_display: to_currency_display
+      to_currency_display: to_currency_display,
+      split_percentage: split_percentage
     }
   })
   const reference : TxPlaceholder = {
@@ -49,24 +52,61 @@ describe('Test TxApprovedMessageBox Interface', () => {
     await expect(wrapper.findAll('p').filter(i => i.element.innerHTML.includes('Schnitzel')).length).toBe(1)
     await expect(wrapper.findAll('p').filter(i => i.element.innerHTML.includes(user_1.displayname + ' paid 27.50€')).length).toBe(1)
   })
-  it('Test pressing Details redirects', async () => {
-    let redirected = false
-    const wrapper = shallowMount(TxPendingMessageBox, {
+  it('Test store is updated after approval', async () => {
+    let action_called = false
+    const store = createStore({
+      modules: {
+        tx: {
+          namespaced: true,
+          actions: {
+            action_approve_tx_for_room: () => { action_called = true }
+          }
+        },
+        auth: {
+          namespaced: true,
+          getters: {
+            user_id: () => user_3.user_id
+          }
+        }
+      }
+    })
+    const wrapper = mount(TxPendingMessageBox, {
       global: {
-        mocks: {
-          $router: {
-            push: () => {
-              redirected = true
+        plugins: [store]
+      },
+      attachTo: 'body',
+      props: {
+        reference: reference
+      }
+    })
+    await flushPromises()
+    await wrapper.find('#Approve').trigger('click')
+    expect(action_called).toBe(true)
+  })
+  describe('Test ApprovalDialog', () => {
+    it('Test the other user MUST see split configuration', async () => {
+      const store = createStore({
+        modules: {
+          auth: {
+            namespaced: true,
+            getters: {
+              user_id: () => user_3.user_id
             }
           }
         }
-      },
-      props: {
-        reference: reference,
-        room_id: room_01_room_id
-      }
+      })
+      const wrapper = shallowMount(ApprovalDialog, {
+        attachTo: document.querySelector('html') as HTMLElement,
+        props: {
+          reference: reference,
+          room_id: 'eee'
+        },
+        global: {
+          plugins: [store]
+        }
+      })
+      expect(wrapper.find('#split-percentage *').findAll('p').filter(i => i.element.innerHTML.includes('45%')))
+      expect(wrapper.find('#split-percentage *').findAll('p').filter(i => i.element.innerHTML.includes('54%')))
     })
-    await wrapper.find('button').trigger('click')
-    expect(redirected).toBe(true)
   })
 })

@@ -33,7 +33,7 @@
               <div class="col-8">
                 <p>{{ simple_tx.to.displayname + ' owe ' + to_currency_display(simple_tx.amount) }}</p>
               </div>
-              <div class="col-2">
+              <div class="col-2" id="split-percentage">
                 <p>{{(split_percentage(this.reference.approval)[simple_tx.tx_id] * 100).toFixed(2) + "%"}}</p>
               </div>
             </div>
@@ -58,7 +58,7 @@
         </div>
         <div class="modal-footer" v-if="!reference.approval.approvals[this.user_id] && is_current_user_participant">
           <button type="button" class="btn btn-danger" @click="on_reject_click()">Reject</button>
-          <button type="button" class="btn btn-primary" @click="on_approve_click()">Approve</button>
+          <button id="Approve" type="button" class="btn btn-primary" @click="on_approve_click()">Approve</button>
         </div>
       </div>
     </div>

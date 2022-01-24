@@ -1,16 +1,24 @@
 <template>
   <div class="container">
-    <div class="txt_img">
-      <h3>How to register</h3>
-      MatPay itself does not support registration and storing account information. To create
-      an account register on a
-      <a class="btn btn-dark" href="https://matrix.org/faq/#what-is-a-homeserver%3F" role="button">homeserver.</a>
-      We recommend to use
-      <a class="btn btn-dark" href="https://tchncs.de/matrix" role="button">tchncs</a>.<br>
-      Once you´re on tchncs navigate to the right side and press "Create Account". You will be redirected to a new page where
-      you can register your new account.
+    <div class="row text-center">
+      <div class="col-4">
+        <h3>How to register</h3>
+        MatPay itself does not support registration and storing account information. To create
+        an account register on a
+        <a href="https://matrix.org/faq/#what-is-a-homeserver%3F">homeserver.</a>
+        We recommend to use
+        <a href="https://tchncs.de/matrix">tchncs</a>.
+        Once you´re on tchncs navigate to the right side and press "Create Account". You will be redirected to a new page where
+        you can register your new account. The register page is for a chat client called "Element" that is also based on
+        Matrix. You can use your registered account on Element and MatPay.
+      </div>
+      <div class="col-4">
+        <img src="@/assets/CreateAccountTchncs.jpg" alt="Create Account">
+      </div>
+      <div class="col-4">
+        <img src="@/assets/RegisterPageElement.jpg" alt="Register Page">
+      </div>
     </div>
-    <img src="@/assets/abstract-grunge-decorative-relief-navy-blue-stucco-wall-texture-wide-angle-rough-colored-background.jpg" alt="Background Image" width="1000" height="300">
   </div>
 </template>
 <script lang="ts">
@@ -30,18 +38,9 @@ export default defineComponent({
 </script>
 <style scoped>
 img {
-  width: 100%;
+  display: block;
+  max-width: 100%;
   height: auto;
-  opacity: 1;
-}
-.txt_img {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 18px;
-  font-weight: 1000;
-  color: #bbbbbb;
 }
 a:link {
   text-decoration: none;
