@@ -104,7 +104,7 @@ describe('Test TxDetail Component', () => {
           }
         }
       })
-      expect(wrapper.find('#ModificationButton-body').attributes('disabled')).toBeFalsy()
+      expect((wrapper.find('#ModificationButton-body').element as HTMLButtonElement).disabled).toBeFalsy()
     })
     it('Test if the user can not click on modification button when he is not participant', async () => {
       store.state.auth.user_id = user_3.user_id
@@ -131,7 +131,7 @@ describe('Test TxDetail Component', () => {
           }
         }
       })
-      expect(wrapper.find('#ModificationButton-body').attributes('disabled')).toEqual(true)
+      expect((wrapper.find('#ModificationButton-body').element as HTMLButtonElement).disabled).toEqual(true)
     })
     it('Test if the user can not click on modification button tx is frozen', async () => {
       store.state.auth.user_id = user_2.user_id
@@ -158,7 +158,7 @@ describe('Test TxDetail Component', () => {
           }
         }
       })
-      expect(wrapper.find('#ModificationButton-body').attributes('disabled')).toEqual(true)
+      expect((wrapper.find('#ModificationButton-body').element as HTMLButtonElement).disabled).toEqual(true)
     })
     it('Test emit on-error', async () => {
       const store2 = createStore({
