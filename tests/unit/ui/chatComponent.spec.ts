@@ -153,6 +153,185 @@ describe('Test chatComponent', () => {
       await wrapper.find('#sendInputText').setValue('')
       expect((wrapper.find('#sendButton').element as HTMLButtonElement).disabled).toBe(true)
     })
+    // fuck
+    it('Test if the chat_dialog show correctly', async () => {
+      const room_id = 'aaa'
+      const $route = {
+        fullPath: 'full/path'
+      }
+      const mock_chat_message : ChatMessage = {
+        sender: user_1,
+        content: 'Hello,Peter',
+        timestamp: new Date('2022/1/16')
+      }
+      const mock_chatlog : ChatLog = { messages: [mock_chat_message] }
+      const store = createStore({
+        modules: {
+          auth: {
+            namespaced: true,
+            getters: {
+              is_logged_in: () => true,
+              user_id: jest.fn(),
+              homeserver: jest.fn(),
+              auth_id: () => 'fdsfsd'
+            }
+          },
+          chat: {
+            namespaced: true,
+            getters: {
+              get_chat_log_for_room: (room_id) => () => mock_chatlog
+            }
+          },
+          rooms: {
+            namespaced: true,
+            getters: {
+            }
+          }
+        }
+      })
+      const wrapper = mount(ChatComponent, {
+        attachTo: document.querySelector('html') as HTMLElement,
+        global: {
+          stubs: {
+            CreateTxDialog: true
+          },
+          plugins: [store],
+          mocks: {
+            $route: {
+              params: {
+                room_id: room_01_room_id
+              }
+            }
+          }
+        },
+        props: {
+          users_info: [mocked_user_info1]
+        }
+      })
+      expect(wrapper.findAllComponents('')[0].element.innerHTML.includes('Hello,Peter'))
+    })
+    it('Test if the user can send messages when he types in correct messages', async () => {
+      const room_id = 'aaa'
+      let if_send = false
+      const $route = {
+        fullPath: 'full/path'
+      }
+      const mock_chat_message : ChatMessage = {
+        sender: user_1,
+        content: 'Hello,Allen',
+        timestamp: new Date('2022/1/16')
+      }
+      const mock_chatlog : ChatLog = { messages: [mock_chat_message] }
+      const store = createStore({
+        modules: {
+          auth: {
+            namespaced: true,
+            getters: {
+              is_logged_in: () => true,
+              user_id: jest.fn(),
+              homeserver: jest.fn(),
+              auth_id: () => 'fdsfsd'
+            }
+          },
+          chat: {
+            namespaced: true,
+            getters: {
+              get_chat_log_for_room: (room_id) => () => mock_chatlog
+            },
+            actions: {
+              action_send_chat_message_for_room: (room_id) => {
+                if_send = true
+              }
+            }
+          },
+          rooms: {
+            namespaced: true,
+            getters: {
+            }
+          }
+        }
+      })
+      const wrapper = shallowMount(ChatComponent, {
+        attachTo: document.querySelector('html') as HTMLElement,
+        global: {
+          plugins: [store],
+          mocks: {
+            $route: {
+              params: {
+                room_id: room_01_room_id
+              }
+            }
+          }
+        },
+        props: {
+          users_info: [mocked_user_info1]
+        }
+      })
+      await wrapper.find('#sendInputText').setValue('hello,allen')
+      expect((wrapper.find('#sendButton').element as HTMLButtonElement).disabled).toBe(false)
+      await wrapper.find('#sendButton').trigger('click')
+      expect(if_send).toEqual(true)
+    })
+    it('Test (assume the sending always fails)', async () => {
+      const room_id = 'aaa'
+      const $route = {
+        fullPath: 'full/path'
+      }
+      const mock_chat_message : ChatMessage = {
+        sender: user_1,
+        content: 'Hello,Allen',
+        timestamp: new Date('2022/1/16')
+      }
+      const mock_chatlog : ChatLog = { messages: [mock_chat_message] }
+      const store = createStore({
+        modules: {
+          auth: {
+            namespaced: true,
+            getters: {
+              is_logged_in: () => true,
+              user_id: jest.fn(),
+              homeserver: jest.fn(),
+              auth_id: () => 'fdsfsd'
+            }
+          },
+          chat: {
+            namespaced: true,
+            getters: {
+              get_chat_log_for_room: (room_id) => () => mock_chatlog
+            },
+            actions: {
+              action_send_chat_message_for_room: () => { throw new Error('Error, sending is failed') }
+            }
+          },
+          rooms: {
+            namespaced: true,
+            getters: {
+            }
+          }
+        }
+      })
+      const wrapper = shallowMount(ChatComponent, {
+        attachTo: document.querySelector('html') as HTMLElement,
+        global: {
+          plugins: [store],
+          mocks: {
+            $route: {
+              params: {
+                room_id: room_01_room_id
+              }
+            }
+          }
+        },
+        props: {
+          users_info: [mocked_user_info1]
+        }
+      })
+      await wrapper.find('#sendInputText').setValue('hello,allen')
+      expect((wrapper.find('#sendButton').element as HTMLButtonElement).disabled).toBe(false)
+      await wrapper.find('#sendButton').trigger('click')
+      expect(wrapper.emitted()).toHaveProperty('on-error')
+      expect((wrapper.emitted()['on-error'][0] as Array<Error>)[0]).toEqual(Error('Error, sending is failed'))
+    })
   })
   describe('Test CreateTxDialog', () => {
     it('Test empty input(description)', async () => {

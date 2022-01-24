@@ -1,9 +1,9 @@
 <template>
   <div>
-    <div v-for="message in chat_log.messages" :key="message.timestamp">
+    <div v-for="message in chat_log.messages" :key="message.timestamp" >
       <component v-if="message.grouped_tx" :is="TxApprovedMessageBox" :reference="message" :room_id="room_id"/>
       <component v-if="message.approval" :is="TxPendingMessageBox" :reference="message" :room_id="room_id"/>
-      <component v-if="message.content" :is="ChatMessageBox" :chat_message="message" :room_id="room_id"/>
+      <component v-if="message.content" :is="ChatMessageBox" :chat_message="message" :room_id="room_id" />
     </div>
   </div>
   <div>
