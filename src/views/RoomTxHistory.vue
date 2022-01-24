@@ -13,10 +13,10 @@
     </div>
     <div class="row" v-if="this.is_tx_fully_loaded">
       <h4 id="history_room_name">History: {{ room_name }}</h4>
-      <div v-if="balance >= 0">
+      <div v-if="balance >= 0" id="balance-display-positive">
         <p>You owe in total: {{ to_currency_display(balance) }}</p>
       </div>
-      <div v-if="balance < 0">
+      <div v-if="balance < 0" id="balance-display-negative">
         <p>Oweing you in total: {{ to_currency_display(-balance) }} </p>
       </div>
       <div class="col-4" v-if="tx_list.length >= 1">
