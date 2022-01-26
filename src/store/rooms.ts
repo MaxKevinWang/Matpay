@@ -4,7 +4,7 @@ import { ActionTree, GetterTree, MutationTree } from 'vuex'
 import { MatrixRoomMemberStateEvent, MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
 import { MatrixError } from '@/interface/error.interface'
 import { MatrixRoomID, MatrixUserID } from '@/models/id.model'
-import { Room } from '@/models/room.model'
+import { Room, RoomTableRow } from '@/models/room.model'
 import { TxRejectedEvent } from '@/interface/tx_event.interface'
 import { MatrixSyncInvitedRooms } from '@/interface/sync.interface'
 
@@ -59,8 +59,8 @@ export const rooms_store = {
       const rooms = state.joined_rooms.filter(r => r.room_id === payload.room_id)
       rooms[0].name = payload.name
     },
-    mutation_remove_invite_room (state: State, payload: {room_id: MatrixRoomID}) {
-      state.invited_rooms = state.invited_rooms.filter(i => i.room_id !== payload.room_id)
+    mutation_remove_invite_room (state: State, payload: MatrixRoomID) {
+      state.invited_rooms = state.invited_rooms.filter(i => i.room_id !== payload)
     },
     mutation_reset_state (state: State) {
       Object.assign(state, {
@@ -197,6 +197,40 @@ export const rooms_store = {
     },
     get_invited_rooms: (state: State) => (): Room[] => {
       return state.invited_rooms
+    },
+    get_room_table_rows (state: State, getters, rootState, rootGetters) : RoomTableRow[] {
+      // generates table rows for RoomsTab
+      const rooms: Room[] = state.joined_rooms
+      const result: RoomTableRow[] = []
+      for (const room of rooms) {
+        result.push({
+          room_id: room.room_id,
+          room_id_display: room.room_id.split(':')[0].substring(1),
+          name: '',
+          member_count: 0,
+          user_type: ''
+        })
+        const current_room = result.filter(i => i.room_id === room.room_id)[0]
+        // get room name: state event 'm.room.name'
+        const name_event: MatrixRoomStateEvent = getters.get_name_event_for_room(current_room.room_id)
+        current_room.name = name_event ? name_event.content.name as string : '<NO NAME>'
+        // count room members: state event 'm.room.member' AND content.membership === join
+        const member_join_event: MatrixRoomMemberStateEvent[] = room.state_events.filter(
+          event => event.type === 'm.room.member' && event.content.membership as string === 'join'
+        ) as MatrixRoomMemberStateEvent[]
+        current_room.member_count = member_join_event.length
+        // determine user type: if the user can send state events then treat him as admin.
+        const power_level_event: MatrixRoomStateEvent = getters.get_permission_event_for_room(current_room.room_id)
+        const power_level = (power_level_event.content.users as Record<string, number>)[rootGetters['auth/user_id']]
+        if (power_level >= 100) {
+          current_room.user_type = 'Admin'
+        } else if (power_level >= 50) {
+          current_room.user_type = 'Moderator'
+        } else {
+          current_room.user_type = 'User'
+        }
+      }
+      return result
     },
     get_member_state_events_for_room: (state: State) => (room_id: MatrixRoomID): MatrixRoomMemberStateEvent[] => {
       const rooms = state.joined_rooms.filter(r => r.room_id === room_id)
