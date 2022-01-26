@@ -78,9 +78,7 @@ describe('Test rooms store', function () {
         name: '',
         state_events: []
       })
-      mutation(state, {
-        room_id: 'ABC'
-      })
+      mutation(state, 'ABC')
       const rooms = state.invited_rooms.filter(r => r.room_id === 'ABC')
       expect(rooms[0]).toEqual(undefined)
     })

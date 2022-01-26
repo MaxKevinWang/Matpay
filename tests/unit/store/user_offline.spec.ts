@@ -133,8 +133,7 @@ describe('Test user store', function () {
           avatar_url: '',
           displayname: '@test-2:dsn.tm.kit.edu',
           is_self: false,
-          user_type: 'Member',
-          balance: 0
+          user_type: 'Member'
         }])
       })
       it('Test two users with the same displayname', async () => {
@@ -179,8 +178,7 @@ describe('Test user store', function () {
           },
           displayname: 'DSN Test Account No 1 (@test-1:dsn.tm.kit.edu)',
           is_self: true,
-          user_type: 'Member',
-          balance: 0
+          user_type: 'Member'
         },
         {
           avatar_url: '',
@@ -190,8 +188,7 @@ describe('Test user store', function () {
           },
           displayname: 'DSN Test Account No 1 (@test-2:dsn.tm.kit.edu)',
           is_self: false,
-          user_type: 'Member',
-          balance: 0
+          user_type: 'Member'
         }])
       })
       it('Test no member events', async () => {
