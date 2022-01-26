@@ -20,7 +20,9 @@
               placeholder="Split value"
               aria-label="Recipient's username"
               aria-describedby="basic-addon2"
-              :id="`split-perc${selectorify(user.user.user_id)}`">
+              :id="`split-perc${selectorify(user.user.user_id)}`"
+              :disabled="!this.selected_members.includes(user.user.user_id)"
+            >
             <span class="input-group-text" id="basic-addon2">%</span>
           </div>
         </div>
