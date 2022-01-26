@@ -119,38 +119,6 @@ describe('Test transaction Vuex store offline', () => {
       mutation(state, { room_id: 'aaa', grouped_tx: fake_grouped_tx })
       expect(state.transactions.aaa.basic[0]).toEqual(fake_grouped_tx)
     })
-    it('Test mutation_mark_previous_txs_as_frozen', function () {
-      const mutation = store.mutations.mutation_mark_previous_txs_as_frozen
-      const date = new Date()
-      const fake_grouped_tx1: GroupedTransaction = {
-        from: user_1,
-        group_id: uuidgen(),
-        state: 'approved',
-        txs: [],
-        description: '',
-        participants: [],
-        timestamp: new Date(),
-        pending_approvals: []
-      }
-      const fake_grouped_tx2: GroupedTransaction = {
-        from: user_1,
-        group_id: uuidgen(),
-        state: 'approved',
-        txs: [],
-        description: '',
-        participants: [],
-        timestamp: new Date(),
-        pending_approvals: []
-      }
-      fake_grouped_tx1.timestamp.setTime(100)
-      fake_grouped_tx2.timestamp.setTime(200)
-      date.setTime(300)
-      state.transactions.aaa.basic.push(fake_grouped_tx1)
-      state.transactions.aaa.basic.push(fake_grouped_tx2)
-      mutation(state, { room_id: 'aaa', timestamp: date })
-      expect(state.transactions.aaa.basic[0].state).toEqual('frozen')
-      expect(state.transactions.aaa.basic[1].state).toEqual('frozen')
-    })
     it('Test mutation_add_pending_approval_for_room', function () {
       const mutation = store.mutations.mutation_add_pending_approval_for_room
       const fake_pending_approval: PendingApproval = {
@@ -249,17 +217,17 @@ describe('Test transaction Vuex store offline', () => {
       const fake_grouped_tx: GroupedTransaction = {
         from: user_1,
         group_id: fake_group_id,
-        state: 'approved',
+        state: 'defined',
         txs: [],
         description: '',
         participants: [],
         timestamp: new Date(),
         pending_approvals: []
       }
-      expect(() => mutation(state, { room_id: 'aaa', group_id: uuidgen(), state: 'frozen' })).toThrow('Invalid group ID!')
+      expect(() => mutation(state, { room_id: 'aaa', group_id: uuidgen(), state: 'approved' })).toThrow('Invalid group ID!')
       state.transactions.aaa.basic.push(fake_grouped_tx)
-      mutation(state, { room_id: 'aaa', group_id: fake_group_id, state: 'frozen' })
-      expect(state.transactions.aaa.basic[0].state).toEqual('frozen')
+      mutation(state, { room_id: 'aaa', group_id: fake_group_id, state: 'approved' })
+      expect(state.transactions.aaa.basic[0].state).toEqual('approved')
     })
     it('Test mutation_build_tx_graph_for_room', function () {
       const mutation = store.mutations.mutation_build_tx_graph_for_room
@@ -1573,6 +1541,7 @@ describe('Test transaction Vuex store offline', () => {
             tx_event: event
           })).resolves.toEqual(false)
         })
+        /*
         it('Test Tx has been Frozen', async () => {
           const getters = {
             get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
@@ -1626,6 +1595,7 @@ describe('Test transaction Vuex store offline', () => {
             tx_event: event
           })).resolves.toEqual(false)
         })
+         */
       })
       describe('Test parse approve event', () => {
         it('Test without data event with same event ID', async () => {
@@ -1913,6 +1883,7 @@ describe('Test transaction Vuex store offline', () => {
             tx_event: event
           })).resolves.toEqual(false)
         })
+        /*
         it('amount field smaller than open balance', async () => {
           const getters = {
             get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
@@ -1960,6 +1931,7 @@ describe('Test transaction Vuex store offline', () => {
             tx_event: event
           })).resolves.toEqual(false)
         })
+         */
       })
     })
   })

@@ -1,5 +1,5 @@
 <template>
-  <div id="fixed-member-list">
+  <div>
     <h4>Members</h4>
     <ul class="list-unstyled card chat-list mt-2 mb-0">
       <li class="clearfix" v-for="user in users" :key="user.user.user_id" :data-test="user.user.user_id">
@@ -163,10 +163,6 @@ li {
 li:hover {
   background: #efefef;
   cursor: pointer
-}
-
-#fixed-member-list {
-  position: fixed;
 }
 
 </style>

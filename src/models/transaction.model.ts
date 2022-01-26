@@ -10,7 +10,7 @@ export interface SimpleTransaction {
 export interface GroupedTransaction {
   from: User,
   group_id: GroupID,
-  state: 'defined' | 'approved' | 'frozen' | 'settlement',
+  state: 'defined' | 'approved' | 'settlement',
   txs: SimpleTransaction[],
   description: string,
   participants?: User[]

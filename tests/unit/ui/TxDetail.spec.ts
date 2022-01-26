@@ -133,6 +133,7 @@ describe('Test TxDetail Component', () => {
       })
       expect((wrapper.find('#ModificationButton-body').element as HTMLButtonElement).disabled).toEqual(true)
     })
+    /*
     it('Test if the user can not click on modification button tx is frozen', async () => {
       store.state.auth.user_id = user_2.user_id
       const wrapper = shallowMount(TxDetail, {
@@ -160,6 +161,7 @@ describe('Test TxDetail Component', () => {
       })
       expect((wrapper.find('#ModificationButton-body').element as HTMLButtonElement).disabled).toEqual(true)
     })
+     */
     it('Test emit on-error', async () => {
       const store2 = createStore({
         modules: {
