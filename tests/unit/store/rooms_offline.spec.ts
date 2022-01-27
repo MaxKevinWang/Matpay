@@ -2,12 +2,13 @@ import store, { rooms_store } from '@/store/rooms'
 import { Room } from '@/models/room.model'
 import { MatrixEventID, MatrixRoomID, MatrixUserID } from '@/models/id.model'
 import { uuidgen } from '@/utils/utils'
-import { room_01_room_id, user_1, user_aaa } from '../mocks/mocked_user'
+import { room_01_room_id, user_1, user_2, user_aaa } from '../mocks/mocked_user'
 import { MatrixSyncInvitedRooms } from '@/interface/sync.interface'
 import { MatrixRoomStrippedEvent } from '@/interface/rooms_event.interface'
 import axios, { Axios, AxiosInstance, AxiosPromise, AxiosResponse, AxiosStatic } from 'axios'
 import { MatrixError } from '@/interface/error.interface'
 import { RoomUserInfo } from '@/models/user.model'
+import { createStore } from 'vuex'
 
 jest.mock('axios')
 const mockedAxios = axios as jest.Mocked<typeof axios>
@@ -289,19 +290,30 @@ describe('Test rooms store', function () {
       expect(state.invited_rooms.filter(i => i.room_id === room_01_room_id)[0].name).toEqual('fake_room')
     })
     it('Test action_create_room_1', async function () {
+      const dispatch_called: Record<MatrixRoomID, boolean> = {
+        aaa: false
+      }
+      const dispatch = (dispatch_name: string, payload: { room_name: string }) => {
+        if (dispatch_name === 'sync/action_resync_initial_state_for_room') {
+          dispatch_called.aaa = true
+        }
+      }
       const resp = {
         status: 200,
-        data: 'mocked_id'
+        data: {
+          room_id: 'mocked_id'
+        }
       }
       const action = store.actions.action_create_room as (context: any, payload: any) => Promise<any>
       mockedAxios.post.mockImplementation(() => Promise.resolve(resp))
-      await action({
+      await expect(action({
         state,
         commit: jest.fn(),
-        dispatch: jest.fn(),
+        dispatch,
         rootGetters: rootGetters
-      }, { room_name: 'test_name' })
-      expect(state.joined_rooms.filter(i => i.room_id === room_01_room_id)[0].name).toEqual('test_name')
+      }, { room_name: 'aaa' })).resolves.toEqual('mocked_id')
+      expect(dispatch_called.aaa).toEqual(true)
+      // expect(state.joined_rooms.filter(i => i.room_id === room_01_room_id)[0].name).toEqual('test_name')
     })
     it('Test Test action_create_room_2', async () => {
       const resp = {

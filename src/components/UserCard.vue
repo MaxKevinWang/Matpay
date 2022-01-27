@@ -9,7 +9,7 @@
       </div>
       <div class="status">{{ this.is_self ? 'Yourself, ' + this.user_type : this.user_type }}</div>
       <div v-if="!this.is_self">
-        <button class="btn btn-danger btn-sm me-1" v-if="can_i_kick_user" @click="on_permission_click('kick')">Kick</button>
+        <button class="btn btn-danger btn-sm me-1" id="kickButton" v-if="can_i_kick_user" @click="on_permission_click('kick')">Kick</button>
         <button class="btn btn-danger btn-sm me-1" v-if="can_i_kick_user" @click="on_permission_click('ban')">Ban</button>
         <button class="btn btn-primary btn-sm" @click="on_settle_click()">Settle</button>
       </div>
