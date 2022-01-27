@@ -9,18 +9,18 @@
         </div>
         <div class="modal-body">
           <div v-if="balance >= 0">
-            <p>You owe:</p>
+            <p id="you-owe">You owe:</p>
             <h3>{{ to_currency_display(balance) }}</h3>
             <p>You cannot settle with this user.</p>
           </div>
           <div v-if="balance < 0">
-            <p>Oweing you: </p>
+            <p id="owe-you">Owing you: </p>
             <h3>{{ to_currency_display(-balance) }}</h3>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" :disabled="balance >= 0" @click="on_settle_click">Settle</button>
+          <button type="button" class="btn btn-primary" :disabled="balance >= 0" @click="on_settle_click" id="settle-button">Settle</button>
         </div>
       </div>
     </div>

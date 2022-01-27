@@ -342,6 +342,7 @@ describe('Test RoomTxHistory', () => {
       }
     })
     const wrapper = mount(RoomTxHistory, {
+      attachTo: 'body',
       global: {
         mocks: {
           $route: {
