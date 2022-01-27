@@ -1,9 +1,9 @@
-import { GETJoinedRoomsResponse, POSTRoomCreateResponse } from '@/interface/api.interface'
+import { POSTRoomCreateResponse } from '@/interface/api.interface'
 import axios from 'axios'
 import { ActionTree, GetterTree, MutationTree } from 'vuex'
 import { MatrixRoomMemberStateEvent, MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
 import { MatrixError } from '@/interface/error.interface'
-import { MatrixRoomID, MatrixUserID } from '@/models/id.model'
+import { MatrixRoomID } from '@/models/id.model'
 import { Room, RoomTableRow } from '@/models/room.model'
 import { TxRejectedEvent } from '@/interface/tx_event.interface'
 import { MatrixSyncInvitedRooms } from '@/interface/sync.interface'
@@ -49,9 +49,11 @@ export const rooms_store = {
           i.type === payload.state_event.type &&
           i.origin_server_ts < payload.state_event.origin_server_ts
       )
-      for (const prev of previous_state_event) {
-        const index = room.state_events.indexOf(prev)
-        room.state_events.splice(index, 1)
+      if (previous_state_event.length > 0) {
+        for (const prev of previous_state_event) {
+          const index = room.state_events.indexOf(prev)
+          room.state_events.splice(index, 1)
+        }
       }
       room.state_events.push(payload.state_event)
     },
@@ -85,11 +87,66 @@ export const rooms_store = {
             name: name_event.content.name
           })
         }
-        dispatch('user/action_parse_member_events_for_room', {
+        await dispatch('user/action_parse_permission_event_for_room', {
           room_id: room.room_id,
-          member_events: getters.get_member_state_events_for_room(room.room_id),
           permission_event: getters.get_permission_event_for_room(room.room_id)
         }, { root: true })
+        dispatch('user/action_parse_member_events_for_room', {
+          room_id: room.room_id,
+          member_events: getters.get_member_state_events_for_room(room.room_id)
+        }, { root: true })
+      }
+    },
+    async action_parse_single_state_event_for_room ({
+      state,
+      commit,
+      dispatch,
+      getters,
+      rootGetters
+    }, payload: {
+      room_id: MatrixRoomID,
+      state_event: MatrixRoomStateEvent
+    }) {
+      const room_id = payload.room_id
+      const state_event = payload.state_event
+      // Only parse when newer
+      let to_parse = false
+      const room = state.joined_rooms.filter(r => r.room_id === room_id)[0]
+      const previous_state_event = room.state_events.filter(
+        i => i.state_key === state_event.state_key &&
+          i.type === state_event.type
+      )
+      if (previous_state_event.length === 0) {
+        // No previous event: must parse
+        to_parse = true
+      } else {
+        if (previous_state_event[0].origin_server_ts < state_event.origin_server_ts) {
+          // There is previous event, but this one is newer
+          to_parse = true
+        }
+      }
+      if (to_parse) {
+        commit('mutation_add_state_event_for_joined_room', {
+          room_id: room_id,
+          state_event: state_event
+        })
+        if (state_event.type === 'm.room.name') {
+          commit('mutation_set_name_for_joined_room', {
+            room_id: room_id,
+            name: state_event.content.name
+          })
+        } else if (state_event.type === 'm.room.power_levels') {
+          dispatch('user/action_parse_permission_event_for_room', {
+            room_id: room_id,
+            permission_event: state_event
+          }, { root: true })
+        } else if (state_event.type === 'm.room.member') {
+          dispatch('user/action_parse_single_member_event_for_room', {
+            room_id: room_id,
+            member_event: state_event,
+            recalculate_displayname: true
+          }, { root: true })
+        }
       }
     },
     action_parse_invited_rooms ({
@@ -121,7 +178,7 @@ export const rooms_store = {
       rootGetters
     }, payload: {
       room_name: string
-    }) : Promise<MatrixRoomID> {
+    }): Promise<MatrixRoomID> {
       if (!payload.room_name) {
         throw new Error('Room name cannot be empty!')
       }
@@ -198,7 +255,7 @@ export const rooms_store = {
     get_invited_rooms: (state: State) => (): Room[] => {
       return state.invited_rooms
     },
-    get_room_table_rows (state: State, getters, rootState, rootGetters) : RoomTableRow[] {
+    get_room_table_rows (state: State, getters, rootState, rootGetters): RoomTableRow[] {
       // generates table rows for RoomsTab
       const rooms: Room[] = state.joined_rooms
       const result: RoomTableRow[] = []

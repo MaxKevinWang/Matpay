@@ -10,7 +10,8 @@ const mockedAxios = axios as jest.Mocked<typeof axios>
 
 interface State {
   users_info: Record<MatrixRoomID, Array<RoomUserInfo>>,
-  permissions: Record<MatrixRoomID, MatrixRoomPermissionConfiguration>
+  permissions: Record<MatrixRoomID, MatrixRoomPermissionConfiguration>,
+  left_users_info: Record<MatrixRoomID, Array<RoomUserInfo>>
 }
 
 describe('Test user store', function () {
@@ -31,6 +32,9 @@ describe('Test user store', function () {
         users_default: 0,
         users: {}
       }
+    },
+    left_users_info: {
+      ABC: []
     }
   }
   beforeEach(() => {
@@ -50,6 +54,9 @@ describe('Test user store', function () {
           users_default: 0,
           users: {}
         }
+      },
+      left_users_info: {
+        ABC: []
       }
     }
   })
