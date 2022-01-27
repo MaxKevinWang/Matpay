@@ -856,11 +856,6 @@ export const tx_store = {
             console.log('Checkpoint 3')
             return false
           }
-          // Amount is greater than 0 and smaller or same as the open balance
-          if (tx_event_settle.content.amount <= 0 || tx_event_settle.content.amount > -balance_between_users) {
-            console.log('Checkpoint 4')
-            return false
-          }
           // Mark previous txs as frozen
           const frozen_begin : number | null = rootGetters['sync/get_timestamp_for_event'](room_id, tx_event_settle.content.event_id)
           if (!frozen_begin) {
