@@ -439,12 +439,22 @@ export const sync_store = {
       room_id: MatrixRoomID
     }) {
       /*
-      This action is used to resync the state information for a specific room, typically after room creation.
+      This action is used to resync the state information for a specific room, typically after room creation & invitation.
        */
       if (state.init_state_complete) {
         const homeserver = rootGetters['auth/homeserver']
+        // Turn off long polling
         commit('mutation_init_state_incomplete')
         commit('mutation_create_new_room', payload.room_id)
+        // perform one additional full sync to retrieve previous batch ids
+        const response = await axios.get<MatrixSyncResponse>(`${homeserver}/_matrix/client/r0/sync`, {
+          params: {
+            full_state: true,
+            since: state.next_batch
+          }
+        })
+        commit('mutation_set_next_batch', { next_batch: response.data.next_batch })
+        commit('mutation_set_current_response', response.data)
         // only state events
         const state_response = await axios.get<MatrixRoomStateEvent[]>(`${homeserver}/_matrix/client/r0/rooms/${payload.room_id}/state`)
         for (const event of state_response.data) {
@@ -456,6 +466,18 @@ export const sync_store = {
           }
         }
         commit('mutation_init_state_complete')
+        await dispatch('rooms/action_parse_state_events_for_all_rooms', null, { root: true })
+        if (response.data.rooms && response.data.rooms.join) {
+          const timeline = response.data.rooms.join[payload.room_id].timeline
+          commit('mutation_set_room_tx_prev_batch', {
+            room_id: payload.room_id,
+            prev_batch: timeline.prev_batch
+          })
+          commit('mutation_set_room_msg_prev_batch', {
+            room_id: payload.room_id,
+            prev_batch: timeline.prev_batch
+          })
+        }
       }
     }
   },
