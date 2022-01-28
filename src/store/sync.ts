@@ -126,12 +126,18 @@ export const sync_store = {
         // create a filter
         const response_filter = await axios.post<POSTFilterCreateResponse>(`${homeserver}/_matrix/client/r0/user/${user_id}/filter`, {
           room: {
-            state: {
-              lazy_load_members: true
-            },
             timeline: {
               limit: 20
+            },
+            ephemeral: {
+              not_types: ['*']
             }
+          },
+          presence: {
+            not_types: ['*']
+          },
+          account_data: {
+            not_types: ['*']
           }
         })
         commit('mutation_set_sync_filter', response_filter.data.filter_id)
@@ -142,59 +148,65 @@ export const sync_store = {
         })
         commit('mutation_set_next_batch', { next_batch: response.data.next_batch })
         commit('mutation_set_current_response', response.data)
-        // Parse invited rooms
-        // Note: **NONE** state events are parsed in this stage.
-        if (response.data.rooms && response.data.rooms.invite) {
-          dispatch('rooms/action_parse_invited_rooms', response.data.rooms.invite, { root: true })
-        }
-        if (response.data.rooms && response.data.rooms.join) {
-          // 1. create room structure for every existing room
-          for (const room_id of Object.keys(response.data.rooms.join)) {
-            commit('mutation_create_new_room', room_id)
+        if (response.data.rooms) {
+          // Parse invited rooms
+          // Note: **NONE** state events are parsed in this stage.
+          if (response.data.rooms.invite) {
+            dispatch('rooms/action_parse_invited_rooms', response.data.rooms.invite, { root: true })
           }
-          // 2. Parse existing events
-          for (const room_id of Object.keys(response.data.rooms.join)) {
-            // state events first
-            // this ensures that when init is marked true, basic room information can be displayed.
-            const state_response = await axios.get<MatrixRoomStateEvent[]>(`${homeserver}/_matrix/client/r0/rooms/${room_id}/state`)
-            for (const event of state_response.data) {
-              if (!state.processed_events_id.has(event.event_id)) {
-                commit('mutation_process_event', {
-                  room_id: room_id,
-                  event: event
-                })
+          if (response.data.rooms.join) {
+            // 1. create room structure for every existing room
+            for (const room_id of Object.keys(response.data.rooms.join)) {
+              commit('mutation_create_new_room', room_id)
+            }
+            // 2. Parse existing events
+            for (const room_id of Object.keys(response.data.rooms.join)) {
+              // state events first
+              // this ensures that when init is marked true, basic room information can be displayed.
+              const state_response = await axios.get<MatrixRoomStateEvent[]>(`${homeserver}/_matrix/client/r0/rooms/${room_id}/state`)
+              for (const event of state_response.data) {
+                if (!state.processed_events_id.has(event.event_id)) {
+                  commit('mutation_process_event', {
+                    room_id: room_id,
+                    event: event
+                  })
+                }
               }
             }
+            commit('mutation_init_state_complete')
+            // Then pass single events
+            for (const [room_id, room_data] of Object.entries(response.data.rooms.join)) {
+              const timeline = room_data.timeline
+              commit('mutation_set_room_tx_prev_batch', {
+                room_id: room_id,
+                prev_batch: timeline.prev_batch
+              })
+              commit('mutation_set_room_msg_prev_batch', {
+                room_id: room_id,
+                prev_batch: timeline.prev_batch
+              })
+              // then all events
+              for (const event of timeline.events) {
+                if (TX_EVENT_TYPES.includes(event.type)) { // Don't parse tx events at this stage, cache them
+                  commit('mutation_add_cached_tx_event', {
+                    room_id: room_id,
+                    event: event as TxEvent
+                  })
+                  continue
+                }
+                if (!state.processed_events_id.has(event.event_id)) {
+                  commit('mutation_process_event', {
+                    room_id: room_id,
+                    event: event
+                  })
+                }
+              }
+            }
+          } else {
+            commit('mutation_init_state_complete')
           }
+        } else {
           commit('mutation_init_state_complete')
-          // Then pass single events
-          for (const [room_id, room_data] of Object.entries(response.data.rooms.join)) {
-            const timeline = room_data.timeline
-            commit('mutation_set_room_tx_prev_batch', {
-              room_id: room_id,
-              prev_batch: timeline.prev_batch
-            })
-            commit('mutation_set_room_msg_prev_batch', {
-              room_id: room_id,
-              prev_batch: timeline.prev_batch
-            })
-            // then all events
-            for (const event of timeline.events) {
-              if (TX_EVENT_TYPES.includes(event.type)) { // Don't parse tx events at this stage, cache them
-                commit('mutation_add_cached_tx_event', {
-                  room_id: room_id,
-                  event: event as TxEvent
-                })
-                continue
-              }
-              if (!state.processed_events_id.has(event.event_id)) {
-                commit('mutation_process_event', {
-                  room_id: room_id,
-                  event: event
-                })
-              }
-            }
-          }
         }
       }
     },
