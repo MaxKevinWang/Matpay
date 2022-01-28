@@ -2,7 +2,7 @@ import axios from 'axios'
 import { ActionTree, GetterTree, MutationTree } from 'vuex'
 import { GroupID, MatrixEventID, MatrixRoomID } from '@/models/id.model'
 import { ChatLog, ChatMessage, TxApprovedPlaceholder, TxPendingPlaceholder, TxPlaceholder } from '@/models/chat.model'
-import { KICKED_USER, RoomUserInfo, User } from '@/models/user.model'
+import { RoomUserInfo, User } from '@/models/user.model'
 import { MatrixRoomChatMessageEvent } from '@/interface/rooms_event.interface'
 import { GroupedTransaction, PendingApproval } from '@/models/transaction.model'
 import { PUTRoomEventSendResponse } from '@/interface/api.interface'
@@ -68,10 +68,10 @@ export const chat_store = {
       message_event: MatrixRoomChatMessageEvent
     }) {
       const room_id = payload.room_id
-      const users_info : Array<RoomUserInfo> = rootGetters['user/get_users_info_for_room'](room_id)
+      const users_info : Array<RoomUserInfo> = rootGetters['user/get_all_users_info_for_room'](room_id)
       const sender = users_info.filter(u => u.user.user_id === payload.message_event.sender)[0]
       const msg : ChatMessage = {
-        sender: sender ? sender.user : KICKED_USER,
+        sender: sender.user,
         timestamp: new Date(payload.message_event.origin_server_ts),
         content: payload.message_event.content.body
       }

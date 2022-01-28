@@ -142,9 +142,9 @@ export const user_store = {
         const user_info_tmp: RoomUserInfo = {
           user: {
             user_id: member_event.state_key,
-            displayname: member_event.content.displayname || ''
+            displayname: member_event.content.displayname || member_event.state_key
           },
-          displayname: member_event.content.displayname || '',
+          displayname: member_event.content.displayname || member_event.state_key,
           avatar_url: member_event.content.avatar_url,
           user_type: permissions.users[member_event.state_key] >= 100
             ? 'Admin'
@@ -166,9 +166,9 @@ export const user_store = {
         const user_info_tmp: RoomUserInfo = {
           user: {
             user_id: member_event.state_key,
-            displayname: member_event.content.displayname || ''
+            displayname: (member_event.content.displayname || member_event.state_key) + ' (Left)'
           },
-          displayname: member_event.content.displayname || '',
+          displayname: (member_event.content.displayname || member_event.state_key) + ' (Left)',
           avatar_url: member_event.content.avatar_url,
           user_type: 'Member',
           is_self: false
@@ -233,6 +233,9 @@ export const user_store = {
     },
     get_left_users_info_for_room: (state: State) => (room_id: MatrixRoomID): Array<RoomUserInfo> => {
       return state.left_users_info[room_id]
+    },
+    get_all_users_info_for_room: (state: State) => (room_id: MatrixRoomID): Array<RoomUserInfo> => {
+      return state.users_info[room_id].concat(state.left_users_info[room_id])
     },
     get_permissions_for_room: (state: State) => (room_id: MatrixRoomID): MatrixRoomPermissionConfiguration => {
       return state.permissions[room_id]
