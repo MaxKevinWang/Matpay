@@ -212,7 +212,7 @@ export default defineComponent({
           this.room_members = this.users_info
         }
       },
-      deep: true
+      immediate: true
     }
   }
 })
