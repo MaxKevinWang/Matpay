@@ -91,7 +91,6 @@ export function newStore () {
               break
             }
             case 'sync/mutation_init_state_complete': {
-              store.dispatch('rooms/action_parse_state_events_for_all_rooms')
               // eslint-disable-next-line no-unmodified-loop-condition
               is_long_poll_enabled = true
               const long_poll = async function () {

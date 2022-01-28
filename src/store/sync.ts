@@ -174,6 +174,8 @@ export const sync_store = {
               }
             }
             commit('mutation_init_state_complete')
+            // Wait for user info be ready
+            await dispatch('rooms/action_parse_state_events_for_all_rooms', null, { root: true })
             // Then pass single events
             for (const [room_id, room_data] of Object.entries(response.data.rooms.join)) {
               const timeline = room_data.timeline
