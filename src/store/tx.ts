@@ -562,7 +562,7 @@ export const tx_store = {
           if (check_tx_id.size > 0) {
             return false
           }
-          const room_users: Array<User> = (rootGetters['user/get_users_info_for_room'](room_id) as Array<RoomUserInfo>)
+          const room_users: Array<User> = (rootGetters['user/get_all_users_info_for_room'](room_id) as Array<RoomUserInfo>)
             .map(u => u.user)
           // all participants in room
           const targets = tx_event_create.content.txs.map(t => t.to)
@@ -706,7 +706,7 @@ export const tx_store = {
           }
           console.log('Modify checkpoint 11 (passed)')
           // Construct pending approval
-          const room_users: Array<User> = (rootGetters['user/get_users_info_for_room'](room_id) as Array<RoomUserInfo>)
+          const room_users: Array<User> = (rootGetters['user/get_all_users_info_for_room'](room_id) as Array<RoomUserInfo>)
             .map(u => u.user)
           const txs = tx_event_modify.content.txs.map<SimpleTransaction>(i => {
             return {
@@ -823,7 +823,7 @@ export const tx_store = {
             return false
           }
           // User is in the room
-          const room_members: RoomUserInfo[] = (rootGetters['user/get_users_info_for_room'](room_id) as Array<RoomUserInfo>)
+          const room_members: RoomUserInfo[] = (rootGetters['user/get_all_users_info_for_room'](room_id) as Array<RoomUserInfo>)
           const oweing_user: RoomUserInfo[] = room_members.filter(id => id.user.user_id === tx_event_settle.content.user_id)
           if (oweing_user.length === 0) {
             console.log('Checkpoint 2')
