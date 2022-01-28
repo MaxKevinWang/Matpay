@@ -10,7 +10,6 @@ import { MatrixRoomEvent, MatrixRoomStateEvent } from '@/interface/rooms_event.i
 import { TX_MESSAGE_EVENT_TYPES, TxMessageEvent } from '@/interface/tx_event.interface'
 
 const normal_stores = ['rooms', 'user', 'tx', 'chat']
-let is_long_poll_enabled = false
 export function newStore () {
   return createStore({
     modules: {
@@ -28,16 +27,14 @@ export function newStore () {
           switch (type) {
             case 'auth/mutation_logout': {
               // stop syncing
-              is_long_poll_enabled = false
+              store.commit('sync/mutation_init_state_incomplete')
               // remove all existing states
               for (const st of normal_stores.concat(['sync'])) {
                 store.commit(`${st}/mutation_reset_state`)
               }
               break
             }
-            case 'auth/mutation_init_state_incomplete': {
-              // stop syncing
-              is_long_poll_enabled = false
+            case 'sync/mutation_init_state_incomplete': {
               break
             }
             case 'sync/mutation_create_new_room': {
@@ -91,17 +88,6 @@ export function newStore () {
               break
             }
             case 'sync/mutation_init_state_complete': {
-              // eslint-disable-next-line no-unmodified-loop-condition
-              is_long_poll_enabled = true
-              const long_poll = async function () {
-                if (is_long_poll_enabled) {
-                  await store.dispatch('sync/action_update_state', {
-                    timeout: 10000
-                  })
-                  setTimeout(long_poll, 1000)
-                }
-              }
-              long_poll()
               break
             }
             case 'sync/mutation_room_tx_sync_state_complete': {

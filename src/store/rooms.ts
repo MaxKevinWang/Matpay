@@ -183,6 +183,8 @@ export const rooms_store = {
         throw new Error('Room name cannot be empty!')
       }
       const homeserver = rootGetters['auth/homeserver']
+      // Prevent race condition: turn off long polling
+      commit('sync/mutation_init_state_incomplete', null, { root: true })
       const response = await axios.post<POSTRoomCreateResponse>(`${homeserver}/_matrix/client/r0/createRoom`, {
         preset: 'private_chat',
         name: payload.room_name,
@@ -215,6 +217,8 @@ export const rooms_store = {
       room_id: MatrixRoomID
     }) {
       const homeserver = rootGetters['auth/homeserver']
+      // Prevent race condition: turn off long polling
+      commit('sync/mutation_init_state_incomplete', null, { root: true })
       const response = await axios.post<POSTRoomCreateResponse>(`${homeserver}/_matrix/client/r0/rooms/${payload.room_id}/join`,
         null,
         { validateStatus: () => true })
@@ -245,7 +249,7 @@ export const rooms_store = {
         throw new Error((response.data as unknown as MatrixError).error)
       }
       // remove invitation from state
-      commit('mutation_remove_invite_room', payload)
+      commit('mutation_remove_invite_room', payload.room_id)
     }
   },
   getters: <GetterTree<State, any>>{
