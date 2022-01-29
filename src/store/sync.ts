@@ -19,7 +19,8 @@ interface State {
   room_message_prev_batch_id: Record<MatrixRoomID, string | null>
   room_tx_sync_complete: Record<MatrixRoomID, boolean>,
   cached_tx_events: Record<MatrixRoomID, Array<TxEvent>>,
-  sync_filter: string
+  sync_filter: string,
+  long_poll_controller: AbortController
 }
 
 export const sync_store = {
@@ -36,7 +37,8 @@ export const sync_store = {
       room_message_prev_batch_id: {},
       room_tx_sync_complete: {},
       cached_tx_events: {},
-      sync_filter: ''
+      sync_filter: '',
+      long_poll_controller: new AbortController()
     }
   },
   mutations: <MutationTree<State>>{
@@ -47,11 +49,21 @@ export const sync_store = {
       // state.current_response = payload
     },
     mutation_create_new_room (state: State, payload: MatrixRoomID) {
+      console.log('Creating room structure for room:', payload)
       state.room_events[payload] = []
       state.room_state_events[payload] = []
       state.room_tx_prev_batch_id[payload] = ''
       state.room_tx_sync_complete[payload] = false
       state.cached_tx_events[payload] = []
+    },
+    mutation_remove_room (state: State, payload: MatrixRoomID) {
+      console.log('Destroying room structure for room:', payload)
+      delete state.room_events[payload]
+      delete state.room_state_events[payload]
+      delete state.room_tx_prev_batch_id[payload]
+      delete state.room_tx_sync_complete[payload]
+      delete state.cached_tx_events[payload]
+      delete state.room_message_prev_batch_id[payload]
     },
     mutation_add_cached_tx_event (state: State, payload: {
       room_id: MatrixRoomID,
@@ -70,10 +82,16 @@ export const sync_store = {
       }
     },
     mutation_init_state_complete (state: State) {
+      console.log('Init state completed.')
       state.init_state_complete = true
+      state.long_poll_controller = new AbortController()
     },
     mutation_init_state_incomplete (state: State) {
+      console.log('Init state reset to incomplete. Aborting current long poll.')
       state.init_state_complete = false
+      // Abort current long poll
+      state.long_poll_controller.abort()
+      state.long_poll_controller = new AbortController()
     },
     mutation_set_room_tx_prev_batch (state: State, payload: {
       room_id: MatrixRoomID,
@@ -126,12 +144,18 @@ export const sync_store = {
         // create a filter
         const response_filter = await axios.post<POSTFilterCreateResponse>(`${homeserver}/_matrix/client/r0/user/${user_id}/filter`, {
           room: {
-            state: {
-              lazy_load_members: true
-            },
             timeline: {
               limit: 20
+            },
+            ephemeral: {
+              not_types: ['*']
             }
+          },
+          presence: {
+            not_types: ['*']
+          },
+          account_data: {
+            not_types: ['*']
           }
         })
         commit('mutation_set_sync_filter', response_filter.data.filter_id)
@@ -142,59 +166,71 @@ export const sync_store = {
         })
         commit('mutation_set_next_batch', { next_batch: response.data.next_batch })
         commit('mutation_set_current_response', response.data)
-        // Parse invited rooms
-        // Note: **NONE** state events are parsed in this stage.
-        if (response.data.rooms && response.data.rooms.invite) {
-          dispatch('rooms/action_parse_invited_rooms', response.data.rooms.invite, { root: true })
-        }
-        if (response.data.rooms && response.data.rooms.join) {
-          // 1. create room structure for every existing room
-          for (const room_id of Object.keys(response.data.rooms.join)) {
-            commit('mutation_create_new_room', room_id)
+        if (response.data.rooms) {
+          // Parse invited rooms
+          // Note: **NONE** state events are parsed in this stage.
+          if (response.data.rooms.invite) {
+            dispatch('rooms/action_parse_invited_rooms', response.data.rooms.invite, { root: true })
           }
-          // 2. Parse existing events
-          for (const room_id of Object.keys(response.data.rooms.join)) {
-            // state events first
-            // this ensures that when init is marked true, basic room information can be displayed.
-            const state_response = await axios.get<MatrixRoomStateEvent[]>(`${homeserver}/_matrix/client/r0/rooms/${room_id}/state`)
-            for (const event of state_response.data) {
-              if (!state.processed_events_id.has(event.event_id)) {
-                commit('mutation_process_event', {
-                  room_id: room_id,
-                  event: event
-                })
+          if (response.data.rooms.join) {
+            // 1. create room structure for every existing room
+            for (const room_id of Object.keys(response.data.rooms.join)) {
+              commit('mutation_create_new_room', room_id)
+            }
+            // 2. Parse existing events
+            for (const room_id of Object.keys(response.data.rooms.join)) {
+              // state events first
+              // this ensures that when init is marked true, basic room information can be displayed.
+              const state_response = await axios.get<MatrixRoomStateEvent[]>(`${homeserver}/_matrix/client/r0/rooms/${room_id}/state`)
+              for (const event of state_response.data) {
+                if (!state.processed_events_id.has(event.event_id)) {
+                  commit('mutation_process_event', {
+                    room_id: room_id,
+                    event: event
+                  })
+                }
               }
             }
+            commit('mutation_init_state_complete')
+            // Wait for user info be ready
+            await dispatch('rooms/action_parse_state_events_for_all_rooms', null, { root: true })
+            // Start long polling
+            dispatch('action_update_state', {
+              timeout: 10000
+            })
+            // Then pass single events
+            for (const [room_id, room_data] of Object.entries(response.data.rooms.join)) {
+              const timeline = room_data.timeline
+              commit('mutation_set_room_tx_prev_batch', {
+                room_id: room_id,
+                prev_batch: timeline.prev_batch
+              })
+              commit('mutation_set_room_msg_prev_batch', {
+                room_id: room_id,
+                prev_batch: timeline.prev_batch
+              })
+              // then all events
+              for (const event of timeline.events) {
+                if (TX_EVENT_TYPES.includes(event.type)) { // Don't parse tx events at this stage, cache them
+                  commit('mutation_add_cached_tx_event', {
+                    room_id: room_id,
+                    event: event as TxEvent
+                  })
+                  continue
+                }
+                if (!state.processed_events_id.has(event.event_id)) {
+                  commit('mutation_process_event', {
+                    room_id: room_id,
+                    event: event
+                  })
+                }
+              }
+            }
+          } else {
+            commit('mutation_init_state_complete')
           }
+        } else {
           commit('mutation_init_state_complete')
-          // Then pass single events
-          for (const [room_id, room_data] of Object.entries(response.data.rooms.join)) {
-            const timeline = room_data.timeline
-            commit('mutation_set_room_tx_prev_batch', {
-              room_id: room_id,
-              prev_batch: timeline.prev_batch
-            })
-            commit('mutation_set_room_msg_prev_batch', {
-              room_id: room_id,
-              prev_batch: timeline.prev_batch
-            })
-            // then all events
-            for (const event of timeline.events) {
-              if (TX_EVENT_TYPES.includes(event.type)) { // Don't parse tx events at this stage, cache them
-                commit('mutation_add_cached_tx_event', {
-                  room_id: room_id,
-                  event: event as TxEvent
-                })
-                continue
-              }
-              if (!state.processed_events_id.has(event.event_id)) {
-                commit('mutation_process_event', {
-                  room_id: room_id,
-                  event: event
-                })
-              }
-            }
-          }
         }
       }
     },
@@ -250,6 +286,7 @@ export const sync_store = {
         events.sort((a, b) => a.origin_server_ts - b.origin_server_ts)
         console.log('Start processing events')
         for (const event of events) {
+          console.log('Events: ', events)
           if (!state.processed_events_id.has(event.event_id)) {
             console.log('Processing event: ')
             console.log(event)
@@ -347,74 +384,90 @@ export const sync_store = {
     }, payload: {
       timeout?: number
     }) {
+      console.log('Long poll action entered.')
       if (state.init_state_complete) {
+        console.log('Init state completed. Long poll will now start.')
         const homeserver = rootGetters['auth/homeserver']
-        const response = await axios.get<MatrixSyncResponse>(`${homeserver}/_matrix/client/r0/sync`, {
-          params: {
-            // full_state: true,
-            timeout: payload ? payload.timeout : undefined,
-            since: state.next_batch,
-            filter: state.sync_filter
-          }
-        })
-        commit('mutation_set_next_batch', { next_batch: response.data.next_batch })
-        commit('mutation_set_current_response', response.data)
-        if (response.data.rooms && response.data.rooms.join) {
-          // 1. create room structure for every new room
-          for (const room_id of Object.keys(response.data.rooms.join)) {
-            if (!Object.keys(state.room_events).includes(room_id)) {
-              commit('mutation_create_new_room', room_id)
+        try {
+          const response = await axios.get<MatrixSyncResponse>(`${homeserver}/_matrix/client/r0/sync`, {
+            params: {
+              // full_state: true,
+              timeout: payload ? payload.timeout : undefined,
+              since: state.next_batch,
+              filter: state.sync_filter
+            },
+            signal: state.long_poll_controller.signal
+          })
+          commit('mutation_set_next_batch', { next_batch: response.data.next_batch })
+          commit('mutation_set_current_response', response.data)
+          if (response.data.rooms && response.data.rooms.join) {
+            // 1. create room structure for every new room
+            for (const room_id of Object.keys(response.data.rooms.join)) {
+              if (!Object.keys(state.room_events).includes(room_id)) {
+                commit('mutation_create_new_room', room_id)
+              }
             }
-          }
-          // Then pass single events
-          for (const [room_id, room_data] of Object.entries(response.data.rooms.join)) {
-            const timeline = room_data.timeline
-            /*
-            commit('mutation_set_room_tx_prev_batch', {
-              room_id: room_id,
-              prev_batch: timeline.prev_batch
-            })
-             */
-            // then all events
-            for (const event of timeline.events) {
-              console.log(event)
-              if (TX_EVENT_TYPES.includes(event.type)) { // transaction events
-                // For transaction events, we are only able to process them after full sync
-                // So we differentiate 2 cases
-                if (state.room_tx_sync_complete[room_id]) {
-                  // For full synced rooms: parse immediately
+            // Then pass single events
+            for (const [room_id, room_data] of Object.entries(response.data.rooms.join)) {
+              const timeline = room_data.timeline
+              /*
+              commit('mutation_set_room_tx_prev_batch', {
+                room_id: room_id,
+                prev_batch: timeline.prev_batch
+              })
+               */
+              // then all events
+              for (const event of timeline.events) {
+                console.log(event)
+                if (TX_EVENT_TYPES.includes(event.type)) { // transaction events
+                  // For transaction events, we are only able to process them after full sync
+                  // So we differentiate 2 cases
+                  if (state.room_tx_sync_complete[room_id]) {
+                    // For full synced rooms: parse immediately
+                    if (!state.processed_events_id.has(event.event_id)) {
+                      commit('mutation_process_event', {
+                        room_id: room_id,
+                        event: event
+                      })
+                    }
+                  } else {
+                    // For not fully synced events: cache them
+                    // They will be processed after full sync
+                    commit('mutation_add_cached_tx_event', {
+                      room_id: room_id,
+                      event: event as TxEvent
+                    })
+                  }
+                } else { // chat messages
                   if (!state.processed_events_id.has(event.event_id)) {
+                    // New chat messages are processed regardless of tx full sync status
                     commit('mutation_process_event', {
                       room_id: room_id,
                       event: event
                     })
                   }
-                } else {
-                  // For not fully synced events: cache them
-                  // They will be processed after full sync
-                  commit('mutation_add_cached_tx_event', {
-                    room_id: room_id,
-                    event: event as TxEvent
-                  })
-                }
-              } else { // chat messages
-                if (!state.processed_events_id.has(event.event_id)) {
-                  // New chat messages are processed regardless of tx full sync status
-                  commit('mutation_process_event', {
-                    room_id: room_id,
-                    event: event
-                  })
                 }
               }
             }
           }
-        }
-        // Parse invited rooms
-        // Note: **NONE** state events are parsed in this stage.
-        if (response.data.rooms && response.data.rooms.invite) {
-          dispatch('rooms/action_parse_invited_rooms', response.data.rooms.invite, { root: true })
+          // Parse invited rooms
+          // Note: **NONE** state events are parsed in this stage.
+          if (response.data.rooms && response.data.rooms.invite) {
+            dispatch('rooms/action_parse_invited_rooms', response.data.rooms.invite, { root: true })
+          }
+        } catch (e) {
+          if ((e as Error).message === 'canceled') {
+            console.log('Long poll cancelled.')
+          }
         }
       }
+      setTimeout(() => {
+        console.log('Long poll ended. Starting next poll.')
+        dispatch('action_update_state', {
+          timeout: 10000
+        })
+      }, 1000)
+      console.log('Long poll stopped.')
     },
     async action_resync_initial_state_for_room ({
       state,
@@ -425,23 +478,69 @@ export const sync_store = {
       room_id: MatrixRoomID
     }) {
       /*
-      This action is used to resync the state information for a specific room, typically after room creation.
+      This action is used to resync the state information for a specific room, typically after room creation & invitation.
        */
       if (state.init_state_complete) {
-        const homeserver = rootGetters['auth/homeserver']
+        // Turn off long polling
         commit('mutation_init_state_incomplete')
-        commit('mutation_create_new_room', payload.room_id)
-        // only state events
-        const state_response = await axios.get<MatrixRoomStateEvent[]>(`${homeserver}/_matrix/client/r0/rooms/${payload.room_id}/state`)
-        for (const event of state_response.data) {
-          if (!state.processed_events_id.has(event.event_id)) {
-            commit('mutation_process_event', {
-              room_id: payload.room_id,
-              event: event
-            })
+      }
+      const homeserver = rootGetters['auth/homeserver']
+      commit('mutation_create_new_room', payload.room_id)
+      // perform one additional full sync to retrieve previous batch ids
+      const response = await axios.get<MatrixSyncResponse>(`${homeserver}/_matrix/client/r0/sync`, {
+        params: {
+          full_state: true,
+          since: state.next_batch,
+          filter: {
+            room: {
+              rooms: [payload.room_id]
+            }
           }
         }
-        commit('mutation_init_state_complete')
+      })
+      commit('mutation_set_next_batch', { next_batch: response.data.next_batch })
+      commit('mutation_set_current_response', response.data)
+      // only state events
+      const state_response = await axios.get<MatrixRoomStateEvent[]>(`${homeserver}/_matrix/client/r0/rooms/${payload.room_id}/state`)
+      for (const event of state_response.data) {
+        if (!state.processed_events_id.has(event.event_id)) {
+          commit('mutation_process_event', {
+            room_id: payload.room_id,
+            event: event
+          })
+        }
+      }
+      commit('mutation_init_state_complete')
+      await dispatch('rooms/action_parse_state_events_for_all_rooms', null, { root: true })
+      if (response.data.rooms && response.data.rooms.join) {
+        const timeline = response.data.rooms.join[payload.room_id].timeline
+        commit('mutation_set_room_tx_prev_batch', {
+          room_id: payload.room_id,
+          prev_batch: timeline.prev_batch
+        })
+        commit('mutation_set_room_msg_prev_batch', {
+          room_id: payload.room_id,
+          prev_batch: timeline.prev_batch
+        })
+        for (const event of timeline.events) {
+          console.log(event)
+          if (TX_EVENT_TYPES.includes(event.type)) { // transaction events
+            // For transaction events, we are only able to process them after full sync
+            // Here the room cannot be in a fully synced state -> cache them
+            commit('mutation_add_cached_tx_event', {
+              room_id: payload.room_id,
+              event: event as TxEvent
+            })
+          } else { // chat messages
+            if (!state.processed_events_id.has(event.event_id)) {
+              // New chat messages are processed regardless of tx full sync status
+              commit('mutation_process_event', {
+                room_id: payload.room_id,
+                event: event
+              })
+            }
+          }
+        }
       }
     }
   },

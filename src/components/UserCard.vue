@@ -58,6 +58,7 @@ export default defineComponent({
   emits: [
     'on-kick',
     'on-ban',
+    'on-leave',
     'on-error'
   ],
   data () {
@@ -103,6 +104,9 @@ export default defineComponent({
       } else if (operation === 'ban') {
         this.$emit('on-ban', this.user_id)
       }
+    },
+    on_leave_click () {
+      this.$emit('on-leave')
     },
     async on_settle_click () {
       if (!this.is_self) {

@@ -5,10 +5,6 @@ export interface User {
   displayname: string
 }
 
-export const KICKED_USER : User = {
-  user_id: '',
-  displayname: 'Left User'
-}
 export type RoomUserInfo = {
   user: User,
   displayname: string, // displayname after resolving conflicts. Different from user.displayname.

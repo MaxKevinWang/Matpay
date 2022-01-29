@@ -126,10 +126,11 @@ export default defineComponent({
     },
     async on_create (room_name: string) {
       try {
+        this.is_loading = true // prevent computed race condition
         const room_id = await this.action_create_room({
           room_name: room_name
         })
-        this.$router.push({
+        await this.$router.push({
           name: 'room_detail',
           params: {
             room_id: room_id
