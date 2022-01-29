@@ -265,6 +265,8 @@ export const rooms_store = {
       room_id: MatrixRoomID
     }) {
       const room_id = payload.room_id
+      // Early leave settlement
+      await dispatch('tx/action_early_leave_settlement_for_room', { room_id: room_id }, { root: true })
       const homeserver = rootGetters['auth/homeserver']
       const response = await axios.post<Record<string, never>>(`${homeserver}/_matrix/client/r0/rooms/${room_id}/leave`,
         null,
@@ -274,7 +276,6 @@ export const rooms_store = {
       }
       // remove all data structures
       commit('sync/mutation_remove_room', room_id, { root: true })
-      // TODO: early leave settlement
     }
   },
   getters: <GetterTree<State, any>>{

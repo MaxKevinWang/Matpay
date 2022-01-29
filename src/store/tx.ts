@@ -297,7 +297,6 @@ export const tx_store = {
       if (response_approve.status !== 200) {
         throw new Error((response.data as unknown as MatrixError).error)
       }
-      // TODO: notify other stores
     },
     async action_modify_tx_for_room ({
       state,
@@ -361,7 +360,6 @@ export const tx_store = {
       if (from_to_same) {
         throw new Error('Implementation error: the from & to users should not stay the same')
       }
-      // TODO: Further validations goes here
       // construct event
       const modify_event = {
         txs: tx_new.txs.map(i => {
@@ -383,7 +381,6 @@ export const tx_store = {
       if (response.status !== 200) {
         throw new Error((response.data as unknown as MatrixError).error)
       }
-      // TODO: notify other stores
     },
     async action_approve_tx_for_room ({
       state,
@@ -418,7 +415,6 @@ export const tx_store = {
       if (response.status !== 200) {
         throw new Error((response.data as unknown as MatrixError).error)
       }
-      // TODO: notify other stores
     },
     async action_reject_tx_for_room ({
       state,
@@ -469,7 +465,42 @@ export const tx_store = {
       if (response.status !== 200) {
         throw new Error((response.data as unknown as MatrixError).error)
       }
-      // TODO: notify other stores
+    },
+    /**
+     * This action takes a room ID, finds all users that have a relative negative open balance (other users owing the current),
+     * and sends a settlement transaction for all of them.
+     * This action is typically used in leaving condition, hence the name.
+     * But the function itself does NOT check if it's called before a leaving.
+     * Note that this function DOES NOT settle transactions the current user owing others.
+     */
+    async action_early_leave_settlement_for_room ({
+      state,
+      commit,
+      getters,
+      dispatch,
+      rootGetters
+    }, payload: {
+      room_id: MatrixRoomID
+    }) {
+      const room_id = payload.room_id
+      const room_users: Array<User> = (rootGetters['user/get_users_info_for_room'](room_id) as Array<RoomUserInfo>)
+        .map(u => u.user)
+      const current_user_id: MatrixUserID = rootGetters['auth/user_id']
+      const settle_actions: Promise<void>[] = []
+      for (const one_user of room_users) {
+        // Don't settle with myself
+        if (one_user.user_id === current_user_id) {
+          continue
+        }
+        const open_balance: number = getters.get_open_balance_against_user_for_room(room_id, current_user_id, one_user.user_id)
+        if (open_balance < 0) {
+          settle_actions.push(dispatch('action_settle_for_room', {
+            room_id: room_id,
+            target_user: one_user
+          }))
+        }
+      }
+      await Promise.all(settle_actions)
     },
     async action_parse_rejected_events_for_room ({
       state,
