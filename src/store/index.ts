@@ -57,12 +57,16 @@ export function newStore () {
               }
               // Event distinguishing starts here
               if (['m.room.member', 'm.room.power_levels', 'm.room.name'].includes(room_event.type)) {
-                store.commit('rooms/mutation_add_state_event_for_joined_room', {
-                  room_id: room_id,
-                  state_event: room_event as MatrixRoomStateEvent
-                })
-                if (store.state.sync.init_state_complete) {
-                  store.dispatch('rooms/action_parse_state_events_for_all_rooms')
+                if (!store.state.sync.init_state_complete) {
+                  store.commit('rooms/mutation_add_state_event_for_joined_room', {
+                    room_id: room_id,
+                    state_event: room_event as MatrixRoomStateEvent
+                  })
+                } else {
+                  store.dispatch('rooms/action_parse_single_state_event_for_room', {
+                    room_id: room_id,
+                    state_event: room_event as MatrixRoomStateEvent
+                  })
                 }
               }
               if (['m.room.message'].includes(room_event.type)) {

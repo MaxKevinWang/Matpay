@@ -1,9 +1,9 @@
 <template>
-  <div id="fixed-member-list">
+  <div>
     <h4>Members</h4>
     <ul class="list-unstyled card chat-list mt-2 mb-0">
       <li class="clearfix" v-for="user in users" :key="user.user.user_id" :data-test="user.user.user_id">
-        <UserCard :id="`name-card${user.user.displayname}`" :room_id="room_id" :user_prop="user" :can_i_kick_user="can_i_kick_user" @on-kick="on_kick" @on-ban="on_ban" @on-error="on_error"/>
+        <UserCard :room_id="room_id" :user_prop="user" :can_i_kick_user="can_i_kick_user" @on-kick="on_kick" @on-ban="on_ban" @on-error="on_error"/>
       </li>
       <li class="row">
         <button class="btn btn-primary" @click="on_invite_user_clicked()">Invite user</button>
@@ -136,7 +136,8 @@ export default defineComponent({
         this.users = []
         this.show_member_detail()
       },
-      deep: true
+      deep: true,
+      immediate: true
     }
   }
 })
@@ -162,10 +163,6 @@ li {
 li:hover {
   background: #efefef;
   cursor: pointer
-}
-
-#fixed-member-list {
-  position: fixed;
 }
 
 </style>

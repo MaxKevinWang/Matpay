@@ -17,55 +17,54 @@ describe('Test Rooms Tab', () => {
       modules: {
         auth: {
           namespaced: true,
+          state () {
+            return {
+              user_id: user_1.user_id,
+              homeserver: 'https://tchncs.de',
+              access_token: 'token',
+              device_id: undefined
+            }
+          },
           getters: {
-            user_id: () => user_1.user_id
+            user_id: (state) => () => state.user_id
           }
         },
         rooms: {
           namespaced: true,
           state () {
             return {
-              joined_rooms: [
-                {
-                  room_id: 'aaa',
-                  name: 'Room1',
-                  state_events: [
-                    {
-                      type: 'm.room.power_levels',
-                      state_key: '',
-                      content: {
-                        '@test-1:dsn.tm.kit.edu': {
-                          users: 100
-                        }
-                      },
-                      room_id: 'aaa',
-                      sender: user_1.user_id,
-                      origin_server_ts: 0,
-                      event_id: 'id'
-                    }
-                  ]
-                }
-              ],
+              joined_rooms: [],
               invited_rooms: []
             }
           },
           getters: {
-            get_all_joined_rooms: (state) => () => state.joined_rooms,
-            get_invited_rooms: () => []
+            get_room_table_rows: () => () => [{
+              room_id: 'aaa',
+              room_id_display: 'aaa',
+              name: 'Room1',
+              member_count: 1,
+              user_type: 'admin'
+            }],
+            get_invited_rooms: (state) => () => state.invited_rooms
           },
           actions: {
-            action_create_room: () => 'No',
-            action_accept_invitation_for_room: () => 'No',
-            action_reject_invitation_for_room: () => 'No'
+            action_create_room: jest.fn(),
+            action_accept_invitation_for_room: jest.fn(),
+            action_reject_invitation_for_room: jest.fn()
           }
         },
         sync: {
           namespaced: true,
+          state () {
+            return {
+              init_state_complete: true
+            }
+          },
           getters: {
-            is_initial_sync_complete: () => 'No'
+            is_initial_sync_complete: (state) => () => state.init_state_complete
           },
           actions: {
-            action_sync_initial_state: () => 'No'
+            action_sync_initial_state: jest.fn()
           }
         }
       }

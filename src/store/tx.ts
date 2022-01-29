@@ -166,7 +166,7 @@ export const tx_store = {
     mutation_change_tx_state_for_room (state: State, payload: {
       room_id: MatrixRoomID,
       group_id: GroupID,
-      state: 'defined' | 'approved' | 'frozen' | 'settlement'
+      state: 'defined' | 'approved' | 'settlement'
     }) {
       const tx = state.transactions[payload.room_id].basic.filter(i => i.group_id === payload.group_id)
       if (tx.length !== 1) {
@@ -327,8 +327,8 @@ export const tx_store = {
       if (exist_tx_old.length <= 0) {
         throw new Error('Implementation error: only modify existing tx!')
       }
-      if (tx_old.state === 'frozen' || tx_old.state === 'settlement' || tx_new.state === 'frozen' || tx_new.state === 'settlement') {
-        throw new Error('Implementation error: cannot modify frozen or settlement txs!')
+      if (tx_old.state === 'settlement' || tx_new.state === 'settlement') {
+        throw new Error('Implementation error: cannot modify settlement txs!')
       }
       if (tx_old.group_id !== tx_new.group_id) {
         throw new Error('Implementation error: keep the group_id same!')
@@ -456,16 +456,15 @@ export const tx_store = {
         throw new Error('Implementation error: target user not in room!')
       }
       // calculate open balance
-      const current_user_id : MatrixUserID = rootGetters['auth/user_id']
-      const open_balance : number = getters.get_open_balance_against_user_for_room(room_id, current_user_id, target_user.user_id)
+      const current_user_id: MatrixUserID = rootGetters['auth/user_id']
+      const open_balance: number = getters.get_open_balance_against_user_for_room(room_id, current_user_id, target_user.user_id)
       if (open_balance >= 0) {
         throw new Error('Implementation error: settlement not permitted with the target user!')
       }
       // prepare the event
       const settle_event = {
         amount: -open_balance,
-        user_id: target_user.user_id,
-        event_id: rootGetters['sync/get_last_message_event_id'](room_id)
+        user_id: target_user.user_id
       }
       const homeserver: string = rootGetters['auth/homeserver']
       const response = await axios.put<PUTRoomEventSendResponse>(`${homeserver}/_matrix/client/r0/rooms/${room_id}/send/com.matpay.settle/${uuidgen()}`,
@@ -735,7 +734,7 @@ export const tx_store = {
             return prev
           }, {} as Record<MatrixUserID, boolean>)
           approvals[(old_tx as GroupedTransaction).from.user_id] = false
-          const new_pending_approval : PendingApproval = {
+          const new_pending_approval: PendingApproval = {
             approvals: approvals,
             description: tx_event_modify.content.description,
             event_id: tx_event_modify.event_id,
@@ -856,48 +855,39 @@ export const tx_store = {
             console.log('Checkpoint 3')
             return false
           }
-          // Mark previous txs as frozen
-          const frozen_begin : number | null = rootGetters['sync/get_timestamp_for_event'](room_id, tx_event_settle.content.event_id)
-          if (!frozen_begin) {
-            console.log('Checkpoint 5')
-            return false // Invalid event reference
-          } else {
-            console.log('Checkpoint 6')
-            // Actual marking
-            commit('mutation_mark_previous_txs_as_frozen', {
-              room_id: room_id,
-              timestamp: frozen_begin
-            })
-            // TODO: rollback invalid change: All changes between frozen_begin and origin_server_ts of settlement must be rolled back.
-            // Add new settlement transaction
-            const from_user = oweing_user[0].user
-            const to_user = room_members.filter(id => id.user.user_id === tx_event_settle.sender)[0].user
-            const new_tx: GroupedTransaction = {
-              from: from_user,
-              txs: [
-                {
-                  to: to_user,
-                  tx_id: uuidgen(),
-                  amount: tx_event_settle.content.amount
-                }
-              ],
-              timestamp: new Date(tx_event_settle.origin_server_ts),
-              group_id: uuidgen(),
-              pending_approvals: [],
-              description: `Settlement between ${from_user.displayname} and ${to_user.displayname}`,
-              state: 'settlement'
-            }
-            commit('mutation_add_approved_grouped_transaction_for_room', {
-              room_id: room_id,
-              grouped_tx: new_tx
-            })
-            dispatch('chat/action_parse_single_grouped_tx_for_room', {
-              room_id: room_id,
-              grouped_tx: new_tx
-            }, { root: true })
-            return true
+          // Amount is greater than 0
+          if (tx_event_settle.content.amount <= 0) {
+            console.log('Checkpoint 4')
+            return false
           }
-          break
+          console.log('Checkpoint 6')
+          // Add new settlement transaction
+          const from_user = oweing_user[0].user
+          const to_user = room_members.filter(id => id.user.user_id === tx_event_settle.sender)[0].user
+          const new_tx: GroupedTransaction = {
+            from: from_user,
+            txs: [
+              {
+                to: to_user,
+                tx_id: uuidgen(),
+                amount: tx_event_settle.content.amount
+              }
+            ],
+            timestamp: new Date(tx_event_settle.origin_server_ts),
+            group_id: uuidgen(),
+            pending_approvals: [],
+            description: `Settlement between ${from_user.displayname} and ${to_user.displayname}`,
+            state: 'settlement'
+          }
+          commit('mutation_add_approved_grouped_transaction_for_room', {
+            room_id: room_id,
+            grouped_tx: new_tx
+          })
+          dispatch('chat/action_parse_single_grouped_tx_for_room', {
+            room_id: room_id,
+            grouped_tx: new_tx
+          }, { root: true })
+          return true
         }
         default: {
           throw new Error('Invalid transaction event type!')

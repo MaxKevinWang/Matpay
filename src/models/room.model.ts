@@ -7,3 +7,11 @@ export interface Room {
   name: string,
   state_events: MatrixRoomStateEvent[]
 }
+
+export interface RoomTableRow {
+  room_id: string,
+  room_id_display: string,
+  name: string
+  member_count: number
+  user_type: string
+}

@@ -8,9 +8,9 @@
         </div>
         <div class="modal-body">
           <p>Input split as a percentage between 0 and 100. The sum of all splits should be 100.</p>
-          <div class="input-group mb-3 form-control" v-for="user in users" :key="user.user.user_id">
+          <div class="input-group mb-3 form-control" v-for="user in users" :key="user.user.user_id" :data-test="user.user.user_id">
                    <span class="input-group-text" id="basic-addon3">
-              <input class="form-check-input" type="checkbox" :id="user.user.displayname" :value="user.user.user_id" v-model="selected_members" >
+              <input class="form-check-input" type="checkbox" :id="`split-checkbox${selectorify(user.user.user_id)}`" :value="user.user.user_id" v-model="selected_members" >
             </span>
             <label class="input-group-text" :for="`split-perc${selectorify(user.user.user_id)}`">{{ user.displayname }}</label>
             <input
@@ -20,14 +20,16 @@
               placeholder="Split value"
               aria-label="Recipient's username"
               aria-describedby="basic-addon2"
-              :id="`split-perc${selectorify(user.user.user_id)}`">
+              :id="`split-perc${selectorify(user.user.user_id)}`"
+              :disabled="!this.selected_members.includes(user.user.user_id)"
+            >
             <span class="input-group-text" id="basic-addon2">%</span>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-info" @click="on_default_split">Split Equally among Selected</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" @click="on_save_click">Save</button>
+          <button type="button" class="btn btn-primary" @click="on_save_click" id="split_create_save">Save</button>
         </div>
       </div>
     </div>
@@ -76,12 +78,6 @@ export default defineComponent({
   components: {
   },
   methods: {
-    selectorify (user_id: MatrixUserID) : string {
-      // transforms a user id to a valid selector
-      return user_id.substring(1)
-        .replaceAll(':', '_')
-        .replaceAll('.', '_')
-    },
     show () {
       this.modal_control?.show()
       this.is_shown = true

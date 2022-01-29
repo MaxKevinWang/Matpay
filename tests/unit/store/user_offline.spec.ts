@@ -10,7 +10,8 @@ const mockedAxios = axios as jest.Mocked<typeof axios>
 
 interface State {
   users_info: Record<MatrixRoomID, Array<RoomUserInfo>>,
-  permissions: Record<MatrixRoomID, MatrixRoomPermissionConfiguration>
+  permissions: Record<MatrixRoomID, MatrixRoomPermissionConfiguration>,
+  left_users_info: Record<MatrixRoomID, Array<RoomUserInfo>>
 }
 
 describe('Test user store', function () {
@@ -31,6 +32,9 @@ describe('Test user store', function () {
         users_default: 0,
         users: {}
       }
+    },
+    left_users_info: {
+      ABC: []
     }
   }
   beforeEach(() => {
@@ -50,6 +54,9 @@ describe('Test user store', function () {
           users_default: 0,
           users: {}
         }
+      },
+      left_users_info: {
+        ABC: []
       }
     }
   })
@@ -133,8 +140,7 @@ describe('Test user store', function () {
           avatar_url: '',
           displayname: '@test-2:dsn.tm.kit.edu',
           is_self: false,
-          user_type: 'Member',
-          balance: 0
+          user_type: 'Member'
         }])
       })
       it('Test two users with the same displayname', async () => {
@@ -179,8 +185,7 @@ describe('Test user store', function () {
           },
           displayname: 'DSN Test Account No 1 (@test-1:dsn.tm.kit.edu)',
           is_self: true,
-          user_type: 'Member',
-          balance: 0
+          user_type: 'Member'
         },
         {
           avatar_url: '',
@@ -190,8 +195,7 @@ describe('Test user store', function () {
           },
           displayname: 'DSN Test Account No 1 (@test-2:dsn.tm.kit.edu)',
           is_self: false,
-          user_type: 'Member',
-          balance: 0
+          user_type: 'Member'
         }])
       })
       it('Test no member events', async () => {

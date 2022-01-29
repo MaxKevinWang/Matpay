@@ -11,7 +11,7 @@
     </div>
     <div class="card-body" id="ModificationButton-body">
       <button class="btn btn-primary" type="button"
-              :disabled="this.tx.state === 'settlement' || this.tx.state === 'frozen'"
+              :disabled="this.tx.state === 'settlement'"
               @click="modification_click()">
         Modify
       </button>

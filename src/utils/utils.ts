@@ -32,7 +32,12 @@ export const split_percentage = (item: GroupedTransaction | PendingApproval | Si
 export const to_currency_display = (num: number) : string => {
   return (num / 100).toFixed(2) + '€'
 }
-
+export const selectorify = (user_id: MatrixUserID) : string => {
+  // transforms a user id to a valid selector
+  return user_id.substring(1)
+    .replaceAll(':', '_')
+    .replaceAll('.', '_')
+}
 export function optimize_graph (graph: TxGraph) : TxGraph {
   const optim_graph = cloneDeep(graph)
   console.log('Start optim: ', optim_graph)

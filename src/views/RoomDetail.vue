@@ -8,8 +8,7 @@
     </div>
     <div class="row clearfix">
       <div class="col-lg-3 chat-frame">
-        <MemberList :room_id="room_id" :users_info="users_info" @on-error="on_error"
-                    @on-user-change="on_user_change"/>
+        <MemberList :room_id="room_id" :users_info="users_info" @on-error="on_error"/>
       </div>
       <div class="col-lg-9 chat-frame">
         <h4>Chat</h4>
@@ -42,8 +41,6 @@ export default defineComponent({
   name: 'RoomDetail',
   data () {
     return {
-      users_info: [] as Array<RoomUserInfo>,
-      room_name: '' as string,
       error: '' as string,
       is_tx_fully_loaded: false
     }
@@ -62,6 +59,20 @@ export default defineComponent({
     ]),
     room_id (): string {
       return this.$route.params.room_id as string
+    },
+    users_info (): Array<RoomUserInfo> {
+      try {
+        return this.get_users_info_for_room(this.room_id)
+      } catch (e) {
+        return []
+      }
+    },
+    room_name (): string {
+      try {
+        return this.get_room_name(this.room_id)
+      } catch (e) {
+        return 'Loading...'
+      }
     }
   },
   components: {
@@ -74,21 +85,8 @@ export default defineComponent({
       'action_sync_full_tx_events_for_room',
       'action_sync_batch_message_events_for_room'
     ]),
-    update_member_list () {
-      try {
-        this.room_name = this.get_room_name(this.room_id)
-        this.users_info = this.get_users_info_for_room(this.room_id)
-      } catch (e) {
-        this.$router.push({
-          name: 'rooms'
-        })
-      }
-    },
     on_error (error: string) {
       this.error = error
-    },
-    on_user_change () {
-      this.update_member_list()
     },
     on_load_chat () {
       this.action_sync_batch_message_events_for_room({
@@ -106,7 +104,6 @@ export default defineComponent({
     }).then(() => {
       this.is_tx_fully_loaded = true
     })
-    this.update_member_list()
   }
 })
 </script>
