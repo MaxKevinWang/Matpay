@@ -38,6 +38,36 @@ export const selectorify = (user_id: MatrixUserID) : string => {
     .replaceAll(':', '_')
     .replaceAll('.', '_')
 }
+export function build_graph (grouped_txs: GroupedTransaction[]) : TxGraph {
+  const result: TxGraph = {
+    graph: {}
+  }
+  for (const grouped_tx of grouped_txs) {
+    for (const simple_tx of grouped_tx.txs) {
+      // From side is a new vertex
+      if (!result.graph[grouped_tx.from.user_id]) {
+        result.graph[grouped_tx.from.user_id] = []
+      }
+      // To side is a new vertex
+      if (!result.graph[simple_tx.to.user_id]) {
+        result.graph[simple_tx.to.user_id] = []
+      }
+      const existing_edge = result.graph[grouped_tx.from.user_id].filter(i => i[0] === simple_tx.to.user_id)
+      if (existing_edge.length > 0) {
+        // Edge already exists; add the weight instead of creating a new edge.
+        // This makes sure that the graph is not a multigraph.
+        existing_edge[0][1] += simple_tx.amount
+      } else {
+        // Add new adjacency list edge: from -> to
+        result.graph[grouped_tx.from.user_id].push([
+          simple_tx.to.user_id,
+          simple_tx.amount
+        ])
+      }
+    }
+  }
+  return result
+}
 export function optimize_graph (graph: TxGraph) : TxGraph {
   const optim_graph = cloneDeep(graph)
   console.log('Start optim: ', optim_graph)

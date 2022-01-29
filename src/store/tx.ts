@@ -2,7 +2,7 @@ import { ActionTree, GetterTree, MutationTree } from 'vuex'
 import { GroupedTransaction, PendingApproval, SimpleTransaction, TxGraph } from '@/models/transaction.model'
 import { GroupID, MatrixEventID, MatrixRoomID, MatrixUserID, TxID } from '@/models/id.model'
 import { RoomUserInfo, User } from '@/models/user.model'
-import { optimize_graph, uuidgen } from '@/utils/utils'
+import { build_graph, optimize_graph, uuidgen } from '@/utils/utils'
 import {
   TxApproveEvent,
   TxCreateEvent,
@@ -22,7 +22,6 @@ interface State {
     pending_approvals: PendingApproval[],
     graph: TxGraph
     optimized_graph: TxGraph,
-    is_graph_dirty: boolean, // if both graphs are updated with basic
     rejected: Record<MatrixEventID, Set<MatrixUserID>>,
   }>
 }
@@ -43,7 +42,6 @@ export const tx_store = {
           graph: {
             graph: {}
           },
-          is_graph_dirty: false,
           optimized_graph: {
             graph: {}
           },
@@ -70,46 +68,16 @@ export const tx_store = {
       grouped_tx: GroupedTransaction
     }) {
       state.transactions[payload.room_id].basic.push(payload.grouped_tx)
-      state.transactions[payload.room_id].is_graph_dirty = true
+      // build the graph
+      state.transactions[payload.room_id].graph = build_graph(state.transactions[payload.room_id].basic)
+      // Optimize immediately after th graph is built
+      state.transactions[payload.room_id].optimized_graph = optimize_graph(state.transactions[payload.room_id].graph)
     },
     mutation_add_pending_approval_for_room (state: State, payload: {
       room_id: MatrixRoomID,
       pending_approval: PendingApproval
     }) {
       state.transactions[payload.room_id].pending_approvals.push(payload.pending_approval)
-    },
-    mutation_build_tx_graph_for_room (state: State, payload: MatrixRoomID) {
-      if (state.transactions[payload].is_graph_dirty) {
-        // clear the graph
-        state.transactions[payload].graph.graph = {}
-        for (const grouped_tx of state.transactions[payload].basic) {
-          for (const simple_tx of grouped_tx.txs) {
-            // From side is a new vertex
-            if (!state.transactions[payload].graph.graph[grouped_tx.from.user_id]) {
-              state.transactions[payload].graph.graph[grouped_tx.from.user_id] = []
-            }
-            // To side is a new vertex
-            if (!state.transactions[payload].graph.graph[simple_tx.to.user_id]) {
-              state.transactions[payload].graph.graph[simple_tx.to.user_id] = []
-            }
-            const existing_edge = state.transactions[payload].graph.graph[grouped_tx.from.user_id].filter(i => i[0] === simple_tx.to.user_id)
-            if (existing_edge.length > 0) {
-              // Edge already exists; add the weight instead of creating a new edge.
-              // This makes sure that the graph is not a multigraph.
-              existing_edge[0][1] += simple_tx.amount
-            } else {
-              // Add new adjacency list edge: from -> to
-              state.transactions[payload].graph.graph[grouped_tx.from.user_id].push([
-                simple_tx.to.user_id,
-                simple_tx.amount
-              ])
-            }
-          }
-        }
-      }
-      // Optimize immediately after th graph is built
-      state.transactions[payload].optimized_graph = optimize_graph(state.transactions[payload].graph)
-      state.transactions[payload].is_graph_dirty = false
     },
     mutation_mark_user_as_approved_for_room (state: State, payload: {
       room_id: MatrixRoomID,
@@ -164,7 +132,6 @@ export const tx_store = {
       if (payload.txs) {
         tx[0].txs = payload.txs
       }
-      state.transactions[payload.room_id].is_graph_dirty = true
     },
     mutation_change_tx_state_for_room (state: State, payload: {
       room_id: MatrixRoomID,
@@ -177,7 +144,10 @@ export const tx_store = {
       }
       tx[0].state = payload.state
       if (payload.state === 'approved' || payload.state === 'settlement') {
-        state.transactions[payload.room_id].is_graph_dirty = true
+        // build the graph
+        state.transactions[payload.room_id].graph = build_graph(state.transactions[payload.room_id].basic)
+        // Optimize immediately after th graph is built
+        state.transactions[payload.room_id].optimized_graph = optimize_graph(state.transactions[payload.room_id].graph)
       }
     },
     mutation_reset_state (state: State) {
@@ -863,12 +833,6 @@ export const tx_store = {
             console.log('Checkpoint 2')
             return false
           }
-          // If the graph is dirty it needs to be optimized first.
-          if (state.transactions[room_id].is_graph_dirty === true) {
-            await dispatch('action_optimize_graph_and_prepare_balance_for_room', {
-              room_id: room_id
-            })
-          }
           // Sending user is on receiving side && event_id matches previous event
           const balance_between_users = getters.get_open_balance_against_user_for_room(room_id, tx_event_settle.sender, tx_event_settle.content.user_id)
           if (balance_between_users >= 0) {
@@ -913,19 +877,6 @@ export const tx_store = {
           throw new Error('Invalid transaction event type!')
         }
       }
-    },
-    async action_optimize_graph_and_prepare_balance_for_room ({
-      state,
-      commit,
-      getters,
-      dispatch,
-      rootGetters
-    }, payload: {
-      room_id: MatrixRoomID
-    }) {
-      if (state.transactions[payload.room_id].is_graph_dirty) {
-        commit('mutation_build_tx_graph_for_room', payload.room_id)
-      }
     }
   },
   getters: <GetterTree<State, any>>{
@@ -956,67 +907,32 @@ export const tx_store = {
       ])
     },
     get_open_balance_against_user_for_room: (state: State) => (room_id: MatrixRoomID, source_user_id: MatrixUserID, target_user_id: MatrixUserID): number => {
-      /*
-        // The old implementation that does not consider loops.
-        // In this getter, negative means receiving.
-        const grouped_txs = state.transactions[room_id].basic
-        const current_user_id : MatrixUserID = rootGetters['auth/user_id']
-        let balance = 0
-        for (const grouped_tx of grouped_txs) {
-          // Case 1: the current user is on the from side
-          if (grouped_tx.from.user_id === current_user_id) {
-            // Scan for all simple tx and look for target
-            const oweing_sum = grouped_tx.txs
-              .filter(i => i.to.user_id === target_user_id)
-              .map(i => i.amount)
-              .reduce((sum, tx) => sum + tx, 0)
-            balance -= oweing_sum
+      let balance = 0
+      for (const from of Object.keys(state.transactions[room_id].optimized_graph.graph)) {
+        for (const [to, amount] of state.transactions[room_id].optimized_graph.graph[from]) {
+          if (from === source_user_id && to === target_user_id) {
+            balance -= amount
           }
-          // Case 2: the target user is on the from side
-          if (grouped_tx.from.user_id === target_user_id) {
-            const owed_sum = grouped_tx.txs
-              .filter(i => i.to.user_id === current_user_id)
-              .map(i => i.amount)
-              .reduce((sum, tx) => sum + tx, 0)
-            balance += owed_sum
+          if (to === source_user_id && from === target_user_id) {
+            balance += amount
           }
         }
-        return balance
-       */
-      if (state.transactions[room_id].is_graph_dirty) {
-        throw new Error('Graph is not clean. Call corresponding actions first')
-      } else {
-        let balance = 0
-        for (const from of Object.keys(state.transactions[room_id].optimized_graph.graph)) {
-          for (const [to, amount] of state.transactions[room_id].optimized_graph.graph[from]) {
-            if (from === source_user_id && to === target_user_id) {
-              balance -= amount
-            }
-            if (to === source_user_id && from === target_user_id) {
-              balance += amount
-            }
-          }
-        }
-        return balance
       }
+      return balance
     },
     get_total_open_balance_for_user_for_room: (state: State) => (room_id: MatrixRoomID, source_user_id: MatrixUserID) => {
-      if (state.transactions[room_id].is_graph_dirty) {
-        throw new Error('Graph is not clean. Call corresponding actions first')
-      } else {
-        let balance = 0
-        for (const from of Object.keys(state.transactions[room_id].optimized_graph.graph)) {
-          for (const [to, amount] of state.transactions[room_id].optimized_graph.graph[from]) {
-            if (from === source_user_id) {
-              balance -= amount
-            }
-            if (to === source_user_id) {
-              balance += amount
-            }
+      let balance = 0
+      for (const from of Object.keys(state.transactions[room_id].optimized_graph.graph)) {
+        for (const [to, amount] of state.transactions[room_id].optimized_graph.graph[from]) {
+          if (from === source_user_id) {
+            balance -= amount
+          }
+          if (to === source_user_id) {
+            balance += amount
           }
         }
-        return balance
       }
+      return balance
     }
   }
 }

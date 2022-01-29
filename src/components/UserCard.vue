@@ -74,7 +74,6 @@ export default defineComponent({
   },
   methods: {
     ...mapActions('tx', [
-      'action_optimize_graph_and_prepare_balance_for_room',
       'action_settle_for_room'
     ]),
     update_user_card () {
@@ -110,16 +109,7 @@ export default defineComponent({
     },
     async on_settle_click () {
       if (!this.is_self) {
-        let open_balance = 0
-        try {
-          open_balance = this.get_open_balance_against_user_for_room(this.room_id, this.self_user_id, this.user_id)
-        } catch (e) {
-          await this.action_optimize_graph_and_prepare_balance_for_room({
-            room_id: this.room_id
-          })
-          open_balance = this.get_open_balance_against_user_for_room(this.room_id, this.self_user_id, this.user_id)
-        }
-        this.open_balance = open_balance
+        this.open_balance = this.get_open_balance_against_user_for_room(this.room_id, this.self_user_id, this.user_id)
         this.$refs.settle_dialog.show()
       }
     },
