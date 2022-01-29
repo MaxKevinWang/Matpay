@@ -49,6 +49,7 @@ export const sync_store = {
       // state.current_response = payload
     },
     mutation_create_new_room (state: State, payload: MatrixRoomID) {
+      console.log('Creating room structure for room:', payload)
       state.room_events[payload] = []
       state.room_state_events[payload] = []
       state.room_tx_prev_batch_id[payload] = ''
@@ -56,6 +57,7 @@ export const sync_store = {
       state.cached_tx_events[payload] = []
     },
     mutation_remove_room (state: State, payload: MatrixRoomID) {
+      console.log('Destroying room structure for room:', payload)
       delete state.room_events[payload]
       delete state.room_state_events[payload]
       delete state.room_tx_prev_batch_id[payload]
@@ -80,10 +82,12 @@ export const sync_store = {
       }
     },
     mutation_init_state_complete (state: State) {
+      console.log('Init state completed.')
       state.init_state_complete = true
       state.long_poll_controller = new AbortController()
     },
     mutation_init_state_incomplete (state: State) {
+      console.log('Init state reset to incomplete. Aborting current long poll.')
       state.init_state_complete = false
       // Abort current long poll
       state.long_poll_controller.abort()
@@ -380,7 +384,9 @@ export const sync_store = {
     }, payload: {
       timeout?: number
     }) {
+      console.log('Long poll action entered.')
       if (state.init_state_complete) {
+        console.log('Init state completed. Long poll will now start.')
         const homeserver = rootGetters['auth/homeserver']
         try {
           const response = await axios.get<MatrixSyncResponse>(`${homeserver}/_matrix/client/r0/sync`, {
@@ -456,10 +462,12 @@ export const sync_store = {
         }
       }
       setTimeout(() => {
+        console.log('Long poll ended. Starting next poll.')
         dispatch('action_update_state', {
           timeout: 10000
         })
       }, 1000)
+      console.log('Long poll stopped.')
     },
     async action_resync_initial_state_for_room ({
       state,
@@ -482,7 +490,12 @@ export const sync_store = {
       const response = await axios.get<MatrixSyncResponse>(`${homeserver}/_matrix/client/r0/sync`, {
         params: {
           full_state: true,
-          since: state.next_batch
+          since: state.next_batch,
+          filter: {
+            room: {
+              rooms: [payload.room_id]
+            }
+          }
         }
       })
       commit('mutation_set_next_batch', { next_batch: response.data.next_batch })
@@ -509,6 +522,25 @@ export const sync_store = {
           room_id: payload.room_id,
           prev_batch: timeline.prev_batch
         })
+        for (const event of timeline.events) {
+          console.log(event)
+          if (TX_EVENT_TYPES.includes(event.type)) { // transaction events
+            // For transaction events, we are only able to process them after full sync
+            // Here the room cannot be in a fully synced state -> cache them
+            commit('mutation_add_cached_tx_event', {
+              room_id: payload.room_id,
+              event: event as TxEvent
+            })
+          } else { // chat messages
+            if (!state.processed_events_id.has(event.event_id)) {
+              // New chat messages are processed regardless of tx full sync status
+              commit('mutation_process_event', {
+                room_id: payload.room_id,
+                event: event
+              })
+            }
+          }
+        }
       }
     }
   },
