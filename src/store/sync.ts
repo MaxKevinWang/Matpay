@@ -55,6 +55,14 @@ export const sync_store = {
       state.room_tx_sync_complete[payload] = false
       state.cached_tx_events[payload] = []
     },
+    mutation_remove_room (state: State, payload: MatrixRoomID) {
+      delete state.room_events[payload]
+      delete state.room_state_events[payload]
+      delete state.room_tx_prev_batch_id[payload]
+      delete state.room_tx_sync_complete[payload]
+      delete state.cached_tx_events[payload]
+      delete state.room_message_prev_batch_id[payload]
+    },
     mutation_add_cached_tx_event (state: State, payload: {
       room_id: MatrixRoomID,
       event: TxEvent

@@ -30,6 +30,11 @@ export const user_store = {
       state.users_info[payload] = []
       state.left_users_info[payload] = []
     },
+    mutation_remove_joined_room (state: State, payload: MatrixRoomID) {
+      delete state.users_info[payload]
+      delete state.permissions[payload]
+      delete state.left_users_info[payload]
+    },
     mutation_set_users_for_room (state: State, payload: {
       room_id: MatrixRoomID,
       users_info: Array<RoomUserInfo>

@@ -44,6 +44,13 @@ export function newStore () {
               }
               break
             }
+            case 'sync/mutation_remove_room': {
+              const payload: MatrixRoomID = mutation.payload
+              for (const st of normal_stores) {
+                store.commit(`${st}/mutation_remove_joined_room`, payload)
+              }
+              break
+            }
             case 'sync/mutation_process_event': {
               const {
                 room_id,

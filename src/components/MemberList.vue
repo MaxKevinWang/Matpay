@@ -3,7 +3,11 @@
     <h4>Members</h4>
     <ul class="list-unstyled card chat-list mt-2 mb-0">
       <li class="clearfix" v-for="user in users" :key="user.user.user_id" :data-test="user.user.user_id">
-        <UserCard :room_id="room_id" :user_prop="user" :can_i_kick_user="can_i_kick_user" @on-kick="on_kick" @on-ban="on_ban" @on-error="on_error"/>
+        <UserCard :room_id="room_id" :user_prop="user" :can_i_kick_user="can_i_kick_user"
+                  @on-kick="on_kick"
+                  @on-ban="on_ban"
+                  @on-leave="on_leave"
+                  @on-error="on_error"/>
       </li>
       <li class="row">
         <button class="btn btn-primary" @click="on_invite_user_clicked()">Invite user</button>
@@ -27,7 +31,6 @@ import { cloneDeep } from 'lodash'
 export default defineComponent({
   name: 'MemberList',
   emits: {
-    'on-user-change': null,
     'on-error': (error: string) => {
       return !!error
     }
@@ -67,6 +70,9 @@ export default defineComponent({
   methods: {
     ...mapActions('user', [
       'action_change_user_membership_on_room'
+    ]),
+    ...mapActions('rooms', [
+      'action_leave_room'
     ]),
     show_member_detail () {
       const users_tmp = cloneDeep(this.users_info)
@@ -111,23 +117,35 @@ export default defineComponent({
       const prompt = 'Are you sure you want to ban user?'
       this.$refs.confirm_dialog.prompt_confirm(prompt, this.on_confirm)
     },
+    on_leave () {
+      const prompt = `
+      Are you sure you want to leave room?
+      Leaving this room will immediately settle all transactions owing to you.
+      `
+      this.$refs.confirm_dialog.prompt_confirm(prompt, this.on_leave_confirm)
+    },
     async on_confirm () {
-      /*
       try {
         await this.action_change_user_membership_on_room({
           room_id: this.room_id,
           user_id: this.current_operation_user_id,
           action: this.current_operation
         })
-        this.$emit('on-user-change')
       } catch (error) {
         this.$emit('on-error', error)
       }
-      */
-      // The current code now only performs a redirection to avoid cascading errors.
-      this.$router.push({
-        name: 'rooms'
-      })
+    },
+    async on_leave_confirm () {
+      try {
+        await this.action_leave_room({
+          room_id: this.room_id
+        })
+        this.$router.push({
+          name: 'rooms'
+        })
+      } catch (error) {
+        this.$emit('on-error', error)
+      }
     }
   },
   watch: {

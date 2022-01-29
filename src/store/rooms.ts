@@ -30,6 +30,10 @@ export const rooms_store = {
       }
       state.joined_rooms.push(new_room)
     },
+    mutation_remove_joined_room (state: State, payload: MatrixRoomID) {
+      const index = state.joined_rooms.findIndex(i => i.room_id === payload)
+      state.joined_rooms.splice(index, 1)
+    },
     mutation_add_invited_room (state: State, payload: {
       room_id: MatrixRoomID,
       name: string
@@ -250,6 +254,27 @@ export const rooms_store = {
       }
       // remove invitation from state
       commit('mutation_remove_invite_room', payload.room_id)
+    },
+    async action_leave_room ({
+      state,
+      commit,
+      dispatch,
+      getters,
+      rootGetters
+    }, payload: {
+      room_id: MatrixRoomID
+    }) {
+      const room_id = payload.room_id
+      const homeserver = rootGetters['auth/homeserver']
+      const response = await axios.post<Record<string, never>>(`${homeserver}/_matrix/client/r0/rooms/${room_id}/leave`,
+        null,
+        { validateStatus: () => true })
+      if (response.status !== 200) {
+        throw new Error((response.data as unknown as MatrixError).error)
+      }
+      // remove all data structures
+      commit('sync/mutation_remove_room', room_id, { root: true })
+      // TODO: early leave settlement
     }
   },
   getters: <GetterTree<State, any>>{

@@ -51,6 +51,9 @@ export const tx_store = {
         }
       }
     },
+    mutation_remove_joined_room (state: State, payload: MatrixRoomID) {
+      delete state.transactions[payload]
+    },
     mutation_add_rejected_events_for_room (state: State, payload: {
       room_id: MatrixRoomID
       rejected_events: Array<[MatrixEventID, MatrixUserID]>

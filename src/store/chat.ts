@@ -25,6 +25,9 @@ export const chat_store = {
         messages: []
       }
     },
+    mutation_remove_joined_room (state: State, payload: MatrixRoomID) {
+      delete state.chat_log[payload]
+    },
     mutation_add_single_message_for_room (state: State, payload: {
       room_id: MatrixRoomID,
       msg: ChatMessage | TxPlaceholder
