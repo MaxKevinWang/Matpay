@@ -225,9 +225,7 @@ export const user_store = {
       const response = await axios.post<Record<string, never>>(`${homeserver}/_matrix/client/r0/rooms/${payload.room_id}/${payload.action}`, {
         user_id: payload.user_id
       }, { validateStatus: () => true })
-      if (response.status === 200) {
-        dispatch('sync/action_update_state', null, { root: true }) // update state events
-      } else {
+      if (response.status !== 200) {
         throw new Error((response.data as unknown as MatrixError).error)
       }
     }
