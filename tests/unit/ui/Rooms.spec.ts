@@ -19,10 +19,7 @@ describe('Test Rooms Tab', () => {
           namespaced: true,
           state () {
             return {
-              user_id: user_1.user_id,
-              homeserver: 'https://tchncs.de',
-              access_token: 'token',
-              device_id: undefined
+              user_id: user_1.user_id
             }
           },
           getters: {
@@ -38,7 +35,7 @@ describe('Test Rooms Tab', () => {
             }
           },
           getters: {
-            get_room_table_rows: () => () => [{
+            get_room_table_rows: () => [{
               room_id: 'aaa',
               room_id_display: 'aaa',
               name: 'Room1',
@@ -46,11 +43,6 @@ describe('Test Rooms Tab', () => {
               user_type: 'admin'
             }],
             get_invited_rooms: (state) => () => state.invited_rooms
-          },
-          actions: {
-            action_create_room: jest.fn(),
-            action_accept_invitation_for_room: jest.fn(),
-            action_reject_invitation_for_room: jest.fn()
           }
         },
         sync: {
@@ -62,13 +54,11 @@ describe('Test Rooms Tab', () => {
           },
           getters: {
             is_initial_sync_complete: (state) => () => state.init_state_complete
-          },
-          actions: {
-            action_sync_initial_state: jest.fn()
           }
         }
       }
     })
+    store.dispatch = jest.fn()
     it('Test one room', async () => {
       let redirected = false
       const wrapper = shallowMount(Rooms, {
