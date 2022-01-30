@@ -48,7 +48,6 @@ describe('Test transaction Vuex store offline', () => {
           optimized_graph: {
             graph: {}
           },
-          is_graph_dirty: false,
           rejected: {}
         }
       }
@@ -65,7 +64,6 @@ describe('Test transaction Vuex store offline', () => {
             optimized_graph: {
               graph: {}
             },
-            is_graph_dirty: false,
             rejected: {}
           }
         }
@@ -77,7 +75,6 @@ describe('Test transaction Vuex store offline', () => {
       mutation(state, 'aaa')
       expect(state.transactions.aaa.basic).toEqual([])
       expect(state.transactions.aaa.pending_approvals).toEqual([])
-      expect(state.transactions.aaa.is_graph_dirty).toEqual(false)
       expect(state.transactions.aaa.graph.graph).toEqual({})
       expect(state.transactions.aaa.rejected).toEqual({})
     })
@@ -518,25 +515,21 @@ describe('Test transaction Vuex store offline', () => {
         pending_approvals: []
       }
       state.transactions.aaa.basic.push(fake_grouped_tx1, fake_grouped_tx2, fake_grouped_tx3)
-      state.transactions.aaa.is_graph_dirty = true
       state.transactions.aaa.graph = graph1_unoptimized
       mutation(state, 'aaa')
       expect(state.transactions.aaa.optimized_graph).toEqual(graph1_optimized)
       state.transactions.aaa.basic = []
       state.transactions.aaa.basic.push(fake_grouped_tx4, fake_grouped_tx5, fake_grouped_tx6, fake_grouped_tx7)
-      state.transactions.aaa.is_graph_dirty = true
       state.transactions.aaa.graph = graph2_unoptimized
       mutation(state, 'aaa')
       expect(state.transactions.aaa.optimized_graph).toEqual(graph2_optimized)
       state.transactions.aaa.basic = []
       state.transactions.aaa.basic.push(fake_grouped_tx8, fake_grouped_tx9, fake_grouped_tx10, fake_grouped_tx11)
-      state.transactions.aaa.is_graph_dirty = true
       state.transactions.aaa.graph = graph3_unoptimized
       mutation(state, 'aaa')
       expect(state.transactions.aaa.optimized_graph).toEqual(graph3_optimized)
       state.transactions.aaa.basic = []
       state.transactions.aaa.basic.push(fake_grouped_tx12, fake_grouped_tx13, fake_grouped_tx14, fake_grouped_tx15, fake_grouped_tx16)
-      state.transactions.aaa.is_graph_dirty = true
       state.transactions.aaa.graph = graph4_unoptimized
       mutation(state, 'aaa')
       expect(state.transactions.aaa.optimized_graph).toEqual(graph4_optimized)
@@ -554,7 +547,6 @@ describe('Test transaction Vuex store offline', () => {
           optimized_graph: {
             graph: {}
           },
-          is_graph_dirty: false,
           rejected: {}
         }
       }
@@ -571,7 +563,6 @@ describe('Test transaction Vuex store offline', () => {
             optimized_graph: {
               graph: {}
             },
-            is_graph_dirty: false,
             rejected: {}
           }
         }
@@ -679,19 +670,15 @@ describe('Test transaction Vuex store offline', () => {
     })
     it('Test getter get_open_balance_against_user_for_room', function () {
       const getter = store.getters.get_open_balance_against_user_for_room(state, null, null, null)
-      state.transactions.aaa.is_graph_dirty = true
       expect(() => getter('aaa', user_1, user_2)).toThrow('Graph is not clean. Call corresponding actions first')
       state.transactions.aaa.optimized_graph = graph1_optimized
-      state.transactions.aaa.is_graph_dirty = false
       expect(getter('aaa', user_aaa.user_id, user_bbb.user_id)).toEqual(-10)
       expect(getter('aaa', user_bbb.user_id, user_aaa.user_id)).toEqual(10)
     })
     it('Test getter get_total_open_balance_for_user_for_room', function () {
       const getter = store.getters.get_total_open_balance_for_user_for_room(state, null, null, null)
-      state.transactions.aaa.is_graph_dirty = true
       expect(() => getter('aaa', user_a.user_id)).toThrow('Graph is not clean. Call corresponding actions first')
       state.transactions.aaa.optimized_graph = graph2_optimized
-      state.transactions.aaa.is_graph_dirty = false
       expect(getter('aaa', user_a.user_id)).toEqual(-75)
       expect(getter('aaa', user_b.user_id)).toEqual(-50)
     })
