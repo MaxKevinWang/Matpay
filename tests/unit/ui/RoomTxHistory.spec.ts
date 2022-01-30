@@ -45,9 +45,6 @@ describe('Test RoomTxHistory', () => {
         },
         tx: {
           namespaced: true,
-          actions: {
-            action_optimize_graph_and_prepare_balance_for_room: jest.fn()
-          },
           getters: {
             get_grouped_transactions_for_room: () => (room_id: MatrixRoomID) => [{
               from: user_1,
@@ -64,7 +61,8 @@ describe('Test RoomTxHistory', () => {
               participants: [],
               timestamp: new Date('1/15/2022'),
               pending_approvals: []
-            }]
+            }],
+            get_total_open_balance_for_user_for_room: () => (room_id: MatrixRoomID, source_user_id: MatrixUserID) => -10
           }
         },
         sync: {
@@ -103,11 +101,9 @@ describe('Test RoomTxHistory', () => {
         },
         tx: {
           namespaced: true,
-          actions: {
-            action_optimize_graph_and_prepare_balance_for_room: jest.fn()
-          },
           getters: {
-            get_grouped_transactions_for_room: () => (room_id: MatrixRoomID) => []
+            get_grouped_transactions_for_room: () => (room_id: MatrixRoomID) => [],
+            get_total_open_balance_for_user_for_room: () => (room_id: MatrixRoomID, source_user_id: MatrixUserID) => -10
           }
         },
         sync: {
@@ -153,9 +149,6 @@ describe('Test RoomTxHistory', () => {
         },
         tx: {
           namespaced: true,
-          actions: {
-            action_optimize_graph_and_prepare_balance_for_room: jest.fn()
-          },
           getters: {
             get_grouped_transactions_for_room: () => (room_id: MatrixRoomID) => [{
               from: user_1,
@@ -172,7 +165,8 @@ describe('Test RoomTxHistory', () => {
               participants: [],
               timestamp: new Date('1/15/2022'),
               pending_approvals: []
-            }]
+            }],
+            get_total_open_balance_for_user_for_room: () => (room_id: MatrixRoomID, source_user_id: MatrixUserID) => -10
           }
         },
         sync: {
@@ -205,7 +199,7 @@ describe('Test RoomTxHistory', () => {
       }
     })
     await flushPromises()
-    await expect(wrapper.find('#balance-display-negative').element.innerHTML.includes('Oweing you in total: -10')).toEqual(true)
+    await expect(wrapper.find('#balance-display-negative').element.innerHTML.includes('Oweing you in total: 0.10€')).toEqual(true)
   })
   it('Test positive balance display', async () => {
     const store1 = createStore({
@@ -218,9 +212,6 @@ describe('Test RoomTxHistory', () => {
         },
         tx: {
           namespaced: true,
-          actions: {
-            action_optimize_graph_and_prepare_balance_for_room: jest.fn()
-          },
           getters: {
             get_grouped_transactions_for_room: () => (room_id: MatrixRoomID) => [{
               from: user_1,
@@ -237,7 +228,8 @@ describe('Test RoomTxHistory', () => {
               participants: [],
               timestamp: new Date('1/15/2022'),
               pending_approvals: []
-            }]
+            }],
+            get_total_open_balance_for_user_for_room: () => (room_id: MatrixRoomID, source_user_id: MatrixUserID) => 10
           }
         },
         sync: {
@@ -270,7 +262,7 @@ describe('Test RoomTxHistory', () => {
       }
     })
     await flushPromises()
-    await expect(wrapper.find('#balance-display-positive').element.innerHTML.includes('Oweing you in total: 10')).toEqual(true)
+    await expect(wrapper.find('#balance-display-positive').element.innerHTML.includes('You owe in total: 0.10€')).toEqual(true)
   })
   it('Test if txDetail renders when tx is been clicked', async () => {
     const store1 = createStore({
@@ -302,7 +294,8 @@ describe('Test RoomTxHistory', () => {
               participants: [],
               timestamp: new Date('1/15/2022'),
               pending_approvals: []
-            }]
+            }],
+            get_total_open_balance_for_user_for_room: () => (room_id: MatrixRoomID, source_user_id: MatrixUserID) => -10
           }
         },
         sync: {

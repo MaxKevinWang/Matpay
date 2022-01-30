@@ -40,6 +40,11 @@ describe('Test chat store', function () {
       mutation(state, 'aaa')
       expect(state.chat_log.aaa.messages).toEqual([])
     })
+    it('Test mutation_remove_joined_room', function () {
+      const mutation = store.mutations.mutation_remove_joined_room
+      mutation(state, 'aaa')
+      expect(state.chat_log.aaa).toEqual(undefined)
+    })
     it('Test mutation_add_single_message_for_room', function () {
       const mutation = store.mutations.mutation_add_single_message_for_room
       const fake_group_id1 = uuidgen()
@@ -185,7 +190,7 @@ describe('Test chat store', function () {
       }
     }
     const rootGetters = {
-      'user/get_users_info_for_room': (r: MatrixRoomID) => {
+      'user/get_all_users_info_for_room': (r: MatrixRoomID) => {
         if (r === room_id) {
           return room_01_user_info
         }
