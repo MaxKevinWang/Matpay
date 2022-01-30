@@ -30,7 +30,6 @@ describe('Test tx store validation actions', () => {
           optimized_graph: {
             graph: {}
           },
-          is_graph_dirty: false,
           rejected: {}
         }
       }
@@ -54,7 +53,6 @@ describe('Test tx store validation actions', () => {
             optimized_graph: {
               graph: {}
             },
-            is_graph_dirty: false,
             rejected: {}
           }
         }
@@ -1001,7 +999,7 @@ describe('Test tx store validation actions', () => {
             event_id: 'e01'
           }
         }
-        const existing_approval : PendingApproval = {
+        const existing_approval: PendingApproval = {
           event_id: 'e01',
           type: 'create',
           group_id: uuidgen(),
@@ -1252,3 +1250,4 @@ describe('Test tx store validation actions', () => {
        */
     })
   })
+})
