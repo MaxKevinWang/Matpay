@@ -49,7 +49,8 @@ export default defineComponent({
     ...mapGetters('rooms', [
       'get_member_state_events_for_room',
       'get_permission_event_for_room',
-      'get_room_name'
+      'get_room_name',
+      'get_joined_status_for_room'
     ]),
     ...mapGetters('user', [
       'get_all_users_info_for_room'
@@ -96,6 +97,14 @@ export default defineComponent({
   },
   async mounted () {
     await this.action_sync_initial_state()
+    if (!this.get_joined_status_for_room(this.room_id)) {
+      this.$router.push({
+        name: 'rooms',
+        query: {
+          not_joined: 1
+        }
+      })
+    }
     this.action_sync_batch_message_events_for_room({
       room_id: this.room_id
     })
