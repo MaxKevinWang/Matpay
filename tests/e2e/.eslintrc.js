@@ -8,6 +8,7 @@ module.exports = {
   },
   rules: {
     strict: 'off',
-    '@typescript-eslint/no-namespace': 'off'
+    '@typescript-eslint/no-namespace': 'off',
+    '@typescript-eslint/no-var-requires': 'off'
   }
 }

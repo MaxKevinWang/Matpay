@@ -8,6 +8,13 @@
         }}
       </div>
       <div class="status">{{ this.is_self ? 'Yourself, ' + this.user_type : this.user_type }}</div>
+      <div class="status" v-if="!this.is_self">
+        {{
+          this.open_balance < 0
+            ? 'Oweing you: ' + to_currency_display(-open_balance)
+            : 'You oweing: ' + to_currency_display(open_balance)
+        }}
+      </div>
       <div v-if="!this.is_self">
         <button class="btn btn-danger btn-sm me-1" id="kickButton" v-if="can_i_kick_user" @click="on_permission_click('kick')">Kick</button>
         <button class="btn btn-danger btn-sm me-1" v-if="can_i_kick_user" @click="on_permission_click('ban')">Ban</button>
@@ -53,7 +60,10 @@ export default defineComponent({
     }),
     ...mapGetters('tx', [
       'get_open_balance_against_user_for_room'
-    ])
+    ]),
+    open_balance () : number {
+      return this.get_open_balance_against_user_for_room(this.room_id, this.self_user_id, this.user_id)
+    }
   },
   emits: [
     'on-kick',
@@ -68,13 +78,11 @@ export default defineComponent({
       avatar: DEFAULT_AVATAR as string,
       is_self: false as boolean,
       user_type: 'Member',
-      show_right_click_menu: false as boolean,
-      open_balance: 0 as number
+      show_right_click_menu: false as boolean
     }
   },
   methods: {
     ...mapActions('tx', [
-      'action_optimize_graph_and_prepare_balance_for_room',
       'action_settle_for_room'
     ]),
     update_user_card () {
@@ -110,16 +118,6 @@ export default defineComponent({
     },
     async on_settle_click () {
       if (!this.is_self) {
-        let open_balance = 0
-        try {
-          open_balance = this.get_open_balance_against_user_for_room(this.room_id, this.self_user_id, this.user_id)
-        } catch (e) {
-          await this.action_optimize_graph_and_prepare_balance_for_room({
-            room_id: this.room_id
-          })
-          open_balance = this.get_open_balance_against_user_for_room(this.room_id, this.self_user_id, this.user_id)
-        }
-        this.open_balance = open_balance
         this.$refs.settle_dialog.show()
       }
     },

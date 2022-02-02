@@ -154,7 +154,6 @@ export default defineComponent({
         this.users = []
         this.show_member_detail()
       },
-      deep: true,
       immediate: true
     }
   }

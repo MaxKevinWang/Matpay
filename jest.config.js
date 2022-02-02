@@ -3,5 +3,7 @@ module.exports = {
   transform: {
     '^.+\\.vue$': '@vue/vue3-jest'
   },
-  setupFilesAfterEnv: ['jest-extended/all']
+  setupFilesAfterEnv: ['jest-extended/all'],
+  collectCoverage: true,
+  coverageDirectory: 'jest-coverage'
 }

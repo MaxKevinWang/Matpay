@@ -63,9 +63,7 @@ export default defineComponent({
       return this.$route.params.current_group_id as string
     },
     balance (): number {
-      // return this.get_total_open_balance_for_user_for_room(this.room_id, this.user_id)
-      // TODO: fix this
-      return 0
+      return this.get_total_open_balance_for_user_for_room(this.room_id, this.user_id)
     },
     ...mapGetters('tx', [
       'get_grouped_transactions_for_room',
@@ -77,9 +75,6 @@ export default defineComponent({
     ...mapActions('sync', [
       'action_sync_initial_state',
       'action_sync_full_tx_events_for_room'
-    ]),
-    ...mapActions('tx', [
-      'action_optimize_graph_and_prepare_balance_for_room'
     ]),
     on_click (tx: GroupedTransaction) {
       if (JSON.stringify(this.tx) === JSON.stringify(tx) && this.show_detail) {
@@ -99,10 +94,6 @@ export default defineComponent({
     this.action_sync_full_tx_events_for_room({
       room_id: this.room_id
     }).then(() => {
-      console.log('Checkpoint 2')
-      this.action_optimize_graph_and_prepare_balance_for_room({
-        room_id: this.room_id
-      })
       console.log('Checkpoint 3')
       this.room_name = this.get_room_name(this.room_id)
       console.log('Checkpoint 4')
