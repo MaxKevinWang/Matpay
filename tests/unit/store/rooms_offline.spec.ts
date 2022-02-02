@@ -146,19 +146,19 @@ describe('Test rooms store', function () {
     it('Test action_parse_state_events_for_all_rooms(All without name event)', async function () {
       const action = store.actions.action_parse_state_events_for_all_rooms as (context: any, payload: any) => Promise<any>
       state.joined_rooms.push({
-          room_id: 'aaa',
-          name: '',
-          state_events: []
-        }, {
-          room_id: 'bbb',
-          name: '',
-          state_events: []
-        },
-        {
-          room_id: 'ccc',
-          name: '',
-          state_events: []
-        })
+        room_id: 'aaa',
+        name: '',
+        state_events: []
+      }, {
+        room_id: 'bbb',
+        name: '',
+        state_events: []
+      },
+      {
+        room_id: 'ccc',
+        name: '',
+        state_events: []
+      })
       const commit_called: Record<MatrixRoomID, boolean> = {
         aaa: false,
         bbb: false,
@@ -199,29 +199,29 @@ describe('Test rooms store', function () {
     it('Test action_parse_state_events_for_all_rooms(With name event)', async function () {
       const action = store.actions.action_parse_state_events_for_all_rooms as (context: any, payload: any) => Promise<any>
       state.joined_rooms.push({
-          room_id: 'aaa',
-          name: '',
-          state_events: [
-            {
-              room_id: 'abc',
-              sender: user_1.user_id,
-              origin_server_ts: 0,
-              event_id: 'test_event',
-              content: {},
-              type: 'm.room.name',
-              state_key: 'test_key'
-            }
-          ]
-        }, {
-          room_id: 'bbb',
-          name: '',
-          state_events: []
-        },
-        {
-          room_id: 'ccc',
-          name: '',
-          state_events: []
-        })
+        room_id: 'aaa',
+        name: '',
+        state_events: [
+          {
+            room_id: 'abc',
+            sender: user_1.user_id,
+            origin_server_ts: 0,
+            event_id: 'test_event',
+            content: {},
+            type: 'm.room.name',
+            state_key: 'test_key'
+          }
+        ]
+      }, {
+        room_id: 'bbb',
+        name: '',
+        state_events: []
+      },
+      {
+        room_id: 'ccc',
+        name: '',
+        state_events: []
+      })
       const commit_called: Record<MatrixRoomID, boolean> = {
         aaa: false,
         bbb: false,
@@ -354,19 +354,19 @@ describe('Test rooms store', function () {
     })
     it('Test action_accept_invitation_for_room_1', async function () {
       state.joined_rooms.push({
-          room_id: 'aaa',
-          name: '',
-          state_events: []
-        }, {
-          room_id: 'bbb',
-          name: '',
-          state_events: []
-        },
-        {
-          room_id: 'ccc',
-          name: '',
-          state_events: []
-        })
+        room_id: 'aaa',
+        name: '',
+        state_events: []
+      }, {
+        room_id: 'bbb',
+        name: '',
+        state_events: []
+      },
+      {
+        room_id: 'ccc',
+        name: '',
+        state_events: []
+      })
       const resp = {
         status: 200,
         data: ''
@@ -412,19 +412,19 @@ describe('Test rooms store', function () {
     it('Test action_reject_invitation_for_room_1)', async function () {
       const action = store.actions.action_reject_invitation_for_room as (context: any, payload: any) => Promise<any>
       state.joined_rooms.push({
-          room_id: 'aaa',
-          name: '',
-          state_events: []
-        }, {
-          room_id: 'bbb',
-          name: '',
-          state_events: []
-        },
-        {
-          room_id: 'ccc',
-          name: '',
-          state_events: []
-        })
+        room_id: 'aaa',
+        name: '',
+        state_events: []
+      }, {
+        room_id: 'bbb',
+        name: '',
+        state_events: []
+      },
+      {
+        room_id: 'ccc',
+        name: '',
+        state_events: []
+      })
       const resp = {
         status: 200,
         data: ''
@@ -450,21 +450,179 @@ describe('Test rooms store', function () {
       expect(commit_called.bbb).toEqual(false)
       expect(commit_called.ccc).toEqual(false)
     })
+    it('Test action_i_am_kicked_from_room)', async function () {
+      const action = store.actions.action_i_am_kicked_from_room as (context: any, payload: any) => Promise<any>
+      state.joined_rooms.push({
+        room_id: 'aaa',
+        name: '',
+        state_events: []
+      }, {
+        room_id: 'bbb',
+        name: '',
+        state_events: []
+      },
+      {
+        room_id: 'ccc',
+        name: '',
+        state_events: []
+      })
+      const resp = {
+        status: 200,
+        data: ''
+      }
+      const commit_called: Record<MatrixRoomID, boolean> = {
+        aaa: false,
+        bbb: false,
+        ccc: false
+      }
+      const commit = (commit_name: string, payload: string) => {
+        if (commit_name === 'sync/mutation_remove_room') {
+          commit_called[payload] = true
+        }
+      }
+      mockedAxios.post.mockImplementation(() => Promise.resolve(resp))
+      await action({
+        state,
+        commit,
+        dispatch: jest.fn(),
+        rootGetters: rootGetters
+      }, { room_id: 'aaa' })
+      expect(commit_called.aaa).toEqual(true)
+      expect(commit_called.bbb).toEqual(false)
+      expect(commit_called.ccc).toEqual(false)
+    })
+    it('Test action_parse_single_state_event_for_room(power_levels_event)', async function () {
+      state.joined_rooms.push({
+        room_id: 'aaa',
+        name: '',
+        state_events: []
+      })
+      const resp = {
+        status: 200,
+        data: ''
+      }
+      const dispatch_called: Record<MatrixRoomID, boolean> = {
+        aaa: false
+      }
+      const dispatch = (dispatch_name: string, payload: string) => {
+        if (dispatch_name === 'user/action_parse_permission_event_for_room') {
+          dispatch_called.aaa = true
+        }
+      }
+      const action = store.actions.action_parse_single_state_event_for_room as (context: any, payload: any) => Promise<any>
+      mockedAxios.post.mockImplementation(() => Promise.resolve(resp))
+      await action({
+        state,
+        commit: jest.fn(),
+        dispatch,
+        rootGetters: rootGetters
+      }, {
+        room_id: 'aaa',
+        state_event: {
+          room_id: 'abc',
+          sender: user_1.user_id,
+          origin_server_ts: 0,
+          event_id: 'test_event',
+          content: {},
+          type: 'm.room.power_levels',
+          state_key: 'test_key'
+        }
+      })
+      expect(dispatch_called.aaa).toEqual(true)
+    })
+    it('Test action_parse_single_state_event_for_room(member_event)', async function () {
+      state.joined_rooms.push({
+        room_id: 'aaa',
+        name: '',
+        state_events: []
+      })
+      const resp = {
+        status: 200,
+        data: ''
+      }
+      const dispatch_called: Record<MatrixRoomID, boolean> = {
+        aaa: false
+      }
+      const dispatch = (dispatch_name: string, payload: string) => {
+        if (dispatch_name === 'user/action_parse_single_member_event_for_room') {
+          dispatch_called.aaa = true
+        }
+      }
+      const action = store.actions.action_parse_single_state_event_for_room as (context: any, payload: any) => Promise<any>
+      mockedAxios.post.mockImplementation(() => Promise.resolve(resp))
+      await action({
+        state,
+        commit: jest.fn(),
+        dispatch,
+        rootGetters: rootGetters
+      }, {
+        room_id: 'aaa',
+        state_event: {
+          room_id: 'abc',
+          sender: user_1.user_id,
+          origin_server_ts: 0,
+          event_id: 'test_event',
+          content: {},
+          type: 'm.room.member',
+          state_key: 'test_key'
+        }
+      })
+      expect(dispatch_called.aaa).toEqual(true)
+    })
+    it('Test action_parse_single_state_event_for_room(name_event)', async function () {
+      state.joined_rooms.push({
+        room_id: 'aaa',
+        name: '',
+        state_events: []
+      })
+      const resp = {
+        status: 200,
+        data: ''
+      }
+      const commit_called: Record<MatrixRoomID, boolean> = {
+        aaa: false
+      }
+      const commit = (commit_name: string, payload: string) => {
+        if (commit_name === 'mutation_set_name_for_joined_room') {
+          commit_called.aaa = true
+        }
+      }
+      const action = store.actions.action_parse_single_state_event_for_room as (context: any, payload: any) => Promise<any>
+      mockedAxios.post.mockImplementation(() => Promise.resolve(resp))
+      await action({
+        state,
+        commit,
+        dispatch: jest.fn(),
+        rootGetters: rootGetters
+      }, {
+        room_id: 'aaa',
+        state_event: {
+          room_id: 'abc',
+          sender: user_1.user_id,
+          origin_server_ts: 0,
+          event_id: 'test_event',
+          content: {},
+          type: 'm.room.name',
+          state_key: 'test_key'
+        }
+      })
+      expect(commit_called.aaa).toEqual(true)
+    })
     it('Test action_leave_room_1)', async function () {
       state.joined_rooms.push({
-          room_id: 'aaa',
-          name: '',
-          state_events: []
-        }, {
-          room_id: 'bbb',
-          name: '',
-          state_events: []
-        },
-        {
-          room_id: 'ccc',
-          name: '',
-          state_events: []
-        })
+        room_id: 'aaa',
+        name: '',
+        state_events: []
+      }, {
+        room_id: 'bbb',
+        name: '',
+        state_events: []
+      },
+      {
+        room_id: 'ccc',
+        name: '',
+        state_events: []
+      })
       const resp = {
         status: 200,
         data: ''
@@ -671,7 +829,7 @@ describe('Test rooms store', function () {
       })
     })
     it('Test get_joined_status_for_room', function () {
-      const getter = store.getters.get_rejected_events_for_room(state, null, null, null)
+      const getter = store.getters.get_joined_status_for_room(state, null, null, null)
       state.joined_rooms.push({
         room_id: 'abc',
         name: 'ABCD',
@@ -702,28 +860,28 @@ describe('Test rooms store', function () {
           type: 'm.room.name',
           state_key: 'test_key'
         },
-          {
-            room_id: 'abc',
-            sender: user_1.user_id,
-            origin_server_ts: 0,
-            event_id: 'test_event',
-            content: {
-              membership: 'join'
-            },
-            type: 'm.room.member',
-            state_key: 'test_key'
+        {
+          room_id: 'abc',
+          sender: user_1.user_id,
+          origin_server_ts: 0,
+          event_id: 'test_event',
+          content: {
+            membership: 'join'
           },
-          {
-            room_id: 'abc',
-            sender: user_1.user_id,
-            origin_server_ts: 0,
-            event_id: 'test_event',
-            content: {
-              users: {}
-            },
-            type: 'm.room.power_levels',
-            state_key: 'test_key'
-          }]
+          type: 'm.room.member',
+          state_key: 'test_key'
+        },
+        {
+          room_id: 'abc',
+          sender: user_1.user_id,
+          origin_server_ts: 0,
+          event_id: 'test_event',
+          content: {
+            users: {}
+          },
+          type: 'm.room.power_levels',
+          state_key: 'test_key'
+        }]
       })
       const getters = {
         get_name_event_for_room: (state: State) => (room_id: MatrixRoomID): MatrixRoomStateEvent | undefined => {
