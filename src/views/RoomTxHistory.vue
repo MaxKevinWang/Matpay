@@ -36,6 +36,7 @@ import { mapActions, mapGetters } from 'vuex'
 import TxList from '@/components/TxList.vue'
 import TxDetail from '@/components/TxDetail.vue'
 import { validate } from 'uuid'
+import router from '@/router'
 
 export default defineComponent({
   name: 'RoomTxHistory',
@@ -54,7 +55,8 @@ export default defineComponent({
       'user_id'
     ]),
     ...mapGetters('rooms', [
-      'get_room_name'
+      'get_room_name',
+      'get_joined_status_for_room'
     ]),
     room_id (): string {
       return this.$route.params.room_id as string
@@ -90,6 +92,14 @@ export default defineComponent({
   },
   async created () {
     await this.action_sync_initial_state()
+    if (!this.get_joined_status_for_room(this.room_id)) {
+      this.$router.push({
+        name: 'rooms',
+        query: {
+          not_joined: 1
+        }
+      })
+    }
     console.log('Checkpoint 1')
     this.action_sync_full_tx_events_for_room({
       room_id: this.room_id

@@ -7,7 +7,7 @@ import { MatrixRoomID } from '@/models/id.model'
 import { Room, RoomTableRow } from '@/models/room.model'
 import { TxRejectedEvent } from '@/interface/tx_event.interface'
 import { MatrixSyncInvitedRooms } from '@/interface/sync.interface'
-
+import router from '@/router'
 interface State {
   joined_rooms: Room[],
   invited_rooms: Room[]
@@ -276,6 +276,30 @@ export const rooms_store = {
       }
       // remove all data structures
       commit('sync/mutation_remove_room', room_id, { root: true })
+    },
+    async action_i_am_kicked_from_room ({
+      state,
+      commit,
+      dispatch,
+      getters,
+      rootGetters
+    }, payload: {
+      room_id: MatrixRoomID
+    }) {
+      const room_id = payload.room_id
+      // kick myself out
+      if ((router.currentRoute.value.name === 'room_detail' ||
+        router.currentRoute.value.name === 'room_history') &&
+        router.currentRoute.value.params.room_id === room_id) {
+        await router.push({
+          name: 'rooms',
+          query: {
+            not_joined: 1
+          }
+        })
+      }
+      // remove all data structures
+      commit('sync/mutation_remove_room', room_id, { root: true })
     }
   },
   getters: <GetterTree<State, any>>{
@@ -361,6 +385,9 @@ export const rooms_store = {
       } else {
         return null
       }
+    },
+    get_joined_status_for_room: (state: State) => (room_id: MatrixRoomID) : boolean => {
+      return state.joined_rooms.findIndex(i => i.room_id === room_id) !== -1
     }
   }
 }

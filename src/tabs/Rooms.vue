@@ -112,6 +112,7 @@ export default defineComponent({
           room_id: room_id
         }
       })
+      this.error = null
     },
     enter_room_history (room_id: string) {
       this.$router.push({
@@ -120,6 +121,7 @@ export default defineComponent({
           room_id: room_id
         }
       })
+      this.error = null
     },
     on_create_room_click () {
       this.$refs.create_dialog.show()
@@ -153,6 +155,7 @@ export default defineComponent({
           }
         })
         this.is_loading = false
+        this.error = null
       } catch (e) {
         this.error = e
       }
@@ -162,6 +165,7 @@ export default defineComponent({
         await this.action_reject_invitation_for_room({
           room_id: room_id
         })
+        this.error = null
       } catch (e) {
         this.error = e
       }
@@ -170,6 +174,11 @@ export default defineComponent({
   async created () {
     await this.action_sync_initial_state()
     this.is_loading = false
+  },
+  mounted () {
+    if (this.$route.query.not_joined) {
+      this.error = 'Error: You are no longer member of the room!'
+    }
   }
 })
 
