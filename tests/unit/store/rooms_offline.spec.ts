@@ -4,11 +4,11 @@ import { MatrixEventID, MatrixRoomID, MatrixUserID } from '@/models/id.model'
 import { uuidgen } from '@/utils/utils'
 import { room_01_room_id, user_1, user_2, user_aaa } from '../mocks/mocked_user'
 import { MatrixSyncInvitedRooms } from '@/interface/sync.interface'
-import { MatrixRoomStrippedEvent } from '@/interface/rooms_event.interface'
+import { MatrixRoomStateEvent, MatrixRoomStrippedEvent } from '@/interface/rooms_event.interface'
 import axios, { Axios, AxiosInstance, AxiosPromise, AxiosResponse, AxiosStatic } from 'axios'
 import { MatrixError } from '@/interface/error.interface'
 import { RoomUserInfo } from '@/models/user.model'
-import { createStore } from 'vuex'
+import { createStore, GetterTree } from 'vuex'
 
 jest.mock('axios')
 const mockedAxios = axios as jest.Mocked<typeof axios>
@@ -708,8 +708,26 @@ describe('Test rooms store', function () {
           state_key: 'test_key'
         }]
       })
+      const getters = {
+        get_name_event_for_room: (state: State) => (room_id: MatrixRoomID): MatrixRoomStateEvent | undefined => {
+          return undefined
+          /*
+          {
+            state_key: 'test_key',
+            room_id: 'abc',
+            sender: user_1.user_id,
+            origin_server_ts: 0,
+            event_id: 'test_event',
+            content: {
+              name: 'current_name'
+            },
+            type: 'm.room.member'
+          }
+           */
+        }
+      }
       const fake_room = state.joined_rooms.filter(i => i.room_id === 'abc')
-      const getter = store.getters.get_room_table_rows(state, store.getters, null, null)
+      const getter = store.getters.get_room_table_rows(state, getters, null, null)
       expect(getter()).toEqual([{
         room_id: 'abc',
         name: 'ABCD'
