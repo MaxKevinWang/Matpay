@@ -175,7 +175,7 @@ export const user_store = {
           },
           displayname: (member_event.content.displayname || member_event.state_key) + ' (Left)',
           avatar_url: member_event.content.avatar_url,
-          user_type: 'Member',
+          user_type: 'Left',
           is_self: false
         }
         // Remove previous user infos

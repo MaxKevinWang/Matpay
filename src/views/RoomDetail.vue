@@ -52,7 +52,7 @@ export default defineComponent({
       'get_room_name'
     ]),
     ...mapGetters('user', [
-      'get_users_info_for_room'
+      'get_all_users_info_for_room'
     ]),
     ...mapGetters('sync', [
       'is_chat_sync_complete'
@@ -62,7 +62,7 @@ export default defineComponent({
     },
     users_info (): Array<RoomUserInfo> {
       try {
-        return this.get_users_info_for_room(this.room_id)
+        return this.get_all_users_info_for_room(this.room_id)
       } catch (e) {
         return []
       }

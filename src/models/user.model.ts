@@ -8,7 +8,7 @@ export interface User {
 export type RoomUserInfo = {
   user: User,
   displayname: string, // displayname after resolving conflicts. Different from user.displayname.
-  user_type: 'Admin' | 'Moderator' | 'Member'
+  user_type: 'Admin' | 'Moderator' | 'Member' | 'Left'
   is_self: boolean,
   avatar_url?: string
 }

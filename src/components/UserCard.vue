@@ -1,27 +1,29 @@
 <template>
-  <SettlementDialog ref="settle_dialog" :room_id="room_id" :balance="open_balance" :user_clicked="user_prop" @on-settle="on_settle"/>
-  <div :id="'usercard_' + selectorify(user_id)">
-    <img :src="this.avatar" alt="avatar" class="avatar">
-    <div class="about">
-      <div :class="['name', {'self_name': this.is_self }, {'admin': this.user_type === 'Admin'}]">{{
-          this.displayname
-        }}
-      </div>
-      <div class="status">{{ this.is_self ? 'Yourself, ' + this.user_type : this.user_type }}</div>
-      <div class="status" v-if="!this.is_self">
-        {{
-          this.open_balance < 0
-            ? 'Oweing you: ' + to_currency_display(-open_balance)
-            : 'You oweing: ' + to_currency_display(open_balance)
-        }}
-      </div>
-      <div v-if="!this.is_self">
-        <button class="btn btn-danger btn-sm me-1" id="kickButton" v-if="can_i_kick_user" @click="on_permission_click('kick')">Kick</button>
-        <button class="btn btn-danger btn-sm me-1" v-if="can_i_kick_user" @click="on_permission_click('ban')">Ban</button>
-        <button class="btn btn-primary btn-sm" @click="on_settle_click()">Settle</button>
-      </div>
-      <div v-if="this.is_self">
-        <button class="btn btn-danger btn-sm me-1" @click="on_leave_click">Leave Room</button>
+  <div>
+    <SettlementDialog ref="settle_dialog" :room_id="room_id" :balance="open_balance" :user_clicked="user_prop" @on-settle="on_settle"/>
+    <div :id="'usercard_' + selectorify(user_id)" :class="{'left': !not_left}">
+      <img :src="this.avatar" alt="avatar" class="avatar">
+      <div class="about">
+        <div :class="['name', {'self_name': this.is_self }, {'admin': this.user_type === 'Admin'}]">{{
+            this.displayname
+          }}
+        </div>
+        <div class="status">{{ this.is_self ? 'Yourself, ' + this.user_type : this.user_type }}</div>
+        <div class="status" v-if="!this.is_self">
+          {{
+            this.open_balance < 0
+              ? 'Oweing you: ' + to_currency_display(-open_balance)
+              : 'You oweing: ' + to_currency_display(open_balance)
+          }}
+        </div>
+        <div v-if="!this.is_self && not_left">
+          <button class="btn btn-danger btn-sm me-1" id="kickButton" v-if="can_i_kick_user" @click="on_permission_click('kick')">Kick</button>
+          <button class="btn btn-danger btn-sm me-1" v-if="can_i_kick_user" @click="on_permission_click('ban')">Ban</button>
+          <button class="btn btn-primary btn-sm" @click="on_settle_click()">Settle</button>
+        </div>
+        <div v-if="this.is_self">
+          <button class="btn btn-danger btn-sm me-1" @click="on_leave_click">Leave Room</button>
+        </div>
       </div>
     </div>
   </div>
@@ -63,6 +65,9 @@ export default defineComponent({
     ]),
     open_balance () : number {
       return this.get_open_balance_against_user_for_room(this.room_id, this.self_user_id, this.user_id)
+    },
+    not_left () : boolean {
+      return this.user_type !== 'Left'
     }
   },
   emits: [
@@ -180,5 +185,9 @@ img {
 
 .admin {
   color: red
+}
+
+.left {
+  opacity: 0.5;
 }
 </style>
