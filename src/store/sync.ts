@@ -438,7 +438,7 @@ export const sync_store = {
                       event: event as TxEvent
                     })
                   }
-                } else { // chat messages
+                } else { // chat messages plus new state events
                   if (!state.processed_events_id.has(event.event_id)) {
                     // New chat messages are processed regardless of tx full sync status
                     commit('mutation_process_event', {
@@ -454,6 +454,15 @@ export const sync_store = {
           // Note: **NONE** state events are parsed in this stage.
           if (response.data.rooms && response.data.rooms.invite) {
             dispatch('rooms/action_parse_invited_rooms', response.data.rooms.invite, { root: true })
+          }
+          // Parse left rooms
+          // Kick myself out if self leaving is detected
+          if (response.data.rooms && response.data.rooms.leave) {
+            for (const left_room_id of Object.keys(response.data.rooms.leave)) {
+              dispatch('rooms/action_i_am_kicked_from_room', {
+                room_id: left_room_id
+              }, { root: true })
+            }
           }
         } catch (e) {
           if ((e as Error).message === 'canceled') {

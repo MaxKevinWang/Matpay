@@ -28,7 +28,7 @@
       </div>
     </div>
   </div>
-  <CreateTxDialog ref="create_tx_dialog" :room_id="room_id" :users_info="users_info"/>
+  <CreateTxDialog ref="create_tx_dialog" :room_id="room_id" :users_info="users_info.filter(i => i.user_type !== 'Left')"/>
 </template>
 
 <script lang="ts">

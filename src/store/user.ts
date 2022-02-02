@@ -144,6 +144,7 @@ export const user_store = {
       let result : RoomUserInfo | null = null
       // Case 1: member joined
       if (member_event.content.membership === 'join') {
+        console.log('Parsing new join member event:', member_event)
         const user_info_tmp: RoomUserInfo = {
           user: {
             user_id: member_event.state_key,
@@ -168,6 +169,7 @@ export const user_store = {
         result = user_info_tmp
       } else if (member_event.content.membership === 'leave') {
         // Case 2: member left
+        console.log('Parsing new leave member event:', member_event)
         const user_info_tmp: RoomUserInfo = {
           user: {
             user_id: member_event.state_key,
@@ -175,7 +177,7 @@ export const user_store = {
           },
           displayname: (member_event.content.displayname || member_event.state_key) + ' (Left)',
           avatar_url: member_event.content.avatar_url,
-          user_type: 'Member',
+          user_type: 'Left',
           is_self: false
         }
         // Remove previous user infos

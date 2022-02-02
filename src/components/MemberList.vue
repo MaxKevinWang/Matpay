@@ -2,7 +2,7 @@
   <div>
     <h4>Members</h4>
     <ul class="list-unstyled card chat-list mt-2 mb-0">
-      <li class="clearfix" v-for="user in users" :key="user.user.user_id" :data-test="user.user.user_id">
+      <li class="clearfix" v-for="user in users_displayed" :key="user.user.user_id" :data-test="user.user.user_id">
         <UserCard :room_id="room_id" :user_prop="user" :can_i_kick_user="can_i_kick_user"
                   @on-kick="on_kick"
                   @on-ban="on_ban"
@@ -60,6 +60,14 @@ export default defineComponent({
     can_i_kick_user () {
       const my_user_type = this.users.filter(member => member.user.user_id === this.user_id)[0].user_type
       return my_user_type === 'Admin' || my_user_type === 'Moderator'
+    },
+    ...mapGetters('tx', [
+      'get_open_balance_against_user_for_room'
+    ]),
+    users_displayed () : Array<RoomUserInfo> {
+      return this.users.filter(user => user.user_type !== 'Left' ||
+        (user.user_type === 'Left' &&
+          this.get_open_balance_against_user_for_room(this.room_id, this.user_id, user.user.user_id) !== 0))
     }
   },
   components: {
@@ -83,6 +91,12 @@ export default defineComponent({
             users_tmp.unshift(users_tmp.splice(i, 1)[0])
             break
           }
+        }
+        // put left users to last
+        const left_users_info = users_tmp.filter(i => i.user_type === 'Left')
+        for (const left_user of left_users_info) {
+          users_tmp.splice(users_tmp.indexOf(left_user), 1)
+          users_tmp.push(left_user)
         }
         this.users = users_tmp
       }
@@ -118,10 +132,8 @@ export default defineComponent({
       this.$refs.confirm_dialog.prompt_confirm(prompt, this.on_confirm)
     },
     on_leave () {
-      const prompt = `
-      Are you sure you want to leave room?
-      Leaving this room will immediately settle all transactions owing to you.
-      `
+      const prompt = `Are you sure you want to leave room?
+Leaving this room will immediately settle all open balance others owing to you. Balance of you owing others will remain intact.`
       this.$refs.confirm_dialog.prompt_confirm(prompt, this.on_leave_confirm)
     },
     async on_confirm () {
