@@ -139,7 +139,7 @@ export default defineComponent({
     user_prop: {
       handler: 'update_user_card',
       immediate: true
-    } //。
+    }
   },
   components: {
     SettlementDialog
