@@ -399,7 +399,7 @@ describe('Test action_modify_tx_for_room', () => {
     let event_sent = false
     mockedAxios.put.mockImplementation(async <T>(url: string, data: T) : Promise<AxiosResponse<PUTRoomEventSendResponse>> => {
       const event_content = data as unknown as TxModifyEvent['content']
-      if (event_content.description === '1') { event_sent = true }
+      if (event_content.description === '1' && event_content.txs[0].amount === 20) { event_sent = true }
       return {
         data: {
           event_id: 'aaa'
@@ -439,7 +439,7 @@ describe('Test action_modify_tx_for_room', () => {
       txs: [{
         to: user_2,
         tx_id: fake_tx_id,
-        amount: 10
+        amount: 20
       }],
       description: '1',
       participants: [],
