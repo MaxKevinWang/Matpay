@@ -8,6 +8,7 @@ import { User } from '@/models/user.model'
 import axios, { AxiosResponse } from 'axios'
 import { MatrixError } from '@/interface/error.interface'
 import { PUTRoomEventSendResponse } from '@/interface/api.interface'
+import { MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
 
 jest.mock('axios')
 const mockedAxios = axios as jest.Mocked<typeof axios>
@@ -22,8 +23,8 @@ interface State {
   }>
 }
 
-describe('Test action_approve_tx_for_room', () => {
-  const action = store.actions.action_approve_tx_for_room as (context: any, payload: any) => Promise<boolean>
+describe('Test action_settle_for_room', () => {
+  const action = store.actions.action_settle_for_room as (context: any, payload: any) => Promise<boolean>
   const room_id = 'aaa'
   let state: State = {
     transactions: {
@@ -65,22 +66,12 @@ describe('Test action_approve_tx_for_room', () => {
       }
     }
   })
-  it('Test pending_approval not exist', async () => {
+  it('Test target user not in the room', async () => {
     const getters = {
       get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
       get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
       get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
       get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
-    }
-    const fake_approval: PendingApproval = {
-      event_id: 'fake_event_id',
-      from: user_1,
-      group_id: 'abcd',
-      type: 'modify',
-      approvals: {},
-      description: '',
-      txs: [],
-      timestamp: new Date()
     }
     await expect(action({
       state,
@@ -90,28 +81,16 @@ describe('Test action_approve_tx_for_room', () => {
       rootGetters: rootGetters
     }, {
       room_id: 'aaa',
-      approval: fake_approval
-    })).rejects.toThrow(new Error('This pending approval does not exist or is already approved!'))
+      target_user: user_c
+    })).rejects.toThrow(new Error('Implementation error: target user not in room!'))
   })
-  it('Test already approved', async () => {
+  it('Test target user not in the room', async () => {
     const getters = {
       get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
       get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
       get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
       get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
     }
-    const fake_approval: PendingApproval = {
-      event_id: 'fake_event_id',
-      from: user_1,
-      group_id: 'abcd',
-      type: 'modify',
-      approvals: {},
-      description: '',
-      txs: [],
-      timestamp: new Date()
-    }
-    fake_approval.approvals[user_1.user_id] = true
-    state.transactions.aaa.pending_approvals.push(fake_approval)
     await expect(action({
       state,
       commit: jest.fn(),
@@ -120,8 +99,27 @@ describe('Test action_approve_tx_for_room', () => {
       rootGetters: rootGetters
     }, {
       room_id: 'aaa',
-      approval: fake_approval
-    })).rejects.toThrow(new Error('This pending approval has already been approved!'))
+      target_user: user_c
+    })).rejects.toThrow(new Error('Implementation error: target user not in room!'))
+  })
+  it('Test settlement not permitted', async () => {
+    const getters = {
+      get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
+      get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
+      get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
+      get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null),
+      get_open_balance_against_user_for_room: () => 10
+    }
+    await expect(action({
+      state,
+      commit: jest.fn(),
+      dispatch: jest.fn(),
+      getters: getters,
+      rootGetters: rootGetters
+    }, {
+      room_id: 'aaa',
+      target_user: user_2
+    })).rejects.toThrow(new Error('Implementation error: settlement not permitted with the target user!'))
   })
   it('Test Network error', async () => {
     const resp = {
@@ -135,17 +133,6 @@ describe('Test action_approve_tx_for_room', () => {
       get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
       get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
     }
-    const fake_approval: PendingApproval = {
-      event_id: 'fake_event_id',
-      from: user_1,
-      group_id: 'abcd',
-      type: 'modify',
-      approvals: {},
-      description: '',
-      txs: [],
-      timestamp: new Date()
-    }
-    state.transactions.aaa.pending_approvals.push(fake_approval)
     await expect(action({
       state,
       commit: jest.fn(),
@@ -154,14 +141,14 @@ describe('Test action_approve_tx_for_room', () => {
       rootGetters: rootGetters
     }, {
       room_id: 'aaa',
-      approval: fake_approval
+      target_user: user_2
     })).rejects.toThrow((resp.data as unknown as MatrixError).error)
   })
-  it('Test the right case', async () => {
+  it('Test no error', async () => {
     let event_sent = false
     mockedAxios.put.mockImplementation(async <T>(url: string, data: T) : Promise<AxiosResponse<PUTRoomEventSendResponse>> => {
-      const event_content = data as unknown as TxApproveEvent['content']
-      if (event_content.event_id === 'fake_event_id') { event_sent = true }
+      const event_content = data as unknown as TxSettleEvent['content']
+      if (event_content.user_id === user_2.user_id && event_content.amount === 10) { event_sent = true }
       return {
         data: {
           event_id: 'fake_event_id'
@@ -176,19 +163,9 @@ describe('Test action_approve_tx_for_room', () => {
       get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
       get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
       get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
-      get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
+      get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null),
+      get_open_balance_against_user_for_room: () => -10
     }
-    const fake_approval: PendingApproval = {
-      event_id: 'fake_event_id',
-      from: user_1,
-      group_id: 'abcd',
-      type: 'modify',
-      approvals: {},
-      description: '',
-      txs: [],
-      timestamp: new Date()
-    }
-    state.transactions.aaa.pending_approvals.push(fake_approval)
     await expect(action({
       state,
       commit: jest.fn(),
@@ -197,7 +174,7 @@ describe('Test action_approve_tx_for_room', () => {
       rootGetters: rootGetters
     }, {
       room_id: 'aaa',
-      approval: fake_approval
+      target_user: user_2
     })).resolves.toEqual(undefined)
     await expect(event_sent).toEqual(true)
   })
