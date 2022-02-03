@@ -1058,7 +1058,6 @@ describe('Test tx store validation actions', () => {
           event_id: 'e01',
           content: {
             user_id: '@test-4:dsn.tm.kit.edu',
-            event_id: 'e01',
             amount: 50
           }
         }
@@ -1105,7 +1104,6 @@ describe('Test tx store validation actions', () => {
           event_id: 'e01',
           content: {
             user_id: user_2.user_id,
-            event_id: 'e01',
             amount: 50
           }
         }
@@ -1152,7 +1150,6 @@ describe('Test tx store validation actions', () => {
           event_id: 'e01',
           content: {
             user_id: user_2.user_id,
-            event_id: 'e01',
             amount: -5
           }
         }
@@ -1167,6 +1164,7 @@ describe('Test tx store validation actions', () => {
           tx_event: event
         })).resolves.toEqual(false)
       })
+      /*
       it('There is no previous event', async () => {
         const getters = {
           get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
@@ -1184,7 +1182,6 @@ describe('Test tx store validation actions', () => {
           event_id: 'e01',
           content: {
             user_id: user_2.user_id,
-            event_id: 'e01',
             amount: 20
           }
         }
@@ -1199,6 +1196,7 @@ describe('Test tx store validation actions', () => {
           tx_event: event
         })).resolves.toEqual(false)
       })
+       */
       /*
       it('amount field smaller than open balance', async () => {
         const getters = {

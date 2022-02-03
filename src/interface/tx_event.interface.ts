@@ -65,8 +65,7 @@ export interface TxSettleEvent extends TxMessageEvent {
   type: 'com.matpay.settle',
   content: {
     amount: number,
-    user_id: MatrixUserID,
-    event_id: MatrixEventID
+    user_id: MatrixUserID
   }
 }
 
