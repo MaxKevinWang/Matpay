@@ -1,5 +1,5 @@
 let plugins = []
-if (process.env.CYPRESS_INTERNAL_ENV) {
+if (process.env.VUE_APP_CYPRESS) {
   plugins = [
     ['istanbul', {
       extension: ['.js', '.vue', '.ts']
