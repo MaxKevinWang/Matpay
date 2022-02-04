@@ -1,9 +1,9 @@
-import { config, flushPromises, mount, shallowMount } from '@vue/test-utils'
+import { config, flushPromises, shallowMount } from '@vue/test-utils'
 import Rooms from '@/tabs/Rooms.vue'
 import { split_percentage, sum_amount, to_currency_display } from '@/utils/utils'
 import { createStore } from 'vuex'
 import { user_1 } from '../mocks/mocked_user'
-import { MatrixEventID, MatrixRoomID, MatrixUserID } from '@/models/id.model'
+
 describe('Test Rooms Tab', () => {
   beforeAll(() => {
     config.global.mocks = {

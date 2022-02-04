@@ -1,8 +1,7 @@
 import { newStore } from '@/store/index'
-import { config, mount, shallowMount } from '@vue/test-utils'
+import { config, shallowMount } from '@vue/test-utils'
 import SettlementDialog from '@/dialogs/SettlementDialog.vue'
-import { selectorify, split_percentage, sum_amount, to_currency_display, uuidgen } from '@/utils/utils'
-import bootstrap from 'bootstrap'
+import { selectorify, split_percentage, sum_amount, to_currency_display } from '@/utils/utils'
 import { user_1 } from '../mocks/mocked_user'
 
 describe('Test SettlementDialog', () => {

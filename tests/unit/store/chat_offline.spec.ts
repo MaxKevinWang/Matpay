@@ -1,12 +1,11 @@
 import store from '@/store/chat'
-import { GroupID, MatrixEventID, MatrixRoomID, MatrixUserID } from '@/models/id.model'
-import { ChatLog, ChatMessage, TxApprovedPlaceholder, TxPendingPlaceholder, TxPlaceholder } from '@/models/chat.model'
-import { User } from '@/models/user.model'
+import { MatrixRoomID } from '@/models/id.model'
+import { ChatLog, ChatMessage, TxApprovedPlaceholder, TxPendingPlaceholder } from '@/models/chat.model'
 import { room_01_user_info, user_1 } from '../mocks/mocked_user'
 import { MatrixRoomChatMessageEvent } from '@/interface/rooms_event.interface'
-import { GroupedTransaction, PendingApproval, SimpleTransaction } from '@/models/transaction.model'
+import { GroupedTransaction, PendingApproval } from '@/models/transaction.model'
 import { uuidgen } from '@/utils/utils'
-import axios, { Axios, AxiosInstance, AxiosPromise, AxiosResponse, AxiosStatic } from 'axios'
+import axios from 'axios'
 import { MatrixError } from '@/interface/error.interface'
 
 jest.mock('axios')

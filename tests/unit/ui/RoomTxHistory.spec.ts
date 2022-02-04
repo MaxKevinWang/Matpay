@@ -1,15 +1,11 @@
 import { newStore } from '@/store/index'
 import { config, flushPromises, mount, shallowMount } from '@vue/test-utils'
-import SplitModifyDialog from '@/dialogs/SplitModifyDialog.vue'
 import { split_percentage, sum_amount, to_currency_display, uuidgen } from '@/utils/utils'
 import RoomTxHistory from '@/views/RoomTxHistory.vue'
-import bootstrap from 'bootstrap'
-import TxList from '@/components/TxList.vue'
 import { MatrixEventID, MatrixRoomID, MatrixUserID } from '@/models/id.model'
 import { GroupedTransaction, PendingApproval, TxGraph } from '@/models/transaction.model'
 import { createStore } from 'vuex'
 import { user_1, user_2 } from '../mocks/mocked_user'
-import { User } from '@/models/user.model'
 
 interface State {
   transactions: Record<MatrixRoomID, {

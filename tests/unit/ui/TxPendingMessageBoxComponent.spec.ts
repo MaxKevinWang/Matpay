@@ -1,6 +1,6 @@
 import { config, flushPromises, mount, shallowMount } from '@vue/test-utils'
 import TxPendingMessageBox from '@/components/TxPendingMessageBox.vue'
-import { room_01_room_id, user_1, user_2, user_3 } from '../mocks/mocked_user'
+import { user_1, user_2, user_3 } from '../mocks/mocked_user'
 import { TxPlaceholder } from '@/models/chat.model'
 import { split_percentage, sum_amount, to_currency_display } from '@/utils/utils'
 import { createStore } from 'vuex'

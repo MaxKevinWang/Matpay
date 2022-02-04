@@ -1,7 +1,7 @@
 import RoomDetail from '@/views/RoomDetail.vue'
 import { createStore } from 'vuex'
 import { MatrixRoomMemberStateEvent } from '@/interface/rooms_event.interface'
-import { createRouter, createMemoryHistory } from 'vue-router'
+import { createMemoryHistory, createRouter } from 'vue-router'
 import { flushPromises, mount } from '@vue/test-utils'
 
 describe('Test Room Detail View', () => {

@@ -1,6 +1,5 @@
-import { shallowMount, VueWrapper } from '@vue/test-utils'
+import { shallowMount } from '@vue/test-utils'
 import App from '@/App.vue'
-import router from '@/router'
 import { createStore } from 'vuex'
 
 describe('Test navbar', function () {
