@@ -6,11 +6,8 @@ import MemberList from '@/components/MemberList.vue'
 import { createStore } from 'vuex'
 import bootstrap from 'bootstrap'
 import UserInviteDialog from '@/dialogs/UserInviteDialog.vue'
-<<<<<<< HEAD
 import UserCard from '@/components/UserCard.vue'
 import { MatrixRoomID, MatrixUserID } from '@/models/id.model'
-=======
->>>>>>> 21ee9002926dffa80c27483afbce7735adca44ee
 
 jest.mock('bootstrap')
 const mockedBootstrap = bootstrap as jest.Mocked<typeof bootstrap>
