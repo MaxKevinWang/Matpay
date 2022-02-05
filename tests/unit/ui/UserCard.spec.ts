@@ -1,5 +1,5 @@
 import { newStore } from '@/store'
-import { config, flushPromises, shallowMount } from '@vue/test-utils'
+import { config, flushPromises, mount, shallowMount } from '@vue/test-utils'
 import { selectorify, split_percentage, sum_amount, to_currency_display } from '@/utils/utils'
 import { user_1 } from '../mocks/mocked_user'
 import bootstrap from 'bootstrap'
@@ -260,6 +260,102 @@ describe('Test UserCard Component', () => {
       expect(wrapper.find('#usercard_' + selectorify(user_1.user_id)).element.innerHTML.includes('You oweing:')).toBeTruthy()
       // const list1 = wrapper.find('.clearfix').filter(i => i.attributes('data-test') === user_1.user_id)
       // expect(list1[0].find('#"\'usercard_\' + user_id"').element.innerHTML.includes(user_1.displayname)).toBeTruthy()
+    })
+  })
+  describe('Test settlement dialog', () => {
+    let store = newStore()
+    beforeEach(() => {
+      store = newStore()
+    })
+    beforeAll(() => {
+      config.global.mocks = {
+        sum_amount: sum_amount,
+        split_percentage: split_percentage,
+        to_currency_display: to_currency_display,
+        selectorify: selectorify
+      }
+    })
+    it('Test show', async () => {
+      const store1 = createStore({
+        modules: {
+          tx: {
+            namespaced: true,
+            getters: {
+              get_grouped_transactions_for_room: () => (room_id: MatrixRoomID) => [],
+              get_total_open_balance_for_user_for_room: () => (room_id: MatrixRoomID, source_user_id: MatrixUserID) => -10,
+              get_open_balance_against_user_for_room: () => () => 10
+            }
+          },
+          auth: {
+            namespaced: true,
+            getters: {
+              is_logged_in: () => true,
+              user_id: () => user_1.user_id
+            }
+          }
+        }
+      })
+      const wrapper = mount(UserCard, {
+        attachTo: 'body',
+        global: {
+          plugins: [store1]
+        },
+        props: {
+          room_id: 'fake_room_id',
+          user_prop: {
+            user: user_1,
+            displayname: user_1.displayname,
+            user_type: 'Member',
+            is_self: false,
+            avatar_url: ''
+          }
+        }
+      })
+      await wrapper.find('#settle-button').trigger('click')
+      await flushPromises()
+      await expect(wrapper.find('#you-owe').element.innerHTML.includes('You owe:')).toEqual(true)
+    })
+    it('Test hide', async () => {
+      const store1 = createStore({
+        modules: {
+          tx: {
+            namespaced: true,
+            getters: {
+              get_grouped_transactions_for_room: () => (room_id: MatrixRoomID) => [],
+              get_total_open_balance_for_user_for_room: () => (room_id: MatrixRoomID, source_user_id: MatrixUserID) => -10,
+              get_open_balance_against_user_for_room: () => () => 10
+            }
+          },
+          auth: {
+            namespaced: true,
+            getters: {
+              is_logged_in: () => true,
+              user_id: () => user_1.user_id
+            }
+          }
+        }
+      })
+      const wrapper = mount(UserCard, {
+        attachTo: 'body',
+        global: {
+          plugins: [store1]
+        },
+        props: {
+          room_id: 'fake_room_id',
+          user_prop: {
+            user: user_1,
+            displayname: user_1.displayname,
+            user_type: 'Member',
+            is_self: false,
+            avatar_url: ''
+          }
+        }
+      })
+      await wrapper.find('#settle-button').trigger('click')
+      await flushPromises()
+      await wrapper.find('#hide-settle-button').trigger('click')
+      await flushPromises()
+      await expect(wrapper.find('#you-owe').isVisible()).toEqual(false)
     })
   })
 })
