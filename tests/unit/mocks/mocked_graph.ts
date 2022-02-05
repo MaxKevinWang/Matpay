@@ -68,9 +68,9 @@ export const graph4_unoptimized: TxGraph = {
 
 export const graph4_optimized: TxGraph = {
   graph: {
-    a: [['b', 5], ['c', 15], ['d', 5]],
+    a: [['d', 0]],
     b: [],
-    c: [],
+    c: [['d', 5]],
     d: [],
     e: []
   }
