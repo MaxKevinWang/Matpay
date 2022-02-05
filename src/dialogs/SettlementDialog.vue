@@ -1,5 +1,5 @@
 <template>
-  <div class="modal fade" :id="'settlement-modal_' + this.user_clicked.user.user_id" tabindex="-1"
+  <div class="modal fade" :id="'settlement-modal_' + selectorify(this.user_clicked.user.user_id)" tabindex="-1"
        aria-labelledby="settlement-label" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">

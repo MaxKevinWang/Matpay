@@ -355,7 +355,7 @@ describe('Test UserCard Component', () => {
       await flushPromises()
       await wrapper.find('#hide-settle-button').trigger('click')
       await flushPromises()
-      await expect(wrapper.find('#you-owe').isVisible()).toEqual(false)
+      await expect(wrapper.find('#settlement-modal_' + selectorify(user_1.user_id)).classes('modal-open')).toBe(false)
     })
   })
 })
