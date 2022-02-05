@@ -144,7 +144,7 @@ describe('Test action_settle_for_room', () => {
       target_user: user_2
     })).rejects.toThrow((resp.data as unknown as MatrixError).error)
   })
-  it('Test no error', async () => {
+  it('Test the right case', async () => {
     let event_sent = false
     mockedAxios.put.mockImplementation(async <T>(url: string, data: T) : Promise<AxiosResponse<PUTRoomEventSendResponse>> => {
       const event_content = data as unknown as TxSettleEvent['content']

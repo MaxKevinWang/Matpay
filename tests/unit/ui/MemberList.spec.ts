@@ -7,6 +7,7 @@ import { createStore } from 'vuex'
 import bootstrap from 'bootstrap'
 import UserInviteDialog from '@/dialogs/UserInviteDialog.vue'
 import UserCard from '@/components/UserCard.vue'
+import { MatrixRoomID, MatrixUserID } from '@/models/id.model'
 
 jest.mock('bootstrap')
 const mockedBootstrap = bootstrap as jest.Mocked<typeof bootstrap>
@@ -33,7 +34,25 @@ describe('Test MemberList Component', () => {
   })
   describe('Test component UI', () => {
     it('Test if the members and their basic infos are shown correctly', async () => {
-      store.state.auth.user_id = user_1.user_id
+      const store = createStore({
+        modules: {
+          tx: {
+            namespaced: true,
+            getters: {
+              get_grouped_transactions_for_room: () => (room_id: MatrixRoomID) => [],
+              get_total_open_balance_for_user_for_room: () => (room_id: MatrixRoomID, source_user_id: MatrixUserID) => -10,
+              get_open_balance_against_user_for_room: () => () => 10
+            }
+          },
+          auth: {
+            namespaced: true,
+            getters: {
+              is_logged_in: () => true,
+              user_id: () => user_1.user_id
+            }
+          }
+        }
+      })
       const wrapper = mount(MemberList, {
         global: {
           stubs: {
