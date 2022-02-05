@@ -5,6 +5,7 @@ import { user_1 } from '../mocks/mocked_user'
 import bootstrap from 'bootstrap'
 import UserCard from '@/components/UserCard.vue'
 import { MatrixRoomID, MatrixUserID } from '@/models/id.model'
+import { createStore } from 'vuex'
 
 jest.mock('bootstrap')
 const mockedBootstrap = bootstrap as jest.Mocked<typeof bootstrap>
