@@ -3,6 +3,10 @@
     <div class="alert alert-danger" role="alert" v-if="error !== ''">
       {{ error }}
     </div>
+    <div class="alert alert-info" id="tx-not-exist-hint" role="alert"
+         v-if="this.is_tx_fully_loaded && this.tx_list.length === 0">
+      No transaction exists.
+    </div>
     <div class="row">
       <button v-if="!is_tx_fully_loaded" class="btn btn-primary spinner" type="button" disabled>
         <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
@@ -43,7 +47,6 @@ export default defineComponent({
   data () {
     return {
       room_name: '' as string,
-      tx_list: [] as Array<GroupedTransaction>,
       tx: {} as GroupedTransaction,
       show_detail: false as boolean,
       is_tx_fully_loaded: false,
@@ -66,6 +69,13 @@ export default defineComponent({
     },
     balance (): number {
       return this.get_total_open_balance_for_user_for_room(this.room_id, this.user_id)
+    },
+    tx_list () : Array<GroupedTransaction> {
+      if (this.room_id && this.is_tx_fully_loaded) {
+        return this.get_grouped_transactions_for_room(this.room_id)
+      } else {
+        return []
+      }
     },
     ...mapGetters('tx', [
       'get_grouped_transactions_for_room',
@@ -104,21 +114,24 @@ export default defineComponent({
     this.action_sync_full_tx_events_for_room({
       room_id: this.room_id
     }).then(() => {
-      console.log('Checkpoint 3')
+      this.error = ''
       this.room_name = this.get_room_name(this.room_id)
-      console.log('Checkpoint 4')
-      this.tx_list = this.get_grouped_transactions_for_room(this.room_id)
-      console.log('Checkpoint 5')
-      if (validate(this.current_group_id)) {
-        const filter_txs = this.tx_list.filter(i => i.group_id === this.current_group_id)
-        if (filter_txs.length > 0) {
-          this.tx = filter_txs[0]
-          this.show_detail = true
-        }
-      }
-      console.log('Checkpoint 6')
       this.is_tx_fully_loaded = true
     })
+  },
+  watch: {
+    tx_list: {
+      handler () {
+        if (validate(this.current_group_id)) {
+          const filter_txs = this.tx_list.filter(i => i.group_id === this.current_group_id)
+          if (filter_txs.length > 0) {
+            this.tx = filter_txs[0]
+            this.show_detail = true
+          }
+        }
+      },
+      immediate: true
+    }
   }
 })
 </script>

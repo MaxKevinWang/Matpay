@@ -1,5 +1,5 @@
 import { newStore } from '@/store/index'
-import { config, shallowMount } from '@vue/test-utils'
+import { config, flushPromises, mount, shallowMount } from '@vue/test-utils'
 import TxDetail from '@/components/TxDetail.vue'
 import { user_1, user_2, user_3 } from '../mocks/mocked_user'
 import { split_percentage, sum_amount, to_currency_display, uuidgen } from '@/utils/utils'
@@ -124,7 +124,7 @@ describe('Test TxDetail Component', () => {
           }
         }
       })
-      expect((wrapper.find('#ModificationButton-body').element as HTMLButtonElement).disabled).toEqual(true)
+      expect((wrapper.find('#modification-button').element as HTMLButtonElement).disabled).toEqual(true)
     })
     /*
     it('Test if the user can not click on modification button tx is frozen', async () => {
@@ -160,7 +160,7 @@ describe('Test TxDetail Component', () => {
         modules: {
           tx: {
             namespaced: true,
-            getters: {
+            actions: {
               action_modify_tx_for_room: () => { throw new Error('Error, something is fucked') }
             }
           },
@@ -172,7 +172,8 @@ describe('Test TxDetail Component', () => {
           }
         }
       })
-      const wrapper = shallowMount(TxDetail, {
+      const wrapper = mount(TxDetail, {
+        attachTo: 'body',
         global: {
           plugins: [store2]
         },
@@ -195,6 +196,10 @@ describe('Test TxDetail Component', () => {
           }
         }
       })
+      await wrapper.find('#modification-button').trigger('click')
+      await flushPromises()
+      await wrapper.find('#modify-confirm').trigger('click')
+      await flushPromises()
       expect(wrapper.emitted()).toHaveProperty('on-error')
       expect((wrapper.emitted()['on-error'][0] as Array<Error>)[0]).toEqual(Error('Error, something is fucked'))
     })

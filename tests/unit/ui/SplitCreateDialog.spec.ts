@@ -1,5 +1,5 @@
 import { newStore } from '@/store/index'
-import { config, shallowMount } from '@vue/test-utils'
+import { config, flushPromises, shallowMount } from '@vue/test-utils'
 import SplitCreateDialog from '@/dialogs/SplitCreateDialog.vue'
 import { selectorify, split_percentage, sum_amount, to_currency_display } from '@/utils/utils'
 import { user_1, user_2, user_3 } from '../mocks/mocked_user'
@@ -139,6 +139,41 @@ describe('Test for SplitCreateDialog', () => {
     await wrapper.find('#split_create_save').trigger('click')
     expect(popover_error).toEqual(true)
   })
+  it('Test error popover no user selected', async () => {
+    const wrapper = shallowMount(SplitCreateDialog, {
+      attachTo: 'body',
+      global: {
+        plugins: [store]
+      },
+      props: {
+        users_info: [
+          {
+            user: user_1,
+            displayname: user_1.displayname,
+            user_type: 'Admin',
+            is_self: true
+          },
+          {
+            user: user_2,
+            displayname: user_2.displayname,
+            user_type: 'Admin',
+            is_self: true
+          },
+          {
+            user: user_3,
+            displayname: user_3.displayname,
+            user_type: 'Admin',
+            is_self: true
+          }
+        ]
+      }
+    })
+    const tx1 = wrapper.findAll('.input-group').filter(w => w.attributes('data-test') === user_1.user_id)
+    const tx2 = wrapper.findAll('.input-group').filter(w => w.attributes('data-test') === user_2.user_id)
+    const tx3 = wrapper.findAll('.input-group').filter(w => w.attributes('data-test') === user_3.user_id)
+    await wrapper.find('#split_create_save').trigger('click')
+    expect(popover_error).toEqual(true)
+  })
   it('Test error with empty input from selected member', async () => {
     const wrapper = shallowMount(SplitCreateDialog, {
       attachTo: 'body',
@@ -220,5 +255,49 @@ describe('Test for SplitCreateDialog', () => {
     await tx3[0].find(`#split-perc${selectorify(user_3.user_id)}`).setValue('34')
     await wrapper.find('#split_create_save').trigger('click')
     expect(wrapper.emitted()).toHaveProperty('on-save-split')
+  })
+  it('Test default split', async () => {
+    const wrapper = shallowMount(SplitCreateDialog, {
+      attachTo: 'body',
+      global: {
+        plugins: [store]
+      },
+      props: {
+        users_info: [
+          {
+            user: user_1,
+            displayname: user_1.displayname,
+            user_type: 'Admin',
+            is_self: true
+          },
+          {
+            user: user_2,
+            displayname: user_2.displayname,
+            user_type: 'Admin',
+            is_self: true
+          },
+          {
+            user: user_3,
+            displayname: user_3.displayname,
+            user_type: 'Admin',
+            is_self: true
+          }
+        ]
+      }
+    })
+    const tx1 = wrapper.findAll('.input-group').filter(w => w.attributes('data-test') === user_1.user_id)
+    const tx2 = wrapper.findAll('.input-group').filter(w => w.attributes('data-test') === user_2.user_id)
+    const tx3 = wrapper.findAll('.input-group').filter(w => w.attributes('data-test') === user_3.user_id)
+    await tx1[0].find(`#split-checkbox${selectorify(user_1.user_id)}`).trigger('click')
+    await tx2[0].find(`#split-checkbox${selectorify(user_2.user_id)}`).trigger('click')
+    await tx3[0].find(`#split-checkbox${selectorify(user_3.user_id)}`).trigger('click')
+    await wrapper.find('#default-split').trigger('click')
+    await flushPromises()
+    expect((tx1[0].find(`#split-perc${selectorify(user_1.user_id)}`).element.innerHTML.includes('33')) ||
+      (tx1[0].find(`#split-perc${selectorify(user_1.user_id)}`).element.innerHTML.includes('34'))).toBeTruthy()
+    expect((tx2[0].find(`#split-perc${selectorify(user_1.user_id)}`).element.innerHTML.includes('33')) ||
+      (tx2[0].find(`#split-perc${selectorify(user_1.user_id)}`).element.innerHTML.includes('34'))).toBeTruthy()
+    expect((tx3[0].find(`#split-perc${selectorify(user_1.user_id)}`).element.innerHTML.includes('33')) ||
+      (tx3[0].find(`#split-perc${selectorify(user_1.user_id)}`).element.innerHTML.includes('34'))).toBeTruthy()
   })
 })

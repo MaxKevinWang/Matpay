@@ -36,7 +36,8 @@ describe('Test RoomTxHistory', () => {
         rooms: {
           namespaced: true,
           getters: {
-            get_room_name: () => (room_id: MatrixRoomID) => 'aaa'
+            get_room_name: () => (room_id: MatrixRoomID) => 'aaa',
+            get_joined_status_for_room: () => () => true
           }
         },
         tx: {
@@ -92,7 +93,8 @@ describe('Test RoomTxHistory', () => {
         rooms: {
           namespaced: true,
           getters: {
-            get_room_name: () => (room_id: MatrixRoomID) => 'aaa'
+            get_room_name: () => (room_id: MatrixRoomID) => 'aaa',
+            get_joined_status_for_room: () => () => true
           }
         },
         tx: {
@@ -132,7 +134,7 @@ describe('Test RoomTxHistory', () => {
       }
     })
     await flushPromises()
-    await expect(wrapper.find('alert').element.innerHTML.includes('Error')).toEqual(true)
+    await expect(wrapper.find('#tx-not-exist-hint').element.innerHTML.includes('No transaction exists.')).toEqual(true)
   })
   it('Test negative balance display', async () => {
     const store1 = createStore({
@@ -140,7 +142,8 @@ describe('Test RoomTxHistory', () => {
         rooms: {
           namespaced: true,
           getters: {
-            get_room_name: () => (room_id: MatrixRoomID) => 'aaa'
+            get_room_name: () => (room_id: MatrixRoomID) => 'aaa',
+            get_joined_status_for_room: () => () => true
           }
         },
         tx: {
@@ -203,7 +206,8 @@ describe('Test RoomTxHistory', () => {
         rooms: {
           namespaced: true,
           getters: {
-            get_room_name: () => (room_id: MatrixRoomID) => 'aaa'
+            get_room_name: () => (room_id: MatrixRoomID) => 'aaa',
+            get_joined_status_for_room: () => () => true
           }
         },
         tx: {
@@ -266,7 +270,8 @@ describe('Test RoomTxHistory', () => {
         rooms: {
           namespaced: true,
           getters: {
-            get_room_name: () => (room_id: MatrixRoomID) => 'aaa'
+            get_room_name: () => (room_id: MatrixRoomID) => 'aaa',
+            get_joined_status_for_room: () => () => true
           }
         },
         tx: {

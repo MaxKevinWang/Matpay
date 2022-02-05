@@ -753,6 +753,10 @@ describe('Test rooms store', function () {
         state_key: 'test_key'
       }])
     })
+    it('Test get_member_state_events_for_room(Exception)', function () {
+      const getter = store.getters.get_member_state_events_for_room(state, null, null, null)
+      expect(() => getter('abc')).toThrow(new Error('Room does not exist!'))
+    })
     it('Test get_permission_event_for_room', function () {
       const getter = store.getters.get_permission_event_for_room(state, null, null, null)
       state.joined_rooms.push({
@@ -777,6 +781,10 @@ describe('Test rooms store', function () {
         type: 'm.room.power_levels',
         state_key: 'test_key'
       })
+    })
+    it('Test get_permission_event_for_room(Exception)', function () {
+      const getter = store.getters.get_permission_event_for_room(state, null, null, null)
+      expect(() => getter('abc')).toThrow(new Error('Room does not exist!'))
     })
     it('Test get_name_event_for_room', function () {
       const getter = store.getters.get_name_event_for_room(state, null, null, null)
@@ -803,6 +811,10 @@ describe('Test rooms store', function () {
         state_key: 'test_key'
       })
     })
+    it('Test get_name_event_for_room(Exception)', function () {
+      const getter = store.getters.get_name_event_for_room(state, null, null, null)
+      expect(() => getter('abc')).toThrow(new Error('Room does not exist!'))
+    })
     it('Test get_rejected_events_for_room', function () {
       const getter = store.getters.get_rejected_events_for_room(state, null, null, null)
       state.joined_rooms.push({
@@ -827,6 +839,10 @@ describe('Test rooms store', function () {
         type: 'com.matpay.rejected',
         state_key: 'test_key'
       })
+    })
+    it('Test get_rejected_events_for_room(Exception)', function () {
+      const getter = store.getters.get_rejected_events_for_room(state, null, null, null)
+      expect(() => getter('abc')).toThrow(new Error('Room does not exist!'))
     })
     it('Test get_joined_status_for_room', function () {
       const getter = store.getters.get_joined_status_for_room(state, null, null, null)
@@ -887,9 +903,116 @@ describe('Test rooms store', function () {
         }
       }
       const getter = store.getters.get_room_table_rows(state, getters, null, rootGetters)
-      expect(getter()).toEqual([{
+      expect(getter).toEqual([{
+        member_count: 0,
+        name: 'current_name',
         room_id: 'abc',
-        name: 'ABCD'
+        room_id_display: 'bc',
+        user_type: 'User'
+      }])
+    })
+    it('Test getter get_room_table_rows(2)', function () {
+      const rootGetters = {
+        'auth/homeserver': '!ghjfghkdk:dsn.scc.kit.edu',
+        'auth/user_id': '@test-1:dsn.tm.kit.edu'
+      }
+      const fake_room: Room = {
+        room_id: 'abc',
+        name: 'fake_name',
+        state_events: []
+      }
+      state.joined_rooms.push(fake_room)
+      const fake_permission_event : MatrixRoomStateEvent = {
+        state_key: 'test_key',
+        room_id: 'abc',
+        sender: user_1.user_id,
+        origin_server_ts: 0,
+        event_id: 'test_event',
+        content: {
+          name: 'current_name',
+          users: {
+            '@test-1:dsn.tm.kit.edu': 50
+          }
+        },
+        type: 'm.room.power_levels'
+      }
+      const getters = {
+        get_name_event_for_room: (room_id: MatrixRoomID): MatrixRoomStateEvent | undefined => {
+          return {
+            state_key: 'test_key',
+            room_id: 'abc',
+            sender: user_1.user_id,
+            origin_server_ts: 0,
+            event_id: 'test_event',
+            content: {
+              name: 'current_name'
+            },
+            type: 'm.room.name'
+          }
+        },
+        get_permission_event_for_room: (room_id: MatrixRoomID): MatrixRoomStateEvent | undefined => {
+          return fake_permission_event
+        }
+      }
+      const getter = store.getters.get_room_table_rows(state, getters, null, rootGetters)
+      expect(getter).toEqual([{
+        member_count: 0,
+        name: 'current_name',
+        room_id: 'abc',
+        room_id_display: 'bc',
+        user_type: 'Moderator'
+      }])
+    })
+    it('Test getter get_room_table_rows(3)', function () {
+      const rootGetters = {
+        'auth/homeserver': '!ghjfghkdk:dsn.scc.kit.edu',
+        'auth/user_id': '@test-1:dsn.tm.kit.edu'
+      }
+      const fake_room: Room = {
+        room_id: 'abc',
+        name: 'fake_name',
+        state_events: []
+      }
+      state.joined_rooms.push(fake_room)
+      const fake_permission_event : MatrixRoomStateEvent = {
+        state_key: 'test_key',
+        room_id: 'abc',
+        sender: user_1.user_id,
+        origin_server_ts: 0,
+        event_id: 'test_event',
+        content: {
+          name: 'current_name',
+          users: {
+            '@test-1:dsn.tm.kit.edu': 100
+          }
+        },
+        type: 'm.room.power_levels'
+      }
+      const getters = {
+        get_name_event_for_room: (room_id: MatrixRoomID): MatrixRoomStateEvent | undefined => {
+          return {
+            state_key: 'test_key',
+            room_id: 'abc',
+            sender: user_1.user_id,
+            origin_server_ts: 0,
+            event_id: 'test_event',
+            content: {
+              name: 'current_name'
+            },
+            type: 'm.room.name'
+          }
+        },
+        get_permission_event_for_room: (room_id: MatrixRoomID): MatrixRoomStateEvent | undefined => {
+          return fake_permission_event
+        }
+      }
+      const getter = store.getters.get_room_table_rows(state, getters, null, rootGetters)
+      expect(getter).toEqual([{
+        member_count: 0,
+        name: 'current_name',
+        room_id: 'abc',
+        room_id_display: 'bc',
+        user_type: 'Admin'
       }])
     })
   })
