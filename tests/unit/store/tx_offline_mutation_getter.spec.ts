@@ -558,12 +558,12 @@ describe('Test transaction Vuex store offline', () => {
           {
             to: user_c,
             tx_id: uuidgen(),
-            amount: 10
+            amount: 30
           },
           {
             to: user_b,
             tx_id: uuidgen(),
-            amount: 5
+            amount: 10
           }
         ],
         description: '',
