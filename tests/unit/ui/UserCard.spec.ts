@@ -4,6 +4,7 @@ import { selectorify, split_percentage, sum_amount, to_currency_display } from '
 import { user_1 } from '../mocks/mocked_user'
 import bootstrap from 'bootstrap'
 import UserCard from '@/components/UserCard.vue'
+import { MatrixRoomID, MatrixUserID } from '@/models/id.model'
 
 jest.mock('bootstrap')
 const mockedBootstrap = bootstrap as jest.Mocked<typeof bootstrap>
@@ -30,6 +31,25 @@ describe('Test UserCard Component', () => {
   })
   describe('Test component UI', () => {
     it('Test another + self is member', async () => {
+      const store = createStore({
+        modules: {
+          tx: {
+            namespaced: true,
+            getters: {
+              get_grouped_transactions_for_room: () => (room_id: MatrixRoomID) => [],
+              get_total_open_balance_for_user_for_room: () => (room_id: MatrixRoomID, source_user_id: MatrixUserID) => -10,
+              get_open_balance_against_user_for_room: () => () => 10
+            }
+          },
+          auth: {
+            namespaced: true,
+            getters: {
+              is_logged_in: () => true,
+              user_id: () => user_1.user_id
+            }
+          }
+        }
+      })
       const wrapper = shallowMount(UserCard, {
         global: {
           plugins: [store]
@@ -56,6 +76,25 @@ describe('Test UserCard Component', () => {
       // expect(list1[0].find('#"\'usercard_\' + user_id"').element.innerHTML.includes(user_1.displayname)).toBeTruthy()
     })
     it('Test self + self is admin', async () => {
+      const store = createStore({
+        modules: {
+          tx: {
+            namespaced: true,
+            getters: {
+              get_grouped_transactions_for_room: () => (room_id: MatrixRoomID) => [],
+              get_total_open_balance_for_user_for_room: () => (room_id: MatrixRoomID, source_user_id: MatrixUserID) => -10,
+              get_open_balance_against_user_for_room: () => () => 10
+            }
+          },
+          auth: {
+            namespaced: true,
+            getters: {
+              is_logged_in: () => true,
+              user_id: () => user_1.user_id
+            }
+          }
+        }
+      })
       const wrapper = shallowMount(UserCard, {
         global: {
           plugins: [store]
@@ -84,6 +123,25 @@ describe('Test UserCard Component', () => {
       // expect(list1[0].find('#"\'usercard_\' + user_id"').element.innerHTML.includes(user_1.displayname)).toBeTruthy()
     })
     it('Test self + self is a member', async () => {
+      const store = createStore({
+        modules: {
+          tx: {
+            namespaced: true,
+            getters: {
+              get_grouped_transactions_for_room: () => (room_id: MatrixRoomID) => [],
+              get_total_open_balance_for_user_for_room: () => (room_id: MatrixRoomID, source_user_id: MatrixUserID) => -10,
+              get_open_balance_against_user_for_room: () => () => 10
+            }
+          },
+          auth: {
+            namespaced: true,
+            getters: {
+              is_logged_in: () => true,
+              user_id: () => user_1.user_id
+            }
+          }
+        }
+      })
       const wrapper = shallowMount(UserCard, {
         global: {
           plugins: [store]
@@ -112,6 +170,25 @@ describe('Test UserCard Component', () => {
       // expect(list1[0].find('#"\'usercard_\' + user_id"').element.innerHTML.includes(user_1.displayname)).toBeTruthy()
     })
     it('Test another + self is admin', async () => {
+      const store = createStore({
+        modules: {
+          tx: {
+            namespaced: true,
+            getters: {
+              get_grouped_transactions_for_room: () => (room_id: MatrixRoomID) => [],
+              get_total_open_balance_for_user_for_room: () => (room_id: MatrixRoomID, source_user_id: MatrixUserID) => -10,
+              get_open_balance_against_user_for_room: () => () => 10
+            }
+          },
+          auth: {
+            namespaced: true,
+            getters: {
+              is_logged_in: () => true,
+              user_id: () => user_1.user_id
+            }
+          }
+        }
+      })
       const wrapper = shallowMount(UserCard, {
         global: {
           plugins: [store]
@@ -139,7 +216,26 @@ describe('Test UserCard Component', () => {
       // const list1 = wrapper.find('.clearfix').filter(i => i.attributes('data-test') === user_1.user_id)
       // expect(list1[0].find('#"\'usercard_\' + user_id"').element.innerHTML.includes(user_1.displayname)).toBeTruthy()
     })
-    it('Test kick a member', async () => {
+    it('Test if the balance shows correctly', async () => {
+      const store = createStore({
+        modules: {
+          tx: {
+            namespaced: true,
+            getters: {
+              get_grouped_transactions_for_room: () => (room_id: MatrixRoomID) => [],
+              get_total_open_balance_for_user_for_room: () => (room_id: MatrixRoomID, source_user_id: MatrixUserID) => -10,
+              get_open_balance_against_user_for_room: () => () => 10
+            }
+          },
+          auth: {
+            namespaced: true,
+            getters: {
+              is_logged_in: () => true,
+              user_id: () => user_1.user_id
+            }
+          }
+        }
+      })
       const wrapper = shallowMount(UserCard, {
         global: {
           plugins: [store]
@@ -157,8 +253,10 @@ describe('Test UserCard Component', () => {
         }
       })
       await flushPromises()
-      wrapper.find('#kickButton').trigger('click')
-      expect(wrapper.find('#usercard_' + selectorify(user_1.user_id)).element.innerHTML.includes(user_1.displayname)).toBeFalse()
+      // wrapper.find('#kickButton').trigger('click')
+      expect(wrapper.find('#usercard_' + selectorify(user_1.user_id)).element.innerHTML.includes(user_1.displayname)).toBeTruthy()
+      expect(wrapper.find('#usercard_' + selectorify(user_1.user_id)).element.innerHTML.includes('10')).toBeTruthy()
+      expect(wrapper.find('#usercard_' + selectorify(user_1.user_id)).element.innerHTML.includes('You oweing:')).toBeTruthy()
       // const list1 = wrapper.find('.clearfix').filter(i => i.attributes('data-test') === user_1.user_id)
       // expect(list1[0].find('#"\'usercard_\' + user_id"').element.innerHTML.includes(user_1.displayname)).toBeTruthy()
     })

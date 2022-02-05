@@ -7,6 +7,11 @@ import { MatrixSyncInvitedRooms } from '@/interface/sync.interface'
 import { MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
 import axios from 'axios'
 import { RoomUserInfo } from '@/models/user.model'
+<<<<<<< HEAD
+import { createStore, GetterTree } from 'vuex'
+import { PendingApproval } from '@/models/transaction.model'
+=======
+>>>>>>> 21ee9002926dffa80c27483afbce7735adca44ee
 
 jest.mock('axios')
 const mockedAxios = axios as jest.Mocked<typeof axios>
@@ -844,48 +849,31 @@ describe('Test rooms store', function () {
       expect(getter('abc')).toBeTruthy()
     })
     it('Test getter get_room_table_rows', function () {
-      state.joined_rooms.push({
+      const rootGetters = {
+        'auth/homeserver': '!ghjfghkdk:dsn.scc.kit.edu',
+        'auth/user_id': '@test-1:dsn.tm.kit.edu'
+      }
+      const fake_room: Room = {
         room_id: 'abc',
-        name: 'ABC',
-        state_events: [{
-          room_id: 'abc',
-          sender: user_1.user_id,
-          origin_server_ts: 0,
-          event_id: 'test_event',
-          content: {
-            name: 'current_name'
-          },
-          type: 'm.room.name',
-          state_key: 'test_key'
+        name: 'fake_name',
+        state_events: []
+      }
+      state.joined_rooms.push(fake_room)
+      const fake_permission_event : MatrixRoomStateEvent = {
+        state_key: 'test_key',
+        room_id: 'abc',
+        sender: user_1.user_id,
+        origin_server_ts: 0,
+        event_id: 'test_event',
+        content: {
+          name: 'current_name',
+          users: {}
         },
-        {
-          room_id: 'abc',
-          sender: user_1.user_id,
-          origin_server_ts: 0,
-          event_id: 'test_event',
-          content: {
-            membership: 'join'
-          },
-          type: 'm.room.member',
-          state_key: 'test_key'
-        },
-        {
-          room_id: 'abc',
-          sender: user_1.user_id,
-          origin_server_ts: 0,
-          event_id: 'test_event',
-          content: {
-            users: {}
-          },
-          type: 'm.room.power_levels',
-          state_key: 'test_key'
-        }]
-      })
+        type: 'm.room.power_levels'
+      }
       const getters = {
-        get_name_event_for_room: (state: State) => (room_id: MatrixRoomID): MatrixRoomStateEvent | undefined => {
-          return undefined
-          /*
-          {
+        get_name_event_for_room: (room_id: MatrixRoomID): MatrixRoomStateEvent | undefined => {
+          return {
             state_key: 'test_key',
             room_id: 'abc',
             sender: user_1.user_id,
@@ -894,13 +882,14 @@ describe('Test rooms store', function () {
             content: {
               name: 'current_name'
             },
-            type: 'm.room.member'
+            type: 'm.room.name'
           }
-           */
+        },
+        get_permission_event_for_room: (room_id: MatrixRoomID): MatrixRoomStateEvent | undefined => {
+          return fake_permission_event
         }
       }
-      const fake_room = state.joined_rooms.filter(i => i.room_id === 'abc')
-      const getter = store.getters.get_room_table_rows(state, getters, null, null)
+      const getter = store.getters.get_room_table_rows(state, getters, null, rootGetters)
       expect(getter()).toEqual([{
         room_id: 'abc',
         name: 'ABCD'
