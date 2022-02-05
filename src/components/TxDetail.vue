@@ -11,8 +11,8 @@
     </div>
     <div class="card-body" id="ModificationButton-body">
       <button class="btn btn-primary" type="button"
-              :disabled="this.tx.state === 'settlement'"
-              @click="modification_click()">
+              :disabled="this.tx.state === 'settlement' || !modifiable"
+              @click="modification_click()" id="modification-button">
         Modify
       </button>
     </div>
@@ -44,7 +44,18 @@ export default defineComponent({
   computed: {
     ...mapGetters('user', [
       'get_users_info_for_room'
-    ])
+    ]),
+    ...mapGetters('auth', [
+      'user_id'
+    ]),
+    modifiable () : boolean {
+      if (this.tx) {
+        const all_participants = this.tx.txs.map(t => t.to.user_id).concat(this.tx.from.user_id)
+        return all_participants.includes(this.user_id)
+      } else {
+        return false // not yet loaded
+      }
+    }
   },
   components: {
     ModificationDialog
