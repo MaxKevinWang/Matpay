@@ -4,7 +4,7 @@ import { split_percentage, sum_amount, to_currency_display } from '@/utils/utils
 import { createStore } from 'vuex'
 import { user_1 } from '../mocks/mocked_user'
 
-describe('Test Rooms Tab', () => {
+xdescribe('Test Rooms Tab', () => {
   beforeAll(() => {
     config.global.mocks = {
       sum_amount: sum_amount,

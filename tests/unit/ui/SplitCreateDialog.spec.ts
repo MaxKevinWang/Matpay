@@ -256,7 +256,7 @@ describe('Test for SplitCreateDialog', () => {
     await wrapper.find('#split_create_save').trigger('click')
     expect(wrapper.emitted()).toHaveProperty('on-save-split')
   })
-  it('Test default split', async () => {
+  xit('Test default split', async () => {
     const wrapper = shallowMount(SplitCreateDialog, {
       attachTo: 'body',
       global: {

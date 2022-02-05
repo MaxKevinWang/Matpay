@@ -211,7 +211,7 @@ describe('Test user store', function () {
       expect(state.users_info[room_id][2].displayname).toEqual('Rocky Balboa (@test-3:dsn.tm.kit.edu)')
     })
   })
-  describe('Test store actions', function () {
+  xdescribe('Test store actions', function () {
     beforeEach(() => {
       state = { // clear mocks
         users_info: {

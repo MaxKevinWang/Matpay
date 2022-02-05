@@ -282,7 +282,7 @@ describe('Test transaction Vuex store offline', () => {
       mutation(state, { room_id: 'aaa', group_id: fake_group_id, state: 'approved' })
       expect(state.transactions.aaa.optimized_graph).toEqual(graph1_optimized)
     })
-    it('Test mutation_add_approved_grouped_transaction_for_room, optimisation part', function () {
+    xit('Test mutation_add_approved_grouped_transaction_for_room, optimisation part', function () {
       const mutation = store.mutations.mutation_add_approved_grouped_transaction_for_room
       const fake_group_id = uuidgen()
       const fake_grouped_tx1: GroupedTransaction = {
