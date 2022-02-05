@@ -85,3 +85,22 @@ export const room_01_permission: MatrixRoomPermissionConfiguration = {
   users_default: 50,
   users: {}
 }
+
+export const room_02_user_info: Array<RoomUserInfo> = [{
+  user: user_a,
+  displayname: 'DSN Test Account No 1',
+  avatar_url: '',
+  is_self: true,
+  user_type: 'Member'
+}, {
+  user: user_b,
+  displayname: 'DSN Test Account No 3',
+  is_self: false,
+  user_type: 'Admin'
+}, {
+  user: user_c,
+  avatar_url: '',
+  displayname: 'DSN Test Account No 2',
+  is_self: false,
+  user_type: 'Member'
+}]
