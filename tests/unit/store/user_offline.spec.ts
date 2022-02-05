@@ -1,18 +1,22 @@
 import store from '@/store/user'
 import { RoomUserInfo } from '@/models/user.model'
 import { MatrixRoomID } from '@/models/id.model'
-import { MatrixRoomMemberStateEvent, MatrixRoomPermissionConfiguration } from '@/interface/rooms_event.interface'
 import {
+  MatrixRoomMemberStateEvent,
+  MatrixRoomPermissionConfiguration, MatrixRoomStateEvent
+} from '@/interface/rooms_event.interface'
+import {
+  room_01_user_info,
   room_01_left_user_info,
   room_01_permission,
   room_01_room_id,
-  room_01_user_info,
   user_1,
   user_2,
   user_3,
   user_aaa
 } from '../mocks/mocked_user'
 import axios from 'axios'
+import { cloneDeep } from 'lodash'
 
 jest.mock('axios')
 const mockedAxios = axios as jest.Mocked<typeof axios>
@@ -79,7 +83,7 @@ describe('Test user store', function () {
       const mutation = store.mutations.mutation_set_users_for_room
       mutation(state, {
         room_id: room_id,
-        users_info: room_01_user_info
+        users_info: cloneDeep(room_01_user_info)
       })
       expect(state.users_info[room_id]).toEqual(room_01_user_info)
     })
@@ -93,17 +97,17 @@ describe('Test user store', function () {
     })
     it('Test mutation_reset_state', function () {
       const mutation = store.mutations.mutation_reset_state
-      state.users_info[room_id] = room_01_user_info
-      state.permissions[room_id] = room_01_permission
+      state.users_info[room_id] = cloneDeep(room_01_user_info)
+      state.permissions[room_id] = cloneDeep(room_01_permission)
       mutation(state)
       expect(state.users_info).toEqual({})
       expect(state.permissions).toEqual({})
     })
     it('Test mutation_remove_joined_room', function () {
       const mutation = store.mutations.mutation_remove_joined_room
-      state.users_info[room_id] = room_01_user_info
-      state.permissions[room_id] = room_01_permission
-      state.left_users_info[room_id] = room_01_left_user_info
+      state.users_info[room_id] = cloneDeep(room_01_user_info)
+      state.permissions[room_id] = cloneDeep(room_01_permission)
+      state.left_users_info[room_id] = cloneDeep(room_01_left_user_info)
       mutation(state, room_id)
       expect(state.users_info[room_id]).toEqual(undefined)
       expect(state.permissions[room_id]).toEqual(undefined)
@@ -111,7 +115,7 @@ describe('Test user store', function () {
     })
     it('Test mutation_add_user_for_room', function () {
       const mutation = store.mutations.mutation_add_user_for_room
-      state.users_info[room_id] = room_01_user_info
+      state.users_info[room_id] = cloneDeep(room_01_user_info)
       mutation(state, {
         room_id: room_id,
         user_info: {
@@ -128,7 +132,7 @@ describe('Test user store', function () {
     })
     it('Test mutation_add_left_user_for_room', function () {
       const mutation = store.mutations.mutation_add_left_user_for_room
-      state.left_users_info[room_id] = room_01_left_user_info
+      state.left_users_info[room_id] = cloneDeep(room_01_left_user_info)
       mutation(state, {
         room_id: room_id,
         left_user_info: {
@@ -145,8 +149,8 @@ describe('Test user store', function () {
     })
     it('Test mutation_remove_joined_and_left_user_for_room', function () {
       const mutation = store.mutations.mutation_remove_joined_and_left_user_for_room
-      state.left_users_info[room_id] = room_01_left_user_info
-      state.users_info[room_id] = room_01_user_info
+      state.left_users_info[room_id] = cloneDeep(room_01_left_user_info)
+      state.users_info[room_id] = cloneDeep(room_01_user_info)
       mutation(state, {
         room_id: room_id,
         user_id: user_aaa.user_id
@@ -231,12 +235,12 @@ describe('Test user store', function () {
         }
       }
     })
-    const action_parse_member = store.actions.action_parse_member_events_for_room as (context: any, payload: any) => Promise<Array<RoomUserInfo>>
-    const rootGetters = {
-      'auth/homeserver': '!ghjfghkdk:dsn.scc.kit.edu',
-      'auth/user_id': '@test-1:dsn.tm.kit.edu'
-    }
     describe('Test action_parse_member_events_for_room', function () {
+      const action_parse_member = store.actions.action_parse_member_events_for_room as (context: any, payload: any) => Promise<Array<RoomUserInfo>>
+      const rootGetters = {
+        'auth/homeserver': '!ghjfghkdk:dsn.scc.kit.edu',
+        'auth/user_id': '@test-1:dsn.tm.kit.edu'
+      }
       it('Test no user_name collision', async () => {
         const member_events: MatrixRoomMemberStateEvent[] = [{
           type: 'm.room.member',
@@ -390,6 +394,50 @@ describe('Test user store', function () {
         expect(dispatch_called).toEqual(true)
       })
     })
+    describe('Test action_parse_permission_event_for_room', function () {
+      const action_parse_permission = store.actions.action_parse_permission_event_for_room as (context: any, payload: any) => Promise<MatrixRoomPermissionConfiguration>
+      it('Test permission event is set properly', async () => {
+        const mutation_permission = store.mutations.mutation_set_permission_for_room
+        const commit = (mutation_string: string, payload: {
+          room_id: MatrixRoomID,
+          permission: MatrixRoomStateEvent
+        }) => {
+          if (mutation_string === 'mutation_set_permission_for_room') {
+            mutation_permission(state, {
+              room_id: payload.room_id,
+              permission: payload.permission.content
+            })
+          }
+        }
+        await action_parse_permission({
+          state,
+          commit,
+          rootGetters: jest.fn()
+        }, {
+          room_id: room_id,
+          permission_event: {
+            state_key: 'test_key',
+            room_id: 'abc',
+            sender: user_1.user_id,
+            origin_server_ts: 0,
+            event_id: 'test_event',
+            content: {
+              ban: 50,
+              events: {},
+              events_default: 50,
+              invite: 100,
+              kick: 100,
+              redact: 50,
+              state_default: 50,
+              users_default: 50,
+              users: {}
+            },
+            type: 'm.room.power_levels'
+          }
+        })
+        expect(state.permissions[room_id]).toEqual(room_01_permission)
+      })
+    })
   })
   describe('Test store getters', function () {
     beforeEach(() => {
@@ -424,6 +472,39 @@ describe('Test user store', function () {
       const getter = store.getters.get_permissions_for_room(state, null, null, null)
       state.permissions[room_id] = room_01_permission
       expect(getter(room_id)).toEqual(room_01_permission)
+    })
+    it('Test get_left_users_info_for_room', function () {
+      const getter = store.getters.get_left_users_info_for_room(state, null, null, null)
+      state.left_users_info[room_id] = room_01_left_user_info
+      expect(getter(room_id)).toEqual(room_01_left_user_info)
+    })
+    it('Test get_all_users_info_for_room', function () {
+      const getter = store.getters.get_all_users_info_for_room(state, null, null, null)
+      state.left_users_info[room_id] = room_01_left_user_info
+      state.users_info[room_id] = room_01_user_info
+      expect(getter(room_id)).toEqual([{
+        user: user_1,
+        displayname: 'DSN Test Account No 1',
+        avatar_url: '',
+        is_self: true,
+        user_type: 'Member'
+      }, {
+        user: user_3,
+        displayname: 'DSN Test Account No 3',
+        is_self: false,
+        user_type: 'Admin'
+      }, {
+        user: user_2,
+        avatar_url: '',
+        displayname: 'DSN Test Account No 2',
+        is_self: false,
+        user_type: 'Member'
+      }, {
+        user: user_aaa,
+        displayname: 'DSN Test Account No aaa',
+        is_self: false,
+        user_type: 'Member'
+      }])
     })
   })
 })
