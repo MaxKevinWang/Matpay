@@ -1,14 +1,11 @@
 import store from '@/store/tx'
-import { MatrixEventID, MatrixRoomID, MatrixUserID, TxID } from '@/models/id.model'
-import { room_01_user_info, user_1, user_2, user_3, user_a, user_c } from '../mocks/mocked_user'
-import { TxApproveEvent, TxCreateEvent, TxModifyEvent, TxSettleEvent } from '@/interface/tx_event.interface'
-import { uuidgen } from '@/utils/utils'
+import { MatrixEventID, MatrixRoomID, MatrixUserID } from '@/models/id.model'
+import { room_01_user_info, user_1, user_2, user_c } from '../mocks/mocked_user'
+import { TxSettleEvent } from '@/interface/tx_event.interface'
 import { GroupedTransaction, PendingApproval, TxGraph } from '@/models/transaction.model'
-import { User } from '@/models/user.model'
 import axios, { AxiosResponse } from 'axios'
 import { MatrixError } from '@/interface/error.interface'
 import { PUTRoomEventSendResponse } from '@/interface/api.interface'
-import { MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
 
 jest.mock('axios')
 const mockedAxios = axios as jest.Mocked<typeof axios>

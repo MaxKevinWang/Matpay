@@ -1,15 +1,9 @@
-import { config, mount, shallowMount } from '@vue/test-utils'
-import TxApprovedMessageBox from '@/components/TxApprovedMessageBox.vue'
-import { user_1, user_2, user_3 } from '../mocks/mocked_user'
-import { ChatMessage, TxApprovedPlaceholder } from '@/models/chat.model'
-import { split_percentage, sum_amount, to_currency_display, uuidgen } from '@/utils/utils'
-import ChatComponent from '@/components/ChatComponent.vue'
-import Login from '@/tabs/Login.vue'
-import { test_account2, test_homeserver } from '../../test_utils'
-import { createStore } from 'vuex'
-import TxDetail from '@/components/TxDetail.vue'
+import { config, shallowMount } from '@vue/test-utils'
+import { user_1, user_2 } from '../mocks/mocked_user'
+import { ChatMessage } from '@/models/chat.model'
 import { newStore } from '@/store'
 import ChatMessageBox from '@/components/ChatMessageBox.vue'
+
 describe('Test chatComponent', () => {
   let store = newStore()
   beforeEach(() => {

@@ -1,6 +1,6 @@
 import { TxGraph } from '@/models/transaction.model'
 
-export const graph1_unoptimized : TxGraph = {
+export const graph1_unoptimized: TxGraph = {
   graph: {
     aaa: [['bbb', 30]],
     bbb: [['ccc', 20]],
@@ -8,7 +8,7 @@ export const graph1_unoptimized : TxGraph = {
   }
 }
 
-export const graph1_optimized : TxGraph = {
+export const graph1_optimized: TxGraph = {
   graph: {
     aaa: [['bbb', 10]],
     bbb: [],
@@ -16,7 +16,7 @@ export const graph1_optimized : TxGraph = {
   }
 }
 
-export const graph2_unoptimized : TxGraph = {
+export const graph2_unoptimized: TxGraph = {
   graph: {
     a: [['b', 50], ['c', 50]],
     b: [['d', 100]],
@@ -27,18 +27,18 @@ export const graph2_unoptimized : TxGraph = {
   }
 }
 
-export const graph2_optimized : TxGraph = {
+export const graph2_optimized: TxGraph = {
   graph: {
-    a: [['b', 25], ['c', 50]],
-    b: [['d', 75]],
-    c: [['e', 100]],
-    d: [['f', 75]],
+    a: [['e', 50], ['f', 25]],
+    b: [['f', 50]],
+    c: [['e', 50]],
+    d: [],
     e: [],
     f: []
   }
 }
 
-export const graph3_unoptimized : TxGraph = {
+export const graph3_unoptimized: TxGraph = {
   graph: {
     a: [['b', 10]],
     b: [['c', 20]],
@@ -47,7 +47,7 @@ export const graph3_unoptimized : TxGraph = {
   }
 }
 
-export const graph3_optimized : TxGraph = {
+export const graph3_optimized: TxGraph = {
   graph: {
     a: [],
     b: [],
@@ -56,22 +56,44 @@ export const graph3_optimized : TxGraph = {
   }
 }
 
-export const graph4_unoptimized : TxGraph = {
+export const graph4_unoptimized: TxGraph = {
   graph: {
     a: [['c', 10], ['e', 20]],
     b: [['a', 5]],
     c: [['d', 30]],
     d: [['c', 5], ['e', 20]],
-    e: [['c', 30], ['b', 10]]
+    e: [['b', 10], ['c', 30]]
   }
 }
 
-export const graph4_optimized : TxGraph = {
+export const graph4_optimized: TxGraph = {
   graph: {
-    a: [['c', 10], ['e', 15]],
+    a: [['b', 5], ['c', 15], ['d', 5]],
     b: [],
-    c: [['d', 5]],
-    d: [['c', 5], ['e', 20]],
-    e: [['c', 10], ['b', 5]]
+    c: [],
+    d: [],
+    e: []
+  }
+}
+
+export const graph5_unoptimized: TxGraph = {
+  // A typical case for path transformations
+  graph: {
+    a: [['b', 50]],
+    b: [['c', 40]],
+    c: [['d', 30]],
+    d: [['e', 20]],
+    e: [['f', 10]],
+    f: []
+  }
+}
+export const graph5_optimized: TxGraph = {
+  graph: {
+    a: [['b', 10], ['c', 10], ['d', 10], ['e', 10], ['f', 10]],
+    b: [],
+    c: [],
+    d: [],
+    e: [],
+    f: []
   }
 }

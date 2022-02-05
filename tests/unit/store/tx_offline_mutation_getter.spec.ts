@@ -1,28 +1,29 @@
 import store from '@/store/tx'
 import { MatrixEventID, MatrixRoomID, MatrixUserID } from '@/models/id.model'
-import { GroupedTransaction, PendingApproval, SimpleTransaction, TxGraph } from '@/models/transaction.model'
-import { TxApproveEvent, TxCreateEvent, TxModifyEvent, TxSettleEvent } from '@/interface/tx_event.interface'
-import { test_account1, test_account2 } from '../../test_utils'
+import { GroupedTransaction, PendingApproval, TxGraph } from '@/models/transaction.model'
 import { uuidgen } from '@/utils/utils'
 import {
-  room_01_user_info,
   user_1,
   user_2,
-  user_3,
   user_a,
   user_aaa,
   user_b,
-  user_bbb, user_c,
-  user_ccc, user_d, user_e, user_f
+  user_bbb,
+  user_c,
+  user_ccc,
+  user_d,
+  user_e,
+  user_f
 } from '../mocks/mocked_user'
-import user from '@/store/user'
-import { Room } from '@/models/room.model'
 import {
   graph1_optimized,
   graph1_unoptimized,
   graph2_optimized,
-  graph2_unoptimized, graph3_optimized,
-  graph3_unoptimized, graph4_optimized, graph4_unoptimized
+  graph2_unoptimized,
+  graph3_optimized,
+  graph3_unoptimized,
+  graph4_optimized,
+  graph4_unoptimized
 } from '../mocks/mocked_graph'
 
 interface State {

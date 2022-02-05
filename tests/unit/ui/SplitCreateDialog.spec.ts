@@ -1,8 +1,7 @@
 import { newStore } from '@/store/index'
-import { config, mount, shallowMount } from '@vue/test-utils'
+import { config, shallowMount } from '@vue/test-utils'
 import SplitCreateDialog from '@/dialogs/SplitCreateDialog.vue'
 import { selectorify, split_percentage, sum_amount, to_currency_display } from '@/utils/utils'
-import { User } from '@/models/user.model'
 import { user_1, user_2, user_3 } from '../mocks/mocked_user'
 import bootstrap from 'bootstrap'
 

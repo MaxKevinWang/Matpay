@@ -31,15 +31,9 @@ module.exports = {
       ],
       env: {
         jest: true
-      }
-    },
-    {
-      files: [
-        '**/__tests__/*.{j,t}s?(x)',
-        '**/tests/unit/**/*.spec.{j,t}s?(x)'
-      ],
-      env: {
-        jest: true
+      },
+      rules: {
+        "no-unused-vars": ["error", { "vars": "all", "args": "after-used", "ignoreRestSiblings": false }]
       }
     }
   ]

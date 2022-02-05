@@ -1,15 +1,17 @@
-import store, { rooms_store } from '@/store/rooms'
+import store from '@/store/rooms'
 import { Room } from '@/models/room.model'
-import { MatrixEventID, MatrixRoomID, MatrixUserID } from '@/models/id.model'
+import { MatrixRoomID } from '@/models/id.model'
 import { uuidgen } from '@/utils/utils'
-import { room_01_room_id, user_1, user_2, user_aaa } from '../mocks/mocked_user'
+import { room_01_room_id, user_1 } from '../mocks/mocked_user'
 import { MatrixSyncInvitedRooms } from '@/interface/sync.interface'
-import { MatrixRoomStateEvent, MatrixRoomStrippedEvent } from '@/interface/rooms_event.interface'
-import axios, { Axios, AxiosInstance, AxiosPromise, AxiosResponse, AxiosStatic } from 'axios'
-import { MatrixError } from '@/interface/error.interface'
+import { MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
+import axios from 'axios'
 import { RoomUserInfo } from '@/models/user.model'
+<<<<<<< HEAD
 import { createStore, GetterTree } from 'vuex'
 import { PendingApproval } from '@/models/transaction.model'
+=======
+>>>>>>> 21ee9002926dffa80c27483afbce7735adca44ee
 
 jest.mock('axios')
 const mockedAxios = axios as jest.Mocked<typeof axios>

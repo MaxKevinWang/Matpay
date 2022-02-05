@@ -8,7 +8,9 @@ import {
   room_01_room_id,
   room_01_user_info,
   user_1,
-  user_2, user_3, user_aaa
+  user_2,
+  user_3,
+  user_aaa
 } from '../mocks/mocked_user'
 import axios from 'axios'
 
