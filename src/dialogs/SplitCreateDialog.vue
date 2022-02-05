@@ -27,7 +27,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-info" @click="on_default_split">Split Equally among Selected</button>
+          <button type="button" class="btn btn-info" @click="on_default_split" id="default-split">Split Equally among Selected</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           <button type="button" class="btn btn-primary" @click="on_save_click" id="split_create_save">Save</button>
         </div>
