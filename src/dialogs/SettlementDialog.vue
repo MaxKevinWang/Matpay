@@ -33,6 +33,7 @@ import { defineComponent, PropType } from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 import { Modal, Popover } from 'bootstrap'
 import { RoomUserInfo, User } from '@/models/user.model'
+import { selectorify } from '@/utils/utils'
 
 export default defineComponent({
   name: 'SettlementDialog',
@@ -75,10 +76,12 @@ export default defineComponent({
     }
   },
   mounted () {
-    const id = 'settlement-modal_' + this.user_clicked?.user.user_id
-    this.modal_control = new Modal(document.getElementById(id) as HTMLElement, {
-      backdrop: false
-    })
+    if (this.user_clicked) {
+      const id = 'settlement-modal_' + selectorify(this.user_clicked.user.user_id)
+      this.modal_control = new Modal(document.getElementById(id) as HTMLElement, {
+        backdrop: false
+      })
+    }
   }
 })
 </script>
