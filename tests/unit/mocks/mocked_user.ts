@@ -87,6 +87,32 @@ export const room_01_permission: MatrixRoomPermissionConfiguration = {
     '@test-1:dsn.tm.kit.edu': 30
   }
 }
+export const room_02_permission: MatrixRoomPermissionConfiguration = {
+  ban: 50,
+  events: {},
+  events_default: 50,
+  invite: 100,
+  kick: 100,
+  redact: 50,
+  state_default: 50,
+  users_default: 50,
+  users: {
+  }
+}
+
+export const room_03_permission: MatrixRoomPermissionConfiguration = {
+  ban: 50,
+  events: {},
+  events_default: 50,
+  invite: 100,
+  kick: 100,
+  redact: 50,
+  state_default: 50,
+  users_default: 50,
+  users: {
+    '@test-1:dsn.tm.kit.edu': 101
+  }
+}
 
 export const room_02_user_info: Array<RoomUserInfo> = [{
   user: user_a,
