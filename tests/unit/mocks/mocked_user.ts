@@ -83,7 +83,9 @@ export const room_01_permission: MatrixRoomPermissionConfiguration = {
   redact: 50,
   state_default: 50,
   users_default: 50,
-  users: {}
+  users: {
+    '@test-1:dsn.tm.kit.edu': 30
+  }
 }
 
 export const room_02_user_info: Array<RoomUserInfo> = [{

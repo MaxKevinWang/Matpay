@@ -1,13 +1,15 @@
 import { newStore } from '@/store'
 import { config, flushPromises, mount, shallowMount } from '@vue/test-utils'
 import { selectorify, split_percentage, sum_amount, to_currency_display } from '@/utils/utils'
-import { user_1, user_2 } from '../mocks/mocked_user'
+import { room_01_permission, room_01_user_info, user_1, user_2 } from '../mocks/mocked_user'
 import MemberList from '@/components/MemberList.vue'
 import { createStore } from 'vuex'
 import bootstrap from 'bootstrap'
 import UserInviteDialog from '@/dialogs/UserInviteDialog.vue'
 import UserCard from '@/components/UserCard.vue'
 import { MatrixRoomID, MatrixUserID } from '@/models/id.model'
+import { MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
+import { cloneDeep } from 'lodash'
 
 jest.mock('bootstrap')
 const mockedBootstrap = bootstrap as jest.Mocked<typeof bootstrap>
@@ -163,6 +165,57 @@ describe('Test MemberList Component', () => {
       expect(popover_description_called).toBeTruthy()
       // expect(wrapper.emitted()).toHaveProperty('on-error')
       // expect((wrapper.emitted()['on-error'][0] as Array<Error>)[0]).toEqual(Error('Error, something is fucked'))
+    })
+    it('Test the invite_dialog shows up(emit error1)', async () => {
+      const store = createStore({
+        modules: {
+          rooms: {
+            namespaced: true,
+            getters: {
+            }
+          },
+          auth: {
+            namespaced: true,
+            getters: {
+              is_logged_in: () => true,
+              user_id: () => user_1.user_id,
+              homeserver: jest.fn()
+            }
+          },
+          user: {
+            namespaced: true,
+            getters: {
+              get_permissions_for_room: () => (room_id: MatrixRoomID) => {
+                return cloneDeep(room_01_permission)
+              }
+            }
+          },
+          tx: {
+            namespaced: true,
+            getters: {
+              get_open_balance_against_user_for_room: () => () => 10
+            }
+          }
+        }
+      })
+      const wrapper = mount(MemberList, {
+        attachTo: document.querySelector('html') as HTMLElement,
+        global: {
+          stubs: {
+            UserCard: true,
+            ConfirmDialog: true
+          },
+          plugins: [store]
+        },
+        props: {
+          room_id: 'fake_room_id',
+          users_info: room_01_user_info
+        }
+      })
+      await wrapper.find('#inviteButton').trigger('click')
+      await flushPromises()
+      expect(wrapper.emitted()).toHaveProperty('on-error')
+      expect((wrapper.emitted()['on-error'][0] as Array<Error>)[0]).toEqual('You have no permission to invite user')
     })
   })
 })
