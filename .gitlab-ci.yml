@@ -21,28 +21,12 @@ stages:
 install_dependencies:
     variables:
         npm_config_cache: "$CI_PROJECT_DIR/.npm"
-    image: node:16-alpine
-    stage: dependencies
-    tags: ['matpay']
-    only:
-        - main
-    script:
-        - npm ci --prefer-offline
-    cache:
-        key:
-            files:
-                - package-lock.json
-        paths:
-            - node_modules
-            - .npm
-install_dependencies_with_cypress:
-    variables:
-        npm_config_cache: "$CI_PROJECT_DIR/.npm"
         CYPRESS_CACHE_FOLDER: "$CI_PROJECT_DIR/cache/Cypress"
     image: node:16-alpine
     stage: dependencies
     tags: ['matpay']
     only:
+        - main
         - testing
     script:
         - npm ci --prefer-offline
