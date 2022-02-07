@@ -5,7 +5,7 @@ import {
   room_01_permission,
   room_01_user_info,
   room_02_permission,
-  room_03_permission,
+  room_03_permission, room_04_user_info,
   user_1,
   user_2
 } from '../mocks/mocked_user'
@@ -17,6 +17,7 @@ import UserCard from '@/components/UserCard.vue'
 import { MatrixRoomID, MatrixUserID } from '@/models/id.model'
 import { MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
 import { cloneDeep } from 'lodash'
+import { PropType } from 'vue'
 
 jest.mock('bootstrap')
 const mockedBootstrap = bootstrap as jest.Mocked<typeof bootstrap>
@@ -360,17 +361,15 @@ describe('Test MemberList Component', () => {
       const wrapper = mount(MemberList, {
         attachTo: document.querySelector('html') as HTMLElement,
         global: {
-          stubs: {
-            UserCard: true,
-            ConfirmDialog: true
-          },
           plugins: [store]
         },
         props: {
           room_id: 'fake_room_id',
-          users_info: room_01_user_info
+          can_i_kick_user: true,
+          users_info: room_04_user_info
         }
       })
+      expect(wrapper.find('#usercard_' + selectorify(user_1.user_id)).element.innerHTML.includes(user_1.displayname)).toBeTruthy()
       await wrapper.find('#inviteButton').trigger('click')
       await flushPromises() // user-invite-modal
       await expect(wrapper.find('#user-invite-modal').element.innerHTML.includes('@user:')).toEqual(true)

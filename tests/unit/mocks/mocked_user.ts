@@ -68,6 +68,24 @@ export const room_01_user_info: Array<RoomUserInfo> = [{
   is_self: false,
   user_type: 'Member'
 }]
+export const room_04_user_info: Array<RoomUserInfo> = [{
+  user: user_1,
+  displayname: 'DSN Test Account No 1',
+  avatar_url: '',
+  is_self: true,
+  user_type: 'Admin'
+}, {
+  user: user_3,
+  displayname: 'DSN Test Account No 3',
+  is_self: false,
+  user_type: 'Member'
+}, {
+  user: user_2,
+  avatar_url: '',
+  displayname: 'DSN Test Account No 2',
+  is_self: false,
+  user_type: 'Member'
+}]
 export const room_01_left_user_info: Array<RoomUserInfo> = [{
   user: user_aaa,
   displayname: 'DSN Test Account No aaa',
@@ -130,5 +148,12 @@ export const room_02_user_info: Array<RoomUserInfo> = [{
   avatar_url: '',
   displayname: 'DSN Test Account No 2',
   is_self: false,
+  user_type: 'Member'
+}]
+export const room_03_user_info: Array<RoomUserInfo> = [{
+  user: user_a,
+  displayname: 'DSN Test Account No 1',
+  avatar_url: '',
+  is_self: true,
   user_type: 'Member'
 }]
