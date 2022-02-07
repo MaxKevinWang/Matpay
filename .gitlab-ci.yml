@@ -77,7 +77,7 @@ test-unit:
         policy: pull
 
 test-e2e:
-    image: cypress/browsers:node16.13.0-chrome95-ff94
+    image: matpay/cypress-browser:latest
     stage: test
     tags: [ 'matpay' ]
     only:
