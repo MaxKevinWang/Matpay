@@ -369,10 +369,11 @@ describe('Test MemberList Component', () => {
           users_info: room_04_user_info
         }
       })
-      expect(wrapper.find('#usercard_' + selectorify(user_1.user_id)).element.innerHTML.includes(user_1.displayname)).toBeTruthy()
-      await wrapper.find('#inviteButton').trigger('click')
-      await flushPromises() // user-invite-modal
-      await expect(wrapper.find('#user-invite-modal').element.innerHTML.includes('@user:')).toEqual(true)
+      await (wrapper.find('#usercard_' + selectorify(user_2.user_id)).find('#kickButton')).trigger('click')
+      await flushPromises()
+      // expect(wrapper.emitted()).toHaveProperty('on-kick')
+      // expect((wrapper.emitted()['on-error'][0] as Array<Error>)[0]).toEqual(Error('Error, something is fucked'))
+      await expect(wrapper.find('#confirm-modal').element.innerHTML.includes('want to kick user?')).toEqual(true)
     })
   })
 })

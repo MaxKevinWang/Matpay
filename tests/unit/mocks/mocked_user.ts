@@ -75,11 +75,6 @@ export const room_04_user_info: Array<RoomUserInfo> = [{
   is_self: true,
   user_type: 'Admin'
 }, {
-  user: user_3,
-  displayname: 'DSN Test Account No 3',
-  is_self: false,
-  user_type: 'Member'
-}, {
   user: user_2,
   avatar_url: '',
   displayname: 'DSN Test Account No 2',
