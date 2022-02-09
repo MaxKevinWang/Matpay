@@ -15,8 +15,7 @@ interface State {
     basic: GroupedTransaction[],
     pending_approvals: PendingApproval[],
     graph: TxGraph
-    optimized_graph: TxGraph,
-    rejected: Record<MatrixEventID, Set<MatrixUserID>>,
+    optimized_graph: TxGraph
   }>
 }
 
@@ -33,8 +32,7 @@ describe('Test action_settle_for_room', () => {
         },
         optimized_graph: {
           graph: {}
-        },
-        rejected: {}
+        }
       }
     }
   }
@@ -57,8 +55,7 @@ describe('Test action_settle_for_room', () => {
           },
           optimized_graph: {
             graph: {}
-          },
-          rejected: {}
+          }
         }
       }
     }
