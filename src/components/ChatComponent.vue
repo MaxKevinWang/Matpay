@@ -2,7 +2,7 @@
   <div>
     <div v-for="message in chat_log.messages" :key="message.timestamp" >
       <component v-if="message.grouped_tx" :is="TxApprovedMessageBox" :reference="message" :room_id="room_id"/>
-      <component v-if="message.approval" :is="TxPendingMessageBox" :reference="message" :room_id="room_id"/>
+      <component v-if="message.approval" :is="TxPendingMessageBox" :reference="message" :room_id="room_id" @on-error="on_error"/>
       <component v-if="message.content" :is="ChatMessageBox" :chat_message="message" :room_id="room_id" />
     </div>
   </div>
@@ -75,6 +75,9 @@ export default defineComponent({
       }
     }
   },
+  emits: [
+    'on-error'
+  ],
   components: {
     TxApprovedMessageBox,
     TxPendingMessageBox,
@@ -98,9 +101,12 @@ export default defineComponent({
           })
           this.chat_message = null
         } catch (e) {
-          console.log(e)
+          this.$emit('on-error', e)
         }
       }
+    },
+    on_error (e: string) {
+      this.$emit('on-error', e)
     }
   }
 })
