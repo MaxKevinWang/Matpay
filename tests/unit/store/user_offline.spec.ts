@@ -1,6 +1,6 @@
 import store from '@/store/user'
 import { RoomUserInfo } from '@/models/user.model'
-import { MatrixRoomID } from '@/models/id.model'
+import { MatrixRoomID, MatrixUserID } from '@/models/id.model'
 import {
   MatrixRoomMemberStateEvent,
   MatrixRoomPermissionConfiguration, MatrixRoomStateEvent
@@ -237,11 +237,7 @@ describe('Test user store', function () {
     })
     describe('Test action_parse_member_events_for_room', function () {
       const action_parse_member = store.actions.action_parse_member_events_for_room as (context: any, payload: any) => Promise<Array<RoomUserInfo>>
-      const rootGetters = {
-        'auth/homeserver': '!ghjfghkdk:dsn.scc.kit.edu',
-        'auth/user_id': '@test-1:dsn.tm.kit.edu'
-      }
-      it('Test no user_name collision', async () => {
+      it('Test commits and dispatches have been called successfully', async () => {
         const member_events: MatrixRoomMemberStateEvent[] = [{
           type: 'm.room.member',
           content: {
@@ -267,27 +263,52 @@ describe('Test user store', function () {
           origin_server_ts: 0,
           event_id: ''
         }]
-        await expect(action_parse_member({
+        let mutation_1_called = false
+        let mutation_2_called = false
+        const commit = (type: string, payload: {
+          room_id: MatrixRoomID
+        }) => {
+          if (type === 'mutation_init_joined_room') {
+            mutation_1_called = true
+          } else if (type === 'mutation_recalculate_joined_user_display_name_for_room') {
+            mutation_2_called = true
+          }
+        }
+        let dispatch_called = 0
+        const dispatch = async (action_string: string, payload: {
+          room_id: MatrixRoomID,
+          memberEvent: MatrixRoomMemberStateEvent,
+          recalculate_displayname: false
+        }) => {
+          dispatch_called++
+        }
+        await action_parse_member({
           state,
-          commit: jest.fn(),
-          rootGetters: rootGetters
+          commit: commit,
+          dispatch: dispatch,
+          rootGetters: jest.fn()
         }, {
           room_id: room_id,
-          member_events: member_events,
-          permission_event: room_01_permission
-        })).resolves.toEqual([room_01_user_info[0], {
-          user: {
-            user_id: user_2.user_id,
-            displayname: ''
-          },
-          avatar_url: '',
-          displayname: '@test-2:dsn.tm.kit.edu',
-          is_self: false,
-          user_type: 'Member'
-        }])
+          member_events: member_events
+        })
+        await expect(mutation_1_called).toBe(true)
+        await expect(mutation_2_called).toBe(true)
+        await expect(dispatch_called).toBe(2)
       })
-      it('Test two users with the same displayname', async () => {
-        const member_events: MatrixRoomMemberStateEvent[] = [{
+    })
+    describe('Test action_parse_single_member_event_for_room', function () {
+      const actions_parse_single_member_event = store.actions.action_parse_single_member_event_for_room as (context: any, payload: any) => Promise<RoomUserInfo | null>
+      const rootGetters = {
+        'auth/homeserver': '!ghjfghkdk:dsn.scc.kit.edu',
+        'auth/user_id': '@test-1:dsn.tm.kit.edu'
+      }
+      const state = {
+        permissions: {
+          ABC: cloneDeep(room_01_permission)
+        }
+      }
+      it('Tests Membership = join', async () => {
+        const member_event: MatrixRoomMemberStateEvent = {
           type: 'm.room.member',
           content: {
             avatar_url: '',
@@ -299,58 +320,123 @@ describe('Test user store', function () {
           sender: user_1.user_id,
           origin_server_ts: 0,
           event_id: ''
-        }, {
-          type: 'm.room.member',
-          content: {
-            avatar_url: '',
-            displayname: 'DSN Test Account No 1',
-            membership: 'join'
-          },
-          state_key: '@test-2:dsn.tm.kit.edu',
-          room_id: room_id,
-          sender: user_2.user_id,
-          origin_server_ts: 0,
-          event_id: ''
-        }]
-        await expect(action_parse_member({
+        }
+        let mutation_1_called = false
+        let mutation_2_called = false
+        const commit = (type: string, payload: {
+          room_id: MatrixRoomID,
+          user_id?: MatrixUserID,
+          user_info?: RoomUserInfo
+        }) => {
+          if (type === 'mutation_remove_joined_and_left_user_for_room') {
+            mutation_1_called = true
+          } else if (type === 'mutation_add_user_for_room') {
+            mutation_2_called = true
+          }
+        }
+        await expect(actions_parse_single_member_event({
           state,
-          commit: jest.fn(),
+          commit: commit,
           rootGetters: rootGetters
         }, {
           room_id: room_id,
-          member_events: member_events,
-          permission_event: room_01_permission
-        })).resolves.toEqual([{
-          avatar_url: '',
+          member_event: member_event,
+          recalculate_displayname: false
+        })).resolves.toEqual({
           user: {
             user_id: '@test-1:dsn.tm.kit.edu',
             displayname: 'DSN Test Account No 1'
           },
-          displayname: 'DSN Test Account No 1 (@test-1:dsn.tm.kit.edu)',
-          is_self: true,
-          user_type: 'Member'
-        },
-        {
+          displayname: 'DSN Test Account No 1',
           avatar_url: '',
-          user: {
-            user_id: '@test-2:dsn.tm.kit.edu',
-            displayname: 'DSN Test Account No 1'
-          },
-          displayname: 'DSN Test Account No 1 (@test-2:dsn.tm.kit.edu)',
-          is_self: false,
-          user_type: 'Member'
-        }])
+          user_type: 'Member',
+          is_self: true
+        })
+        await expect(mutation_1_called).toBe(true)
+        await expect(mutation_2_called).toBe(true)
       })
-      it('Test no member events', async () => {
-        await expect(action_parse_member({
+      it('Test Membership = leave', async () => {
+        const member_event: MatrixRoomMemberStateEvent = {
+          type: 'm.room.member',
+          content: {
+            avatar_url: '',
+            displayname: 'DSN Test Account No 1',
+            membership: 'leave'
+          },
+          state_key: '@test-1:dsn.tm.kit.edu',
+          room_id: room_id,
+          sender: user_1.user_id,
+          origin_server_ts: 0,
+          event_id: ''
+        }
+        let mutation_1_called = false
+        let mutation_2_called = false
+        const commit = (type: string, payload: {
+          room_id: MatrixRoomID,
+          user_id?: MatrixUserID,
+          user_info?: RoomUserInfo
+        }) => {
+          if (type === 'mutation_remove_joined_and_left_user_for_room') {
+            mutation_1_called = true
+          } else if (type === 'mutation_add_left_user_for_room') {
+            mutation_2_called = true
+          }
+        }
+        await expect(actions_parse_single_member_event({
           state,
-          commit: jest.fn(),
+          commit: commit,
           rootGetters: rootGetters
         }, {
           room_id: room_id,
-          member_events: [],
-          permission_event: room_01_permission
-        })).resolves.toEqual([])
+          member_event: member_event,
+          recalculate_displayname: false
+        })).resolves.toEqual({
+          user: {
+            user_id: '@test-1:dsn.tm.kit.edu',
+            displayname: 'DSN Test Account No 1 (Left)'
+          },
+          displayname: 'DSN Test Account No 1 (Left)',
+          avatar_url: '',
+          user_type: 'Left',
+          is_self: false
+        })
+        await expect(mutation_1_called).toBe(true)
+        await expect(mutation_2_called).toBe(true)
+      })
+      it('Recalculate Balance is true', async () => {
+        const member_event: MatrixRoomMemberStateEvent = {
+          type: 'm.room.member',
+          content: {
+            avatar_url: '',
+            displayname: 'DSN Test Account No 1',
+            membership: 'leave'
+          },
+          state_key: '@test-1:dsn.tm.kit.edu',
+          room_id: room_id,
+          sender: user_1.user_id,
+          origin_server_ts: 0,
+          event_id: ''
+        }
+        let mutation_recalculate_joined_user_display_name_for_room_called = false
+        const commit = (type: string, payload: {
+          room_id: MatrixRoomID,
+          user_id?: MatrixUserID,
+          user_info?: RoomUserInfo
+        }) => {
+          if (type === 'mutation_recalculate_joined_user_display_name_for_room') {
+            mutation_recalculate_joined_user_display_name_for_room_called = true
+          }
+        }
+        await actions_parse_single_member_event({
+          state,
+          commit: commit,
+          rootGetters: rootGetters
+        }, {
+          room_id: room_id,
+          member_event: member_event,
+          recalculate_displayname: true
+        })
+        await expect(mutation_recalculate_joined_user_display_name_for_room_called).toBe(true)
       })
     })
     describe('Test action_change_user_membership_on_room', function () {
@@ -373,45 +459,20 @@ describe('Test user store', function () {
           action: 'invite'
         })).rejects.toThrow(response.data.error)
       })
-      it('Test 200 response', async () => {
-        const response = {
-          status: 200,
-          data: ''
-        }
-        let dispatch_called = false
-        const dispatch = () => {
-          dispatch_called = true
-        }
-        mockedAxios.post.mockResolvedValue(response)
-        await action_change_memb({
-          dispatch,
-          rootGetters: jest.fn()
-        }, {
-          room_id: room_01_room_id,
-          user_id: user_1.user_id,
-          action: 'invite'
-        })
-        expect(dispatch_called).toEqual(true)
-      })
     })
     describe('Test action_parse_permission_event_for_room', function () {
       const action_parse_permission = store.actions.action_parse_permission_event_for_room as (context: any, payload: any) => Promise<MatrixRoomPermissionConfiguration>
       it('Test permission event is set properly', async () => {
-        const mutation_permission = store.mutations.mutation_set_permission_for_room
+        let commit_called = false
         const commit = (mutation_string: string, payload: {
           room_id: MatrixRoomID,
           permission: MatrixRoomStateEvent
         }) => {
-          if (mutation_string === 'mutation_set_permission_for_room') {
-            mutation_permission(state, {
-              room_id: payload.room_id,
-              permission: payload.permission.content
-            })
-          }
+          commit_called = true
         }
         await action_parse_permission({
           state,
-          commit,
+          commit: commit,
           rootGetters: jest.fn()
         }, {
           room_id: room_id,
@@ -435,7 +496,7 @@ describe('Test user store', function () {
             type: 'm.room.power_levels'
           }
         })
-        expect(state.permissions[room_id]).toEqual(room_01_permission)
+        await expect(commit_called).toBe(true)
       })
     })
   })
