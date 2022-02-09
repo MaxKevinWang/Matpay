@@ -310,4 +310,50 @@ describe('Test for SplitCreateDialog', () => {
     expect(((tx3[0].find(`#split-perc${selectorify(user_3.user_id)}`).element as HTMLInputElement).value === '33') ||
       ((tx3[0].find(`#split-perc${selectorify(user_3.user_id)}`).element as HTMLInputElement).value === '34')).toBeTruthy()
   })
+  it('Test current split', async () => {
+    const current_split : Record<MatrixUserID, number> = {}
+    current_split[user_1.user_id] = 0
+    current_split[user_2.user_id] = 0
+    current_split[user_3.user_id] = 0
+    const wrapper = shallowMount(SplitCreateDialog, {
+      attachTo: 'body',
+      global: {
+        plugins: [store]
+      },
+      props: {
+        current_split: current_split,
+        users_info: [
+          {
+            user: user_1,
+            displayname: user_1.displayname,
+            user_type: 'Admin',
+            is_self: true
+          },
+          {
+            user: user_2,
+            displayname: user_2.displayname,
+            user_type: 'Admin',
+            is_self: true
+          },
+          {
+            user: user_3,
+            displayname: user_3.displayname,
+            user_type: 'Admin',
+            is_self: true
+          }
+        ]
+      }
+    })
+    console.log('Wrapper finished')
+    const tx1 = wrapper.findAll('.input-group').filter(w => w.attributes('data-test') === user_1.user_id)
+    const tx2 = wrapper.findAll('.input-group').filter(w => w.attributes('data-test') === user_2.user_id)
+    const tx3 = wrapper.findAll('.input-group').filter(w => w.attributes('data-test') === user_3.user_id)
+    await wrapper.find(`#split-checkbox${selectorify(user_1.user_id)}`).setValue(true)
+    await wrapper.find(`#split-checkbox${selectorify(user_2.user_id)}`).setValue(true)
+    await wrapper.find(`#split-checkbox${selectorify(user_3.user_id)}`).setValue(true)
+    await flushPromises()
+    expect((tx1[0].find(`#split-perc${selectorify(user_1.user_id)}`).element as HTMLInputElement).value === '0').toBeTruthy()
+    expect((tx2[0].find(`#split-perc${selectorify(user_2.user_id)}`).element as HTMLInputElement).value === '0').toBeTruthy()
+    expect((tx3[0].find(`#split-perc${selectorify(user_3.user_id)}`).element as HTMLInputElement).value === '0').toBeTruthy()
+  })
 })

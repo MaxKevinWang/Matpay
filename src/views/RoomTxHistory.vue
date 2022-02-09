@@ -15,19 +15,34 @@
         Transaction data won't be available before all messages are downloaded.
       </button>
     </div>
-    <div class="row" v-if="this.is_tx_fully_loaded">
+    <div v-if="this.is_tx_fully_loaded">
       <h4 id="history_room_name">History: {{ room_name }}</h4>
-      <div v-if="balance >= 0" id="balance-display-positive">
-        <p>You owe in total: {{ to_currency_display(balance) }}</p>
+      <div class="row">
+        <div v-if="balance >= 0" id="balance-display-positive">
+          <p>You owe in total: {{ to_currency_display(balance) }}</p>
+        </div>
+        <div v-if="balance < 0" id="balance-display-negative">
+          <p>Oweing you in total: {{ to_currency_display(-balance) }} </p>
+        </div>
+        <div class="card mb-3">
+          <div class="card-body">
+            <h5 class="card-title">Search & Filter</h5>
+            <label for="tx-search" class="card-text me-1">Search for transactions: </label>
+            <input type="text" class="me-1" id="tx-search" v-model="filter_string">
+            <div>
+              <input type="checkbox" class="me-1" id="tx-participated-filter" v-model="only_participating">
+              <label for="tx-participated-filter">Only show transactions participating</label>
+            </div>
+          </div>
+        </div>
       </div>
-      <div v-if="balance < 0" id="balance-display-negative">
-        <p>Oweing you in total: {{ to_currency_display(-balance) }} </p>
-      </div>
-      <div class="col-4" v-if="tx_list.length >= 1">
-        <TxList :tx_list="tx_list" @on-click="on_click"/>
-      </div>
-      <div class="col-8" v-if="show_detail === true">
-        <TxDetail :tx="tx" :room_id="room_id" @on-error="on_error"/>
+      <div class="row">
+        <div class="col-4" v-if="tx_list.length >= 1">
+          <TxList :tx_list="tx_list" @on-click="on_click"/>
+        </div>
+        <div class="col-8" v-if="show_detail">
+          <TxDetail :tx="tx" :room_id="room_id" @on-error="on_error"/>
+        </div>
       </div>
     </div>
   </div>
@@ -47,9 +62,11 @@ export default defineComponent({
   data () {
     return {
       room_name: '' as string,
-      tx: {} as GroupedTransaction,
+      tx: null as GroupedTransaction | null,
       show_detail: false as boolean,
       is_tx_fully_loaded: false,
+      filter_string: '' as string,
+      only_participating: false as boolean,
       error: '' as string
     }
   },
@@ -72,7 +89,18 @@ export default defineComponent({
     },
     tx_list () : Array<GroupedTransaction> {
       if (this.room_id && this.is_tx_fully_loaded) {
-        return this.get_grouped_transactions_for_room(this.room_id)
+        let result : Array<GroupedTransaction> = this.get_grouped_transactions_for_room(this.room_id)
+        if (this.only_participating) {
+          result = result.filter(
+            t => t.from.user_id === this.user_id ||
+              t.txs.map(txs => txs.to.user_id).includes(this.user_id)
+          )
+        }
+        if (this.filter_string.length > 0) {
+          // case-insensitive comparison
+          result = result.filter(t => t.description.toLowerCase().includes(this.filter_string.toLowerCase()))
+        }
+        return result
       } else {
         return []
       }
@@ -89,7 +117,8 @@ export default defineComponent({
       'action_sync_full_tx_events_for_room'
     ]),
     on_click (tx: GroupedTransaction) {
-      if (JSON.stringify(this.tx) === JSON.stringify(tx) && this.show_detail) {
+      if (this.tx?.group_id === tx.group_id && this.show_detail) {
+        this.tx = null
         this.show_detail = false
       } else {
         this.tx = tx
@@ -129,6 +158,20 @@ export default defineComponent({
             this.show_detail = true
           }
         }
+      },
+      immediate: true
+    },
+    only_participating: {
+      handler () {
+        this.tx = null
+        this.show_detail = false
+      },
+      immediate: true
+    },
+    filter_string: {
+      handler () {
+        this.tx = null
+        this.show_detail = false
       },
       immediate: true
     }

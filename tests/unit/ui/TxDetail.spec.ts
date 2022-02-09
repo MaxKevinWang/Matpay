@@ -2,7 +2,7 @@ import { newStore } from '@/store/index'
 import { config, flushPromises, mount, shallowMount } from '@vue/test-utils'
 import TxDetail from '@/components/TxDetail.vue'
 import { user_1, user_2, user_3 } from '../mocks/mocked_user'
-import { split_percentage, sum_amount, to_currency_display, uuidgen } from '@/utils/utils'
+import { selectorify, split_percentage, sum_amount, to_currency_display, uuidgen } from '@/utils/utils'
 import ModificationDialog from '@/dialogs/ModificationDialog.vue'
 import bootstrap from 'bootstrap'
 import { createStore } from 'vuex'
@@ -68,8 +68,8 @@ describe('Test TxDetail Component', () => {
           }
         }
       })
-      expect(wrapper.find('h3').element.innerHTML.includes('Details')).toBeTruthy()
-      expect(wrapper.find('#TXDetail-body').element.innerHTML.includes('Title: 100€ from DSN Test Account No 1 at 2022/1/15')).toBeTruthy()
+      await flushPromises()
+      await expect(wrapper.find('#TXDetail-header').classes('modal-open')).toBe(false)
       expect(wrapper.findAll('[data-test="todo"]')).toHaveLength(1)
     })
     it('Test if the user can click on modification button when he is participant', async () => {

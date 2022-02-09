@@ -54,8 +54,8 @@ describe('Test Txlist Component', () => {
     const tx1 = wrapper.findAll('.list-tab').filter(w => w.attributes('data-test') === fake_group_id1)
     const tx2 = wrapper.findAll('.list-tab').filter(w => w.attributes('data-test') === fake_group_id2)
     expect(wrapper.findAll('.list-tab')).toHaveLength(2)
-    expect(tx1[0].element.innerHTML.includes('2022/1/15 Title: DSN Test Account No 1 paid 0€')).toBeTruthy()
-    expect(tx2[0].element.innerHTML.includes('2022/1/15 Title: DSN Test Account No 2 paid 0€')).toBeTruthy()
+    expect(tx1[0].element.innerHTML.includes('1/15/2022 Title: DSN Test Account No 1 paid 0€')).toBeTruthy()
+    expect(tx2[0].element.innerHTML.includes('1/15/2022 Title: DSN Test Account No 2 paid 0€')).toBeTruthy()
   })
   it('Test emit', () => {
     const fake_group_id1 = uuidgen()
