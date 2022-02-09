@@ -338,6 +338,17 @@ export const tx_store = {
       if (response.status !== 200) {
         throw new Error((response.data as unknown as MatrixError).error)
       }
+      // Approve immediately by the user him/herself
+      const approve_event = {
+        event_id: response.data.event_id
+      }
+      const response_approve = await axios.put<PUTRoomEventSendResponse>(`${homeserver}/_matrix/client/r0/rooms/${room_id}/send/com.matpay.approve/${uuidgen()}`,
+        approve_event,
+        { validateStatus: () => true }
+      )
+      if (response_approve.status !== 200) {
+        throw new Error((response.data as unknown as MatrixError).error)
+      }
     },
     async action_approve_tx_for_room ({
       state,
