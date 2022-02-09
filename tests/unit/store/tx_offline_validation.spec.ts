@@ -10,8 +10,7 @@ interface State {
     basic: GroupedTransaction[],
     pending_approvals: PendingApproval[],
     graph: TxGraph
-    optimized_graph: TxGraph,
-    rejected: Record<MatrixEventID, Set<MatrixUserID>>,
+    optimized_graph: TxGraph
   }>
 }
 
@@ -29,8 +28,7 @@ describe('Test tx store validation actions', () => {
           },
           optimized_graph: {
             graph: {}
-          },
-          rejected: {}
+          }
         }
       }
     }
@@ -52,8 +50,7 @@ describe('Test tx store validation actions', () => {
             },
             optimized_graph: {
               graph: {}
-            },
-            rejected: {}
+            }
           }
         }
       }
@@ -942,6 +939,7 @@ describe('Test tx store validation actions', () => {
           tx_event: event
         })).resolves.toEqual(false)
       })
+      /*
       it('Test event ID in the rejected', async () => {
         const getters = {
           get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
@@ -982,6 +980,7 @@ describe('Test tx store validation actions', () => {
           tx_event: event
         })).resolves.toEqual(false)
       })
+       */
       it('One user approves twice', async () => {
         const getters = {
           get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),

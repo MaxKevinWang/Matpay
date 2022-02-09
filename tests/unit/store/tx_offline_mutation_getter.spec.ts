@@ -31,8 +31,7 @@ interface State {
     basic: GroupedTransaction[],
     pending_approvals: PendingApproval[],
     graph: TxGraph
-    optimized_graph: TxGraph,
-    rejected: Record<MatrixEventID, Set<MatrixUserID>>,
+    optimized_graph: TxGraph
   }>
 }
 
@@ -48,8 +47,7 @@ describe('Test transaction Vuex store offline', () => {
           },
           optimized_graph: {
             graph: {}
-          },
-          rejected: {}
+          }
         }
       }
     }
@@ -64,8 +62,7 @@ describe('Test transaction Vuex store offline', () => {
             },
             optimized_graph: {
               graph: {}
-            },
-            rejected: {}
+            }
           }
         }
       }
@@ -77,13 +74,6 @@ describe('Test transaction Vuex store offline', () => {
       expect(state.transactions.aaa.basic).toEqual([])
       expect(state.transactions.aaa.pending_approvals).toEqual([])
       expect(state.transactions.aaa.graph.graph).toEqual({})
-      expect(state.transactions.aaa.rejected).toEqual({})
-    })
-    it('Test mutation_add_rejected_events_for_room', function () {
-      const mutation = store.mutations.mutation_add_rejected_events_for_room
-      const fake_rejected_events = [['ep01', user_1.user_id], ['ep01', user_2.user_id]]
-      mutation(state, { room_id: 'aaa', rejected_events: fake_rejected_events })
-      expect(state.transactions.aaa.rejected.ep01).toEqual(new Set([user_1.user_id, user_2.user_id]))
     })
     it('Test mutation_reset_state', function () {
       const mutation = store.mutations.mutation_reset_state
@@ -604,8 +594,7 @@ describe('Test transaction Vuex store offline', () => {
           },
           optimized_graph: {
             graph: {}
-          },
-          rejected: {}
+          }
         }
       }
     }
@@ -620,8 +609,7 @@ describe('Test transaction Vuex store offline', () => {
             },
             optimized_graph: {
               graph: {}
-            },
-            rejected: {}
+            }
           }
         }
       }

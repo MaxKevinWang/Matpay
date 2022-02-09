@@ -21,8 +21,7 @@ interface State {
     basic: GroupedTransaction[],
     pending_approvals: PendingApproval[],
     graph: TxGraph
-    optimized_graph: TxGraph,
-    rejected: Record<MatrixEventID, Set<MatrixUserID>>,
+    optimized_graph: TxGraph
   }>
 }
 
@@ -44,24 +43,12 @@ export const tx_store = {
           },
           optimized_graph: {
             graph: {}
-          },
-          rejected: {}
+          }
         }
       }
     },
     mutation_remove_joined_room (state: State, payload: MatrixRoomID) {
       delete state.transactions[payload]
-    },
-    mutation_add_rejected_events_for_room (state: State, payload: {
-      room_id: MatrixRoomID
-      rejected_events: Array<[MatrixEventID, MatrixUserID]>
-    }) {
-      for (const rejected_tuple of payload.rejected_events) {
-        if (!state.transactions[payload.room_id].rejected[rejected_tuple[0]]) {
-          state.transactions[payload.room_id].rejected[rejected_tuple[0]] = new Set()
-        }
-        state.transactions[payload.room_id].rejected[rejected_tuple[0]].add(rejected_tuple[1])
-      }
     },
     mutation_add_approved_grouped_transaction_for_room (state: State, payload: {
       room_id: MatrixRoomID,
@@ -522,12 +509,6 @@ export const tx_store = {
     }): Promise<boolean> {
       const room_id = payload.room_id
       const tx_event = payload.tx_event
-      // check if rejected
-      // note: this implementation currently does not check if the user can reject it
-      // that is, this allows a user to reject a tx he/she is not participating
-      if (Object.keys(state.transactions[room_id].rejected).includes(tx_event.event_id)) {
-        return false
-      }
       // parse based on event types
       switch (tx_event.type) {
         case 'com.matpay.create': {
