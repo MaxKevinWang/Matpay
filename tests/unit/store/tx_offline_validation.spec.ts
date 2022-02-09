@@ -39,6 +39,11 @@ describe('Test tx store validation actions', () => {
         if (r === room_id) {
           return room_01_user_info
         }
+      },
+      'user/get_all_users_info_for_room': (r: MatrixRoomID) => {
+        if (r === room_id) {
+          return room_01_user_info
+        }
       }
     }
     beforeEach(() => {

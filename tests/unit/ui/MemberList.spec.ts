@@ -375,5 +375,103 @@ describe('Test MemberList Component', () => {
       // expect((wrapper.emitted()['on-error'][0] as Array<Error>)[0]).toEqual(Error('Error, something is fucked'))
       await expect(wrapper.find('#confirm-modal').element.innerHTML.includes('want to kick user?')).toEqual(true)
     })
+    it('Test the on_ban + confirm dialog', async () => {
+      const store = createStore({
+        modules: {
+          rooms: {
+            namespaced: true,
+            getters: {
+            }
+          },
+          auth: {
+            namespaced: true,
+            getters: {
+              is_logged_in: () => true,
+              user_id: () => user_1.user_id,
+              homeserver: jest.fn()
+            }
+          },
+          user: {
+            namespaced: true,
+            getters: {
+              get_permissions_for_room: () => (room_id: MatrixRoomID) => {
+                return cloneDeep(room_03_permission)
+              }
+            }
+          },
+          tx: {
+            namespaced: true,
+            getters: {
+              get_open_balance_against_user_for_room: () => () => 10
+            }
+          }
+        }
+      })
+      const wrapper = mount(MemberList, {
+        attachTo: document.querySelector('html') as HTMLElement,
+        global: {
+          plugins: [store]
+        },
+        props: {
+          room_id: 'fake_room_id',
+          can_i_kick_user: true,
+          users_info: room_04_user_info
+        }
+      })
+      await (wrapper.find('#usercard_' + selectorify(user_2.user_id)).find('#banButton')).trigger('click')
+      await flushPromises()
+      // expect(wrapper.emitted()).toHaveProperty('on-kick')
+      // expect((wrapper.emitted()['on-error'][0] as Array<Error>)[0]).toEqual(Error('Error, something is fucked'))
+      await expect(wrapper.find('#confirm-modal').element.innerHTML.includes('you want to ban user?')).toEqual(true)
+    })
+  })
+  it('Test the on_leave + confirm dialog', async () => {
+    const store = createStore({
+      modules: {
+        rooms: {
+          namespaced: true,
+          getters: {
+          }
+        },
+        auth: {
+          namespaced: true,
+          getters: {
+            is_logged_in: () => true,
+            user_id: () => user_1.user_id,
+            homeserver: jest.fn()
+          }
+        },
+        user: {
+          namespaced: true,
+          getters: {
+            get_permissions_for_room: () => (room_id: MatrixRoomID) => {
+              return cloneDeep(room_03_permission)
+            }
+          }
+        },
+        tx: {
+          namespaced: true,
+          getters: {
+            get_open_balance_against_user_for_room: () => () => 10
+          }
+        }
+      }
+    })
+    const wrapper = mount(MemberList, {
+      attachTo: document.querySelector('html') as HTMLElement,
+      global: {
+        plugins: [store]
+      },
+      props: {
+        room_id: 'fake_room_id',
+        can_i_kick_user: true,
+        users_info: room_04_user_info
+      }
+    })
+    await (wrapper.find('#usercard_' + selectorify(user_1.user_id)).find('#leaveButton')).trigger('click')
+    await flushPromises()
+    // expect(wrapper.emitted()).toHaveProperty('on-kick')
+    // expect((wrapper.emitted()['on-error'][0] as Array<Error>)[0]).toEqual(Error('Error, something is fucked'))
+    await expect(wrapper.find('#confirm-modal').element.innerHTML.includes('you want to leave room?')).toEqual(true)
   })
 })

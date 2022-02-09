@@ -18,11 +18,11 @@
         </div>
         <div v-if="!this.is_self && not_left">
           <button class="btn btn-danger btn-sm me-1" id="kickButton" v-if="can_i_kick_user" @click="on_permission_click('kick')">Kick</button>
-          <button class="btn btn-danger btn-sm me-1" v-if="can_i_kick_user" @click="on_permission_click('ban')">Ban</button>
+          <button class="btn btn-danger btn-sm me-1" id="banButton" v-if="can_i_kick_user" @click="on_permission_click('ban')">Ban</button>
           <button class="btn btn-primary btn-sm" @click="on_settle_click()" id="settle-button">Settle</button>
         </div>
         <div v-if="this.is_self">
-          <button class="btn btn-danger btn-sm me-1" @click="on_leave_click">Leave Room</button>
+          <button class="btn btn-danger btn-sm me-1" id="leaveButton" @click="on_leave_click">Leave Room</button>
         </div>
       </div>
     </div>
