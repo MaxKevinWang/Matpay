@@ -118,7 +118,7 @@ export default defineComponent({
         return
       }
       this.$refs.invite_dialog.show()
-    }, // huh
+    },
     on_kick (user_id: string) {
       this.current_operation = 'kick'
       this.current_operation_user_id = user_id
