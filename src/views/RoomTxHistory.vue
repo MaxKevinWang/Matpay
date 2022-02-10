@@ -27,8 +27,8 @@
         <div class="card mb-3">
           <div class="card-body">
             <h5 class="card-title">Search & Filter</h5>
-            <label for="tx-search" class="card-text me-1">Search for transactions: </label>
-            <input type="text" class="me-1" id="tx-search" v-model="filter_string">
+            <label for="tx-search" class="card-text me-1">Search transactions: </label>
+            <input type="text" placeholder="Search for description" class="me-1" id="tx-search" v-model="filter_string">
             <div>
               <input type="checkbox" class="me-1" id="tx-participated-filter" v-model="only_participating">
               <label for="tx-participated-filter">Only show transactions participating</label>
