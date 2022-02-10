@@ -32,7 +32,7 @@ describe('Test TxApprovedMessageBox Interface', () => {
       pending_approvals: []
     }
   }
-  xit('Test correct display', async () => {
+  it('Test correct display', async () => {
     const wrapper = shallowMount(TxApprovedMessageBox, {
       props: {
         reference: reference

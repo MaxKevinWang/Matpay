@@ -60,7 +60,7 @@ describe('Test Room Detail View', () => {
       component: RoomDetail
     }]
   })
-  xit('', async () => {
+  it('', async () => {
     await router.push({
       name: 'room_detail',
       params: {

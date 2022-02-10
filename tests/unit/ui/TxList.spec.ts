@@ -17,7 +17,7 @@ describe('Test Txlist Component', () => {
       to_currency_display: to_currency_display
     }
   })
-  xit('Test if the component shows information correctly', () => {
+  it('Test if the component shows information correctly', () => {
     const fake_group_id1 = uuidgen()
     const fake_group_id2 = uuidgen()
     const group_tx1: GroupedTransaction = {

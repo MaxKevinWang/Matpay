@@ -256,7 +256,7 @@ describe('Test tx store validation actions', () => {
           tx_event: event
         })).resolves.toEqual(false)
       })
-      xit('Test to field contains repeating user', async () => {
+      it('Test to field contains repeating user', async () => {
         const getters = {
           get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
           get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
@@ -298,7 +298,7 @@ describe('Test tx store validation actions', () => {
           tx_event: event
         })).resolves.toEqual(false)
       })
-      xit('Transaction does not contain the sender', async () => {
+      it('Transaction does not contain the sender', async () => {
         const getters = {
           get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
           get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
@@ -388,7 +388,7 @@ describe('Test tx store validation actions', () => {
           tx_event: event
         })).resolves.toEqual(false)
       })
-      xit('Test participants not in this room', async () => {
+      it('Test participants not in this room', async () => {
         const getters = {
           get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
           get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
@@ -1023,7 +1023,7 @@ describe('Test tx store validation actions', () => {
         })).resolves.toEqual(false)
       })
     })
-    xdescribe('Test parse settle event', () => {
+    describe('Test parse settle event', () => {
       it('User with given user_id is not in the room', async () => {
         const getters = {
           get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),

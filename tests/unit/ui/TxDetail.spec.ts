@@ -44,7 +44,7 @@ describe('Test TxDetail Component', () => {
       expect(wrapper.find('#TXDetail-body').exists()).toBe(false)
       expect(wrapper.find('#ModificationButton-body').exists()).toBe(false)
     })
-    xit('Test if the component render when the tx is defined', async () => {
+    it('Test if the component render when the tx is defined', async () => {
       const wrapper = shallowMount(TxDetail, {
         global: {
           plugins: [store]

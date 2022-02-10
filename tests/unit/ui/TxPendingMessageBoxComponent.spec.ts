@@ -42,7 +42,7 @@ describe('Test TxApprovedMessageBox Interface', () => {
       ]
     }
   }
-  xit('Test contains all attributes', async () => {
+  it('Test contains all attributes', async () => {
     const wrapper = shallowMount(TxPendingMessageBox, {
       props: {
         reference: reference

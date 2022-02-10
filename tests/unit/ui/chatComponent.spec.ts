@@ -346,7 +346,7 @@ describe('Test chatComponent', () => {
       await wrapper.find('#sendButton').trigger('click')
       expect(if_send).toEqual(true)
     })
-    xit('Test (assume the sending always fails)', async () => {
+    it('Test (assume the sending always fails)', async () => {
       const room_id = 'aaa'
       const $route = {
         fullPath: 'full/path'
