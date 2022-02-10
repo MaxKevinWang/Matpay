@@ -68,6 +68,19 @@ export const room_01_user_info: Array<RoomUserInfo> = [{
   is_self: false,
   user_type: 'Member'
 }]
+export const room_04_user_info: Array<RoomUserInfo> = [{
+  user: user_1,
+  displayname: 'DSN Test Account No 1',
+  avatar_url: '',
+  is_self: true,
+  user_type: 'Admin'
+}, {
+  user: user_2,
+  avatar_url: '',
+  displayname: 'DSN Test Account No 2',
+  is_self: false,
+  user_type: 'Member'
+}]
 export const room_01_left_user_info: Array<RoomUserInfo> = [{
   user: user_aaa,
   displayname: 'DSN Test Account No aaa',
@@ -83,7 +96,35 @@ export const room_01_permission: MatrixRoomPermissionConfiguration = {
   redact: 50,
   state_default: 50,
   users_default: 50,
-  users: {}
+  users: {
+    '@test-1:dsn.tm.kit.edu': 30
+  }
+}
+export const room_02_permission: MatrixRoomPermissionConfiguration = {
+  ban: 50,
+  events: {},
+  events_default: 50,
+  invite: 100,
+  kick: 100,
+  redact: 50,
+  state_default: 50,
+  users_default: 50,
+  users: {
+  }
+}
+
+export const room_03_permission: MatrixRoomPermissionConfiguration = {
+  ban: 50,
+  events: {},
+  events_default: 50,
+  invite: 100,
+  kick: 100,
+  redact: 50,
+  state_default: 50,
+  users_default: 50,
+  users: {
+    '@test-1:dsn.tm.kit.edu': 101
+  }
 }
 
 export const room_02_user_info: Array<RoomUserInfo> = [{
@@ -102,5 +143,12 @@ export const room_02_user_info: Array<RoomUserInfo> = [{
   avatar_url: '',
   displayname: 'DSN Test Account No 2',
   is_self: false,
+  user_type: 'Member'
+}]
+export const room_03_user_info: Array<RoomUserInfo> = [{
+  user: user_a,
+  displayname: 'DSN Test Account No 1',
+  avatar_url: '',
+  is_self: true,
   user_type: 'Member'
 }]

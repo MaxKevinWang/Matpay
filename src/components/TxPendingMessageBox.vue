@@ -50,6 +50,9 @@ export default defineComponent({
       timestamp: {} as Date
     }
   },
+  emits: [
+    'on-error'
+  ],
   computed: {
     ...mapGetters('tx', [
       'get_grouped_transactions_for_room'
@@ -72,7 +75,7 @@ export default defineComponent({
           approval: approval
         })
       } catch (e) {
-        console.log(e)
+        this.$emit('on-error', e)
       }
       this.$refs.approve_dialog.hide()
     }

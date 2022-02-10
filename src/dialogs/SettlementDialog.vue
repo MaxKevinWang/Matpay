@@ -1,11 +1,11 @@
 <template>
-  <div class="modal fade" :id="'settlement-modal_' + this.user_clicked.user.user_id" tabindex="-1"
+  <div class="modal fade" :id="'settlement-modal_' + selectorify(this.user_clicked.user.user_id)" tabindex="-1"
        aria-labelledby="settlement-label" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="settlement-label">Settlement with {{ user_clicked.displayname }}</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="hide-settle-button"></button>
         </div>
         <div class="modal-body">
           <div v-if="balance >= 0">
@@ -19,7 +19,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="settle_close">Close</button>
           <button type="button" class="btn btn-primary" :disabled="balance >= 0" @click="on_settle_click" id="settle-button">Settle</button>
         </div>
       </div>
@@ -33,6 +33,7 @@ import { defineComponent, PropType } from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 import { Modal, Popover } from 'bootstrap'
 import { RoomUserInfo, User } from '@/models/user.model'
+import { selectorify } from '@/utils/utils'
 
 export default defineComponent({
   name: 'SettlementDialog',
@@ -75,10 +76,12 @@ export default defineComponent({
     }
   },
   mounted () {
-    const id = 'settlement-modal_' + this.user_clicked?.user.user_id
-    this.modal_control = new Modal(document.getElementById(id) as HTMLElement, {
-      backdrop: false
-    })
+    if (this.user_clicked) {
+      const id = 'settlement-modal_' + selectorify(this.user_clicked.user.user_id)
+      this.modal_control = new Modal(document.getElementById(id) as HTMLElement, {
+        backdrop: false
+      })
+    }
   }
 })
 </script>

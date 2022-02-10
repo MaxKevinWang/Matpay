@@ -10,7 +10,7 @@
                   @on-error="on_error"/>
       </li>
       <li class="row">
-        <button class="btn btn-primary" @click="on_invite_user_clicked()">Invite user</button>
+        <button class="btn btn-primary" id="inviteButton" @click="on_invite_user_clicked()">Invite user</button>
       </li>
     </ul>
     <UserInviteDialog ref="invite_dialog" :room_id="room_id"/>

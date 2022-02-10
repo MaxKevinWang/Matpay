@@ -1,5 +1,5 @@
 <template>
-  <div class="card text-center" v-if="tx !== undefined">
+  <div class="card text-center" v-if="!!tx">
     <div class="card-header" id="TXDetail-header">
       <h3>Details</h3>
     </div>

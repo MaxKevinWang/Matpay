@@ -211,8 +211,8 @@ describe('Test chatComponent', () => {
           users_info: [mocked_user_info1]
         }
       })
-      expect(wrapper.findAllComponents({ name: 'ChatMessageBox' })[0].element.innerHTML.includes('Hello,Peter'))
-      expect(wrapper.findAllComponents({ name: 'ChatMessageBox' })[1].element.innerHTML.includes('Hello,Allen'))
+      expect(wrapper.findAllComponents({ name: 'ChatMessageBox' })[0].element.innerHTML.includes('Hello,Peter')).toBe(true)
+      expect(wrapper.findAllComponents({ name: 'ChatMessageBox' })[1].element.innerHTML.includes('Hello,Allen')).toBe(true)
     })
     it('Test if the transactions show correctly', async () => {
       const room_id = 'aaa'
@@ -279,10 +279,10 @@ describe('Test chatComponent', () => {
           users_info: [mocked_user_info1]
         }
       })
-      expect(wrapper.findAllComponents({ name: 'TxApprovedMessageBox' })[0].element.innerHTML.includes('Hello transaction'))
-      expect(wrapper.findAllComponents({ name: 'TxApprovedMessageBox' })[0].element.innerHTML.includes(fake_group_id1))
-      expect(wrapper.findAllComponents({ name: 'TxApprovedMessageBox' })[0].element.innerHTML.includes('1/15/2022'))
-      expect(wrapper.findAllComponents({ name: 'TxApprovedMessageBox' })[0].element.innerHTML.includes(user_1.displayname))
+      expect(wrapper.findAllComponents({ name: 'TxApprovedMessageBox' })[0].element.innerHTML.includes('Hello transaction')).toBe(true)
+      expect(wrapper.findAllComponents({ name: 'TxApprovedMessageBox' })[0].element.innerHTML.includes(fake_group_id1)).toBe(true)
+      expect(wrapper.findAllComponents({ name: 'TxApprovedMessageBox' })[0].element.innerHTML.includes('1/15/2022')).toBe(true)
+      expect(wrapper.findAllComponents({ name: 'TxApprovedMessageBox' })[0].element.innerHTML.includes(user_1.displayname)).toBe(true)
     })
     it('Test if the user can send messages when he types in correct messages', async () => {
       const room_id = 'aaa'

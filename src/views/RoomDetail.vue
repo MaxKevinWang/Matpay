@@ -23,7 +23,7 @@
           Load previous chat messages
         </button>
         </div>
-        <ChatComponent :users_info="users_info"/>
+        <ChatComponent :users_info="users_info" @on-error="on_error"/>
       </div>
     </div>
   </div>

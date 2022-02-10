@@ -83,8 +83,7 @@ describe('Test TxApprovedMessageBox Interface', () => {
     await wrapper.find('#Approve').trigger('click')
     expect(action_called).toBe(true)
   })
-  // Test works. It throws an error but can´t bother reading the console.
-  xit('Test action throws', async () => {
+  it('Test action throws', async () => {
     const store = createStore({
       modules: {
         tx: {
@@ -112,6 +111,9 @@ describe('Test TxApprovedMessageBox Interface', () => {
     })
     await flushPromises()
     await wrapper.find('#Approve').trigger('click')
+    await flushPromises()
+    expect(wrapper.emitted()).toHaveProperty('on-error')
+    expect((wrapper.emitted()['on-error'][0] as Array<Error>)[0]).toEqual(Error('Action failed'))
   })
   describe('Test ApprovalDialog', () => {
     const store_2 = createStore({
@@ -135,8 +137,8 @@ describe('Test TxApprovedMessageBox Interface', () => {
           plugins: [store_2]
         }
       })
-      expect(wrapper.find('#split-percentage *').findAll('p').filter(i => i.element.innerHTML.includes('45%')))
-      expect(wrapper.find('#split-percentage *').findAll('p').filter(i => i.element.innerHTML.includes('54%')))
+      expect(wrapper.findAll('p').filter(i => i.element.innerHTML.includes('45.45%')).length).toBe(1)
+      expect(wrapper.findAll('p').filter(i => i.element.innerHTML.includes('54.55%')).length).toBe(1)
     })
     it('Test user must see the transaction details', async () => {
       const wrapper = shallowMount(ApprovalDialog, {
@@ -149,8 +151,8 @@ describe('Test TxApprovedMessageBox Interface', () => {
           plugins: [store_2]
         }
       })
-      expect(wrapper.find('#detailed-tx *').findAll('p').filter(i => i.element.innerHTML.includes(user_2.displayname + ' owe ' + 15)))
-      expect(wrapper.find('#detailed-tx *').findAll('p').filter(i => i.element.innerHTML.includes(user_3.displayname + ' owe ' + 12.50)))
+      expect(wrapper.findAll('p').filter(i => i.element.innerHTML.includes(user_2.displayname + ' owe 15.00€')).length).toBe(1)
+      expect(wrapper.findAll('p').filter(i => i.element.innerHTML.includes(user_3.displayname + ' owe 12.50€')).length).toBe(1)
     })
   })
 })

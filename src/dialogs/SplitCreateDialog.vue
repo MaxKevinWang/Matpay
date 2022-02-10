@@ -126,7 +126,8 @@ export default defineComponent({
       if (this.selected_members.length >= 1) {
         const ones = new Array(this.selected_members.length).fill(1)
         const dinero_allocate = Dinero({ amount: 100 }).allocate(ones)
-        for (const [index, selected] of this.selected_members.entries()) {
+        for (let index = 0; index < this.selected_members.length; index++) {
+          const selected = this.selected_members[index]
           this.selected_members_split[selected] = dinero_allocate[index].getAmount().toString()
         }
       }
