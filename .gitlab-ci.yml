@@ -65,7 +65,7 @@ test-e2e:
         - main
         - testing
     script:
-        - npm run test:e2e
+        - npm run test:e2e:ci
     artifacts:
         paths:
             - cypress-coverage/
