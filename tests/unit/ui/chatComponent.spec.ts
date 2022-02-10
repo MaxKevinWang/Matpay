@@ -153,7 +153,6 @@ describe('Test chatComponent', () => {
     })
     // fuck
     it('Test if the chat_dialog show correctly', async () => {
-      const room_id = 'aaa'
       const $route = {
         fullPath: 'full/path'
       }
@@ -174,7 +173,7 @@ describe('Test chatComponent', () => {
             namespaced: true,
             getters: {
               is_logged_in: () => true,
-              user_id: jest.fn(),
+              user_id: () => user_1.user_id,
               homeserver: jest.fn(),
               auth_id: () => 'fdsfsd'
             }
@@ -182,7 +181,7 @@ describe('Test chatComponent', () => {
           chat: {
             namespaced: true,
             getters: {
-              get_chat_log_for_room: (room_id) => () => mock_chatlog
+              get_chat_log_for_room: (room_01_room_id) => () => mock_chatlog
             }
           },
           rooms: {
@@ -208,11 +207,13 @@ describe('Test chatComponent', () => {
           }
         },
         props: {
-          users_info: [mocked_user_info1]
+          users_info: [mocked_user_info1],
+          room_id: room_01_room_id,
+          chat_message: mock_chat_message
         }
       })
-      expect(wrapper.findAllComponents({ name: 'ChatMessageBox' })[0].element.innerHTML.includes('Hello,Peter')).toBe(true)
-      expect(wrapper.findAllComponents({ name: 'ChatMessageBox' })[1].element.innerHTML.includes('Hello,Allen')).toBe(true)
+      expect(wrapper.findAllComponents({ name: 'ChatMessageBox' })[1].element.innerHTML.includes('Hello,Peter')).toBe(true)
+      expect(wrapper.findAllComponents({ name: 'ChatMessageBox' })[0].element.innerHTML.includes('Hello,Allen')).toBe(true)
     })
     it('Test if the transactions show correctly', async () => {
       const room_id = 'aaa'
@@ -276,11 +277,12 @@ describe('Test chatComponent', () => {
           }
         },
         props: {
-          users_info: [mocked_user_info1]
+          users_info: [mocked_user_info1],
+          reference: mock_approved_message,
+          room_id: room_01_room_id
         }
       })
       expect(wrapper.findAllComponents({ name: 'TxApprovedMessageBox' })[0].element.innerHTML.includes('Hello transaction')).toBe(true)
-      expect(wrapper.findAllComponents({ name: 'TxApprovedMessageBox' })[0].element.innerHTML.includes(fake_group_id1)).toBe(true)
       expect(wrapper.findAllComponents({ name: 'TxApprovedMessageBox' })[0].element.innerHTML.includes('1/15/2022')).toBe(true)
       expect(wrapper.findAllComponents({ name: 'TxApprovedMessageBox' })[0].element.innerHTML.includes(user_1.displayname)).toBe(true)
     })

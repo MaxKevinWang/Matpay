@@ -317,29 +317,35 @@ export const rooms_store = {
         result.push({
           room_id: room.room_id,
           room_id_display: room.room_id.split(':')[0].substring(1),
-          name: '',
+          name: '<NO NAME>',
           member_count: 0,
-          user_type: ''
+          user_type: 'User'
         })
-        const current_room = result.filter(i => i.room_id === room.room_id)[0]
-        // get room name: state event 'm.room.name'
-        const name_event: MatrixRoomStateEvent = getters.get_name_event_for_room(current_room.room_id)
-        current_room.name = name_event ? name_event.content.name as string : '<NO NAME>'
-        // count room members: state event 'm.room.member' AND content.membership === join
-        const member_join_event: MatrixRoomMemberStateEvent[] = room.state_events.filter(
-          event => event.type === 'm.room.member' && event.content.membership as string === 'join'
-        ) as MatrixRoomMemberStateEvent[]
-        current_room.member_count = member_join_event.length
-        // determine user type: if the user can send state events then treat him as admin.
-        const power_level_event: MatrixRoomStateEvent = getters.get_permission_event_for_room(current_room.room_id)
-        const power_level = (power_level_event.content.users as Record<string, number>)[rootGetters['auth/user_id']]
-        if (power_level >= 100) {
-          current_room.user_type = 'Admin'
-        } else if (power_level >= 50) {
-          current_room.user_type = 'Moderator'
-        } else {
-          current_room.user_type = 'User'
-        }
+        try {
+          const current_room = result.filter(i => i.room_id === room.room_id)[0]
+          // get room name: state event 'm.room.name'
+          const name_event: MatrixRoomStateEvent = getters.get_name_event_for_room(current_room.room_id)
+          current_room.name = name_event ? name_event.content.name as string : '<NO NAME>'
+          // count room members: state event 'm.room.member' AND content.membership === join
+          const member_join_event: MatrixRoomMemberStateEvent[] = room.state_events.filter(
+            event => event.type === 'm.room.member' && event.content.membership as string === 'join'
+          ) as MatrixRoomMemberStateEvent[]
+          current_room.member_count = member_join_event.length
+          // determine user type: if the user can send state events then treat him as admin.
+          const power_level_event: MatrixRoomStateEvent | undefined = getters.get_permission_event_for_room(current_room.room_id)
+          if (power_level_event && power_level_event.content) {
+            const power_level = (power_level_event.content.users as Record<string, number>)[rootGetters['auth/user_id']]
+            if (power_level >= 100) {
+              current_room.user_type = 'Admin'
+            } else if (power_level >= 50) {
+              current_room.user_type = 'Moderator'
+            } else {
+              current_room.user_type = 'User'
+            }
+          } else {
+            current_room.user_type = 'User'
+          }
+        } catch (e) {}
       }
       return result
     },
@@ -351,7 +357,7 @@ export const rooms_store = {
       const events = rooms[0].state_events
       return events.filter(event => event.type === 'm.room.member') as MatrixRoomMemberStateEvent[]
     },
-    get_permission_event_for_room: (state: State) => (room_id: MatrixRoomID): MatrixRoomStateEvent => {
+    get_permission_event_for_room: (state: State) => (room_id: MatrixRoomID): MatrixRoomStateEvent | undefined => {
       const rooms = state.joined_rooms.filter(r => r.room_id === room_id)
       if (rooms.length !== 1) {
         throw new Error('Room does not exist!')

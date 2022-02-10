@@ -7,6 +7,7 @@
     "build": "vue-cli-service build",
     "test:unit": "vue-cli-service test:unit",
     "test:e2e": "vue-cli-service test:e2e --mode cypress",
+    "test:e2e:ci": "vue-cli-service test:e2e --mode cypress-ci --headless",
     "lint": "vue-cli-service lint",
     "mkdir:reports": "mkdir reports || true",
     "precopy:reports": "npm run mkdir:reports",
