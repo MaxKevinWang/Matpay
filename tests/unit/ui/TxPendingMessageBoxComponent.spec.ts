@@ -48,7 +48,7 @@ describe('Test TxApprovedMessageBox Interface', () => {
         reference: reference
       }
     })
-    await expect(wrapper.findAll('p').filter(i => i.element.innerHTML.includes('15.1.2022')).length).toBe(1)
+    await expect(wrapper.findAll('p').filter(i => i.element.innerHTML.includes('1/15/2022')).length).toBe(1)
     await expect(wrapper.findAll('p').filter(i => i.element.innerHTML.includes('Schnitzel')).length).toBe(1)
     await expect(wrapper.findAll('p').filter(i => i.element.innerHTML.includes(user_1.displayname + ' paid 27.50€')).length).toBe(1)
   })
