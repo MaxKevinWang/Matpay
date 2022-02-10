@@ -23,7 +23,7 @@ describe('Test Rooms Tab', () => {
             }
           },
           getters: {
-            user_id: (state) => () => state.user_id
+            user_id: (state): string => state.user_id
           }
         },
         rooms: {
@@ -43,6 +43,11 @@ describe('Test Rooms Tab', () => {
               user_type: 'admin'
             }],
             get_invited_rooms: (state) => () => state.invited_rooms
+          },
+          actions: {
+            action_create_room: jest.fn(),
+            action_accept_invitation_for_room: jest.fn(),
+            action_reject_invitation_for_room: jest.fn()
           }
         },
         sync: {
@@ -53,12 +58,14 @@ describe('Test Rooms Tab', () => {
             }
           },
           getters: {
-            is_initial_sync_complete: (state) => () => state.init_state_complete
+            is_initial_sync_complete: (state): boolean => state.init_state_complete
+          },
+          actions: {
+            action_sync_initial_state: jest.fn()
           }
         }
       }
     })
-    store.dispatch = jest.fn()
     it('Test one room', async () => {
       let redirected = false
       const wrapper = shallowMount(Rooms, {
@@ -68,6 +75,11 @@ describe('Test Rooms Tab', () => {
             $router: {
               push: () => {
                 redirected = true
+              }
+            },
+            $route: {
+              query: {
+                not_joined: false
               }
             }
           }
