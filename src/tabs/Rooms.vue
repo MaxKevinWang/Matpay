@@ -28,8 +28,8 @@
         <td>{{ room.member_count }}</td>
         <td>{{ room.user_type }}</td>
         <td>
-          <button class="btn btn-primary" @click="enter_room_detail(room.room_id)">Details</button>
-          <button class="btn btn-info" @click="enter_room_history(room.room_id)">History</button>
+          <button id="RoomDetailButton" class="btn btn-primary" @click="enter_room_detail(room.room_id)">Details</button>
+          <button id="RoomHistoryButton" class="btn btn-info" @click="enter_room_history(room.room_id)">History</button>
         </td>
       </tr>
       </tbody>
