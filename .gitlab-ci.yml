@@ -22,9 +22,8 @@ install_dependencies:
     variables:
         npm_config_cache: "$CI_PROJECT_DIR/.npm"
         CYPRESS_CACHE_FOLDER: "$CI_PROJECT_DIR/cache/Cypress"
-    image: node:16-alpine
     stage: dependencies
-    tags: ['matpay']
+    tags: ['nodejs']
     only:
         - main
         - testing
@@ -38,16 +37,14 @@ install_dependencies:
             - node_modules
             - .npm
             - cache/Cypress
-            - /root/.cache/Cypress
+            - ~/.cache/Cypress
 test-unit:
-    image: node:16-alpine
     stage: test
-    tags: ['matpay']
+    tags: ['nodejs']
     only:
         - main
         - testing
     script:
-        - npm install -g @vue/cli
         - npm run test:unit
     artifacts:
         paths:
@@ -60,20 +57,16 @@ test-unit:
             - node_modules
             - .npm
             - cache/Cypress
-            - /root/.cache/Cypress
+            - ~/.cache/Cypress
         policy: pull
 
 test-e2e:
-    image: matpay/cypress-browser:latest
     stage: test
-    tags: [ 'matpay' ]
+    tags: ['nodejs']
     only:
         - main
         - testing
     script:
-        - npm install -g @vue/cli
-        - ./node_modules/.bin/cypress install
-        - npm run serve &
         - npm run test:e2e
     artifacts:
         paths:
@@ -86,18 +79,16 @@ test-e2e:
             - node_modules
             - .npm
             - cache/Cypress
-            - /root/.cache/Cypress
+            - ~/.cache/Cypress
         policy: pull
 
 lint:
-    image: node:16-alpine
     stage: test
-    tags: ['matpay']
+    tags: ['nodejs']
     only:
         - main
         - testing
     script:
-        - npm install -g @vue/cli
         - npm run lint
     cache:
         key:
@@ -107,17 +98,15 @@ lint:
             - node_modules
             - .npm
             - cache/Cypress
-            - /root/.cache/Cypress
+            - ~/.cache/Cypress
         policy: pull
 
 build-frontend:
     stage: build
-    image: node:16-alpine
-    tags: ['matpay']
+    tags: ['nodejs']
     only:
         - main
     script:
-        - npm install -g @vue/cli
         - npm run build
     artifacts:
         paths:
@@ -134,8 +123,7 @@ build-frontend:
 
 deploy-job:
     stage: deploy
-    image: alpine
-    tags: ['matpay']
+    tags: ['nodejs']
     only:
         - main
     before_script:
