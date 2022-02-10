@@ -409,7 +409,10 @@ export const sync_store = {
             // 1. create room structure for every new room
             for (const room_id of Object.keys(response.data.rooms.join)) {
               if (!Object.keys(state.room_events).includes(room_id)) {
-                commit('mutation_create_new_room', room_id)
+                // wait for initial state of this new root
+                await dispatch('action_resync_initial_state_for_room', {
+                  room_id: room_id
+                })
               }
             }
             // Then pass single events
