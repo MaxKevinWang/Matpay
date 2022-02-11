@@ -289,33 +289,33 @@ export const tx_store = {
       // if something changed
       const description_changed = tx_old.description !== tx_new.description
       let simple_tx_changed = false
-      let from_to_same = false
-      for (const u of tx_new.txs) {
-        if (tx_old.txs) {
-          for (const v of tx_old.txs) {
-            if (u.tx_id === v.tx_id) {
-              if (u.to.user_id !== v.to.user_id) {
-                return false
-              }
-              if (u.amount !== v.amount) {
-                simple_tx_changed = true
-                break
-              }
-            }
-          }
+      let from_to_different = false
+      if (tx_old.from.user_id !== tx_new.from.user_id) {
+        from_to_different = true
+      }
+      for (const new_txs of tx_new.txs) {
+        const old_txs = tx_old.txs.filter(i => i.tx_id === new_txs.tx_id)
+        if (old_txs.length === 0) {
+          from_to_different = true
+          break
         }
+        if (old_txs[0].to.user_id !== new_txs.to.user_id) {
+          from_to_different = true
+          break
+        }
+        if (old_txs[0].amount !== new_txs.amount) {
+          simple_tx_changed = true
+        }
+      }
+      if (tx_old.txs.length !== tx_new.txs.length) {
+        from_to_different = true
       }
       // if (tx_new.from.user_id === u.to.user_id)
       if (!simple_tx_changed && !description_changed) {
         throw new Error('Implementation error: something must be changed in a modification')
       }
-      for (const u of tx_new.txs) {
-        if (u.to === tx_new.from) {
-          from_to_same = true
-        }
-      }
-      if (from_to_same) {
-        throw new Error('Implementation error: the from & to users should not stay the same')
+      if (from_to_different) {
+        throw new Error('Implementation error: the from & to users should stay the same')
       }
       // construct event
       const modify_event = {
