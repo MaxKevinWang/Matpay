@@ -1,6 +1,6 @@
 import store from '@/store/tx'
 import { MatrixEventID, MatrixRoomID, MatrixUserID } from '@/models/id.model'
-import { room_01_user_info, user_1, user_2 } from '../mocks/mocked_user'
+import { room_01_user_info, user_1, user_2, user_3 } from '../mocks/mocked_user'
 import { TxModifyEvent } from '@/interface/tx_event.interface'
 import { uuidgen } from '@/utils/utils'
 import { GroupedTransaction, PendingApproval, TxGraph } from '@/models/transaction.model'
@@ -281,7 +281,7 @@ describe('Test action_modify_tx_for_room', () => {
       tx_new: fake_grouped_tx2
     })).rejects.toThrow(new Error('Implementation error: something must be changed in a modification'))
   })
-  it('Test from to user are same', async () => {
+  it('Test from user are same', async () => {
     const resp = {
       status: 200,
       data: ''
@@ -315,6 +315,61 @@ describe('Test action_modify_tx_for_room', () => {
       state: 'approved',
       txs: [{
         to: user_2,
+        tx_id: fake_tx_id,
+        amount: 10
+      }],
+      description: '1',
+      participants: [],
+      timestamp: new Date(),
+      pending_approvals: []
+    }
+    state.transactions.aaa.basic.push(fake_grouped_tx1)
+    await expect(action({
+      state,
+      commit: jest.fn(),
+      dispatch: jest.fn(),
+      getters: getters,
+      rootGetters: rootGetters
+    }, {
+      room_id: 'aaa',
+      tx_old: fake_grouped_tx1,
+      tx_new: fake_grouped_tx2
+    })).rejects.toThrow(new Error('Implementation error: the from & to users should stay the same'))
+  })
+  it('Test to user are same', async () => {
+    const resp = {
+      status: 200,
+      data: ''
+    }
+    mockedAxios.put.mockImplementation(() => Promise.resolve(resp))
+    const getters = {
+      get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
+      get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
+      get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
+      get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
+    }
+    const fake_group_id = uuidgen()
+    const fake_tx_id = uuidgen()
+    const fake_grouped_tx1: GroupedTransaction = {
+      from: user_1,
+      group_id: fake_group_id,
+      state: 'approved',
+      txs: [{
+        to: user_2,
+        tx_id: fake_tx_id,
+        amount: 10
+      }],
+      description: '',
+      participants: [],
+      timestamp: new Date(),
+      pending_approvals: []
+    }
+    const fake_grouped_tx2: GroupedTransaction = {
+      from: user_1,
+      group_id: fake_group_id,
+      state: 'approved',
+      txs: [{
+        to: user_3,
         tx_id: fake_tx_id,
         amount: 10
       }],
