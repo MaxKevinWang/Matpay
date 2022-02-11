@@ -334,7 +334,7 @@ describe('Test action_modify_tx_for_room', () => {
       room_id: 'aaa',
       tx_old: fake_grouped_tx1,
       tx_new: fake_grouped_tx2
-    })).rejects.toThrow(new Error('Implementation error: the from & to users should not stay the same'))
+    })).rejects.toThrow(new Error('Implementation error: the from & to users should stay the same'))
   })
   it('Test Network error', async () => {
     const resp = {
