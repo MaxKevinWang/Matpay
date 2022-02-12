@@ -9,7 +9,7 @@
           }}
         </div>
         <div class="status">{{ this.is_self ? 'Yourself, ' + this.user_type : this.user_type }}</div>
-        <div class="status" v-if="!this.is_self">
+        <div class="status" v-if="!this.is_self" id="balance_display_usercard">
           {{
             this.open_balance < 0
               ? 'Oweing you: ' + to_currency_display(-open_balance)
