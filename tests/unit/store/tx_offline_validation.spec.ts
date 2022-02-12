@@ -4,6 +4,7 @@ import { room_01_user_info, user_1, user_2, user_3 } from '../mocks/mocked_user'
 import { TxApproveEvent, TxCreateEvent, TxModifyEvent, TxSettleEvent } from '@/interface/tx_event.interface'
 import { uuidgen } from '@/utils/utils'
 import { GroupedTransaction, PendingApproval, TxGraph } from '@/models/transaction.model'
+import { TxApprovedPlaceholder } from '@/models/chat.model'
 
 interface State {
   transactions: Record<MatrixRoomID, {
@@ -858,6 +859,69 @@ describe('Test tx store validation actions', () => {
           room_id: room_id,
           tx_event: event
         })).resolves.toEqual(false)
+      })
+      it('Test Everything is fine', async () => {
+        const getters = {
+          get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
+          get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
+          get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
+          get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
+        }
+        const fake_group_id = uuidgen()
+        const fake_tx_id = uuidgen()
+        state.transactions[room_id].basic.push({
+          state: 'approved',
+          group_id: fake_group_id,
+          txs: [
+            {
+              to: user_2,
+              amount: 50,
+              tx_id: fake_tx_id
+            }
+          ],
+          pending_approvals: [],
+          from: user_1,
+          description: 'aaaa',
+          timestamp: new Date()
+        })
+        const event: TxModifyEvent = {
+          type: 'com.matpay.modify',
+          sender: user_2.user_id,
+          room_id: room_id,
+          origin_server_ts: 60000,
+          event_id: 'e02',
+          content: {
+            txs: [
+              {
+                to: user_2.user_id,
+                amount: 60,
+                tx_id: fake_tx_id
+              }
+            ],
+            group_id: fake_group_id,
+            description: 'aaa'
+          }
+        }
+        let commit_called = false
+        const commit = (commit_string: string, payload: {
+          room_id: MatrixRoomID,
+          pending_approval: PendingApproval
+        }) => {
+          if (commit_string === 'mutation_add_pending_approval_for_room' && payload.pending_approval.description === 'aaa' && payload.pending_approval.txs[0].amount === 60 && payload.pending_approval.txs[0].tx_id === fake_tx_id) {
+            commit_called = true
+          }
+        }
+        await expect(action({
+          state,
+          commit: commit,
+          dispatch: jest.fn(),
+          getters: getters,
+          rootGetters: rootGetters
+        }, {
+          room_id: room_id,
+          tx_event: event
+        }))
+        expect(commit_called).toBeTruthy()
       })
       /*
       it('Test Tx has been Frozen', async () => {
