@@ -16,7 +16,7 @@
         </div>
       </div>
     </div>
-    <ApprovalDialog ref="approve_dialog" :reference="reference" @on-approval="on_approval"/>
+    <ApprovalDialog ref="approve_dialog" :reference="reference" @on-approval="on_approval" @on-reject="on_reject"/>
   </div>
 </template>
 
@@ -63,7 +63,8 @@ export default defineComponent({
   },
   methods: {
     ...mapActions('tx', [
-      'action_approve_tx_for_room'
+      'action_approve_tx_for_room',
+      'action_reject_tx_for_room'
     ]),
     approval_click () {
       this.$refs.approve_dialog.show()
@@ -71,6 +72,17 @@ export default defineComponent({
     async on_approval (approval: PendingApproval) {
       try {
         await this.action_approve_tx_for_room({
+          room_id: this.room_id,
+          approval: approval
+        })
+      } catch (e) {
+        this.$emit('on-error', e)
+      }
+      this.$refs.approve_dialog.hide()
+    },
+    async on_reject (approval: PendingApproval) {
+      try {
+        await this.action_reject_tx_for_room({
           room_id: this.room_id,
           approval: approval
         })

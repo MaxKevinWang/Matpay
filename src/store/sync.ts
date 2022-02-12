@@ -75,6 +75,9 @@ export const sync_store = {
       } else {
         state.room_events[payload.room_id].push(payload.event)
       }
+      if (payload.event.event_id) {
+        state.processed_events_id.add(payload.event.event_id)
+      }
     },
     mutation_init_state_complete (state: State) {
       console.log('Init state completed.')
@@ -205,6 +208,8 @@ export const sync_store = {
             const promises_event_async: Promise<any>[] = []
             for (const [room_id, room_data] of Object.entries(response.data.rooms.join)) {
               promises_room_async.push(new Promise(() => {
+                // parse account data
+                const account_data = room_data.account_data
                 const timeline = room_data.timeline
                 commit('mutation_set_room_tx_prev_batch', {
                   room_id: room_id,
@@ -214,6 +219,13 @@ export const sync_store = {
                   room_id: room_id,
                   prev_batch: timeline.prev_batch
                 })
+                // then account data for rejection
+                for (const event of account_data.events) {
+                  commit('mutation_process_event', {
+                    room_id: room_id,
+                    event: event
+                  })
+                }
                 // then all events
                 for (const event of timeline.events) {
                   if (TX_EVENT_TYPES.includes(event.type)) { // Don't parse tx events at this stage, cache them
@@ -418,12 +430,13 @@ export const sync_store = {
             // Then pass single events
             for (const [room_id, room_data] of Object.entries(response.data.rooms.join)) {
               const timeline = room_data.timeline
-              /*
-              commit('mutation_set_room_tx_prev_batch', {
-                room_id: room_id,
-                prev_batch: timeline.prev_batch
-              })
-               */
+              const account_data = room_data.account_data
+              for (const event of account_data.events) {
+                commit('mutation_process_event', {
+                  room_id: room_id,
+                  event: event
+                })
+              }
               // then all events
               for (const event of timeline.events) {
                 console.log(event)
@@ -538,6 +551,13 @@ export const sync_store = {
           room_id: payload.room_id,
           prev_batch: timeline.prev_batch
         })
+        const account_data = response.data.rooms.join[payload.room_id].account_data
+        for (const event of account_data.events) {
+          commit('mutation_process_event', {
+            room_id: payload.room_id,
+            event: event
+          })
+        }
         for (const event of timeline.events) {
           console.log(event)
           if (TX_EVENT_TYPES.includes(event.type)) { // transaction events

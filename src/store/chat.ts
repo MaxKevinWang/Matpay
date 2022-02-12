@@ -8,15 +8,18 @@ import { GroupedTransaction, PendingApproval } from '@/models/transaction.model'
 import { PUTRoomEventSendResponse } from '@/interface/api.interface'
 import { uuidgen } from '@/utils/utils'
 import { MatrixError } from '@/interface/error.interface'
+import { TxRejectedEvent } from '@/interface/tx_event.interface'
 interface State {
   chat_log: Record<MatrixRoomID, ChatLog>,
+  rejected_events: Record<MatrixRoomID, Set<MatrixEventID>>
 }
 
 export const chat_store = {
   namespaced: true,
   state (): State {
     return {
-      chat_log: {}
+      chat_log: {},
+      rejected_events: {}
     }
   },
   mutations: <MutationTree<State>>{
@@ -24,9 +27,17 @@ export const chat_store = {
       state.chat_log[payload] = {
         messages: []
       }
+      state.rejected_events[payload] = new Set()
     },
     mutation_remove_joined_room (state: State, payload: MatrixRoomID) {
       delete state.chat_log[payload]
+      delete state.rejected_events[payload]
+    },
+    mutation_set_rejected_events_for_room (state: State, payload: {
+      room_id: MatrixRoomID,
+      rejected_events: Array<MatrixEventID>
+    }) {
+      state.rejected_events[payload.room_id] = new Set(payload.rejected_events)
     },
     mutation_add_single_message_for_room (state: State, payload: {
       room_id: MatrixRoomID,
@@ -61,6 +72,23 @@ export const chat_store = {
     }
   },
   actions: <ActionTree<State, any>>{
+    action_parse_rejected_event_for_room ({
+      state,
+      commit,
+      dispatch,
+      rootGetters
+    }, payload: {
+      room_id: MatrixRoomID,
+      rejected_event: TxRejectedEvent
+    }) {
+      const room_id = payload.room_id
+      const rejected_event = payload.rejected_event
+      console.log('Reject data received, ', rejected_event)
+      commit('mutation_set_rejected_events_for_room', {
+        room_id: room_id,
+        rejected_events: rejected_event.content.events
+      })
+    },
     action_parse_single_chat_message_event_for_room ({
       state,
       commit,
@@ -94,6 +122,9 @@ export const chat_store = {
     }) {
       const room_id = payload.room_id
       const pending_approval = payload.pending_approval
+      if (state.rejected_events[room_id].has(pending_approval.event_id)) {
+        return // do not show pending approval if already rejected
+      }
       const approval_msg : TxPendingPlaceholder = {
         type: 'pending',
         timestamp: pending_approval.timestamp,
@@ -149,12 +180,32 @@ export const chat_store = {
       if (response.status !== 200) {
         throw new Error((response.data as unknown as MatrixError).error)
       }
-      // TODO: notify other stores
     }
   },
   getters: <GetterTree<State, any>>{
     get_chat_log_for_room: (state: State) => (room_id: MatrixRoomID): ChatLog => {
-      return state.chat_log[room_id] || { messages: [] }
+      if (!state.chat_log[room_id]) {
+        return {
+          messages: []
+        }
+      }
+      const messages = state.chat_log[room_id].messages.filter(m => {
+        if ('type' in m) {
+          if (!('grouped_tx' in m)) {
+            return !state.rejected_events[room_id].has(m.approval.event_id)
+          } else {
+            return true
+          }
+        } else {
+          return true
+        }
+      })
+      return {
+        messages: messages
+      }
+    },
+    get_rejected_events_for_room: (state: State) => (room_id: MatrixRoomID): Set<MatrixEventID> => {
+      return state.rejected_events[room_id]
     }
   }
 }
