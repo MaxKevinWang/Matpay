@@ -1,5 +1,5 @@
 import store from '@/store/chat'
-import { MatrixRoomID } from '@/models/id.model'
+import { MatrixEventID, MatrixRoomID } from '@/models/id.model'
 import { ChatLog, ChatMessage, TxApprovedPlaceholder, TxPendingPlaceholder } from '@/models/chat.model'
 import { room_01_user_info, user_1 } from '../mocks/mocked_user'
 import { MatrixRoomChatMessageEvent } from '@/interface/rooms_event.interface'
@@ -13,6 +13,7 @@ const mockedAxios = axios as jest.Mocked<typeof axios>
 
 interface State {
   chat_log: Record<MatrixRoomID, ChatLog>,
+  rejected_events: Record<MatrixRoomID, Set<MatrixEventID>>
 }
 
 describe('Test chat store', function () {
@@ -22,6 +23,9 @@ describe('Test chat store', function () {
         aaa: {
           messages: []
         }
+      },
+      rejected_events: {
+        aaa: new Set()
       }
     }
     beforeEach(() => {
@@ -30,6 +34,9 @@ describe('Test chat store', function () {
           aaa: {
             messages: []
           }
+        },
+        rejected_events: {
+          aaa: new Set()
         }
       }
     })
@@ -157,6 +164,9 @@ describe('Test chat store', function () {
         aaa: {
           messages: []
         }
+      },
+      rejected_events: {
+        aaa: new Set()
       }
     }
     beforeEach(() => {
@@ -165,6 +175,9 @@ describe('Test chat store', function () {
           aaa: {
             messages: []
           }
+        },
+        rejected_events: {
+          aaa: new Set()
         }
       }
     })
@@ -186,6 +199,9 @@ describe('Test chat store', function () {
         aaa: {
           messages: []
         }
+      },
+      rejected_events: {
+        aaa: new Set()
       }
     }
     const rootGetters = {
@@ -201,6 +217,9 @@ describe('Test chat store', function () {
           aaa: {
             messages: []
           }
+        },
+        rejected_events: {
+          aaa: new Set()
         }
       }
     })

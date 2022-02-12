@@ -60,6 +60,12 @@ export function newStore () {
                 event: MatrixRoomEvent
               }
               // Event distinguishing starts here
+              if (room_event.type === 'com.matpay.rejected') {
+                store.dispatch('chat/action_parse_rejected_event_for_room', {
+                  room_id: room_id,
+                  rejected_event: room_event
+                })
+              }
               if (['m.room.member', 'm.room.power_levels', 'm.room.name'].includes(room_event.type)) {
                 if (!store.state.sync.init_state_complete) {
                   store.commit('rooms/mutation_add_state_event_for_joined_room', {
@@ -80,9 +86,6 @@ export function newStore () {
                     message_event: room_event
                   })
                 }
-              }
-              if (['com.matpay.reject'].includes(room_event.type)) {
-                console.log('Parse rejection here')
               }
               if (TX_MESSAGE_EVENT_TYPES.includes(room_event.type)) {
                 if (store.state.sync.room_tx_sync_complete[room_id]) {

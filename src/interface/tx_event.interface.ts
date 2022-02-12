@@ -55,7 +55,6 @@ export interface TxApproveEvent extends TxMessageEvent {
 
 export interface TxRejectedEvent extends TxStateEvent {
   type: 'com.matpay.rejected',
-  state_key: MatrixUserID,
   content: {
     events: MatrixEventID[]
   }

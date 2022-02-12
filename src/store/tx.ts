@@ -394,7 +394,32 @@ export const tx_store = {
       room_id: MatrixRoomID
       approval: PendingApproval
     }) {
-      throw new Error('TO BE IMPLEMENTED')
+      const room_id = payload.room_id
+      const approval = payload.approval
+      const user_id = rootGetters['auth/user_id'] as string
+      if (!state.transactions[room_id].pending_approvals.includes(approval)) {
+        throw new Error('This pending approval does not exist or is already approved!')
+      }
+      if (approval.approvals[user_id]) {
+        throw new Error('This pending approval has already been approved!')
+      }
+      // get old rejected event
+      const rejected_events_set : Set<MatrixEventID> = rootGetters['chat/get_rejected_events_for_room'](room_id)
+      if (rejected_events_set.has(approval.event_id)) {
+        throw new Error('This pending approval has already been rejected!')
+      }
+      const rejected_event = {
+        events: Array.from(rejected_events_set).concat(approval.event_id)
+      }
+      const homeserver: string = rootGetters['auth/homeserver']
+      const response = await axios.put<PUTRoomEventSendResponse>(`${homeserver}/_matrix/client/v3/user/${user_id}/rooms/${room_id}/account_data/com.matpay.rejected`,
+        rejected_event,
+        { validateStatus: () => true }
+      )
+      console.log('Reject event sent, timestamp:' + new Date().getTime())
+      if (response.status !== 200) {
+        throw new Error((response.data as unknown as MatrixError).error)
+      }
     },
     async action_settle_for_room ({
       state,
@@ -469,27 +494,6 @@ export const tx_store = {
         }
       }
       await Promise.all(settle_actions)
-    },
-    async action_parse_rejected_events_for_room ({
-      state,
-      commit,
-      dispatch,
-      rootGetters
-    }, payload: {
-      room_id: MatrixRoomID
-    }) {
-      const room_id = payload.room_id
-      commit('mutation_init_tx_structure_for_room', room_id)
-      const rejected_events: TxRejectedEvent[] = rootGetters['rooms/get_rejected_events_for_room'](room_id)
-      const room_member_ids: MatrixUserID[] = (rootGetters['rooms/get_users_info_for_room'](room_id) as RoomUserInfo[]).map(u => u.user.user_id)
-      for (const rejected_event of rejected_events) {
-        const array: Array<[MatrixEventID, MatrixUserID]> = []
-        commit('mutation_add_rejected_events_for_room', {
-          room_id: room_id,
-          rejected_events: array
-        })
-        commit('mutation_add_processed_event', rejected_event.event_id)
-      }
     },
     async action_parse_all_tx_events_for_room ({
       state,

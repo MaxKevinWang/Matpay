@@ -83,7 +83,7 @@ export default defineComponent({
       type: Object as PropType<TxPendingPlaceholder>
     }
   },
-  emits: ['on-approval'],
+  emits: ['on-approval', 'on-reject'],
   data () {
     return {
       modal_control: null as Modal | null,
@@ -114,7 +114,7 @@ export default defineComponent({
       this.$emit('on-approval', this.reference?.approval)
     },
     on_reject_click () {
-      this.hide()
+      this.$emit('on-reject', this.reference?.approval)
     }
   },
   mounted () {
