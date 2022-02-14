@@ -1,11 +1,12 @@
 import { newStore } from '@/store'
 import { config, flushPromises, mount, shallowMount } from '@vue/test-utils'
 import { selectorify, split_percentage, sum_amount, to_currency_display } from '@/utils/utils'
-import { user_1 } from '../mocks/mocked_user'
+import { user_1, user_2 } from '../mocks/mocked_user'
 import bootstrap from 'bootstrap'
 import UserCard from '@/components/UserCard.vue'
 import { MatrixRoomID, MatrixUserID } from '@/models/id.model'
 import { createStore } from 'vuex'
+import { User } from '@/models/user.model'
 
 jest.mock('bootstrap')
 const mockedBootstrap = bootstrap as jest.Mocked<typeof bootstrap>
@@ -283,14 +284,14 @@ describe('Test UserCard Component', () => {
             getters: {
               get_grouped_transactions_for_room: () => (room_id: MatrixRoomID) => [],
               get_total_open_balance_for_user_for_room: () => (room_id: MatrixRoomID, source_user_id: MatrixUserID) => -10,
-              get_open_balance_against_user_for_room: () => () => 10
+              get_open_balance_against_user_for_room: () => () => -10
             }
           },
           auth: {
             namespaced: true,
             getters: {
               is_logged_in: () => true,
-              user_id: () => user_1.user_id
+              user_id: () => user_2.user_id
             }
           }
         }
@@ -311,11 +312,12 @@ describe('Test UserCard Component', () => {
           }
         }
       })
-      await wrapper.find('#settle-button').trigger('click')
+      await wrapper.find('#card-settle-button').trigger('click')
       await flushPromises()
-      await expect(wrapper.find('#you-owe').element.innerHTML.includes('You owe:')).toEqual(true)
+      await expect(wrapper.vm.$refs.settle_dialog.is_shown).toBe(true)
     })
-    it('Test hide', async () => {
+    it('Test on-settle', async () => {
+      let action_called = false
       const store1 = createStore({
         modules: {
           tx: {
@@ -323,14 +325,17 @@ describe('Test UserCard Component', () => {
             getters: {
               get_grouped_transactions_for_room: () => (room_id: MatrixRoomID) => [],
               get_total_open_balance_for_user_for_room: () => (room_id: MatrixRoomID, source_user_id: MatrixUserID) => -10,
-              get_open_balance_against_user_for_room: () => () => 10
+              get_open_balance_against_user_for_room: () => () => -10,
+            },
+            actions: {
+              action_settle_for_room: (context, payload: {room_id: MatrixRoomID, target_user: User}) => { action_called = true }
             }
           },
           auth: {
             namespaced: true,
             getters: {
               is_logged_in: () => true,
-              user_id: () => user_1.user_id
+              user_id: () => user_2.user_id
             }
           }
         }
@@ -351,11 +356,140 @@ describe('Test UserCard Component', () => {
           }
         }
       })
+      await wrapper.find('#card-settle-button').trigger('click')
+      await flushPromises()
       await wrapper.find('#settle-button').trigger('click')
       await flushPromises()
-      await wrapper.find('#hide-settle-button').trigger('click')
+      await expect(action_called).toBe(true)
+    })
+    it('Test on-settle on-error', async () => {
+      const store1 = createStore({
+        modules: {
+          tx: {
+            namespaced: true,
+            getters: {
+              get_grouped_transactions_for_room: () => (room_id: MatrixRoomID) => [],
+              get_total_open_balance_for_user_for_room: () => (room_id: MatrixRoomID, source_user_id: MatrixUserID) => -10,
+              get_open_balance_against_user_for_room: () => () => -10,
+            },
+            actions: {
+              action_settle_for_room: (context, payload: {room_id: MatrixRoomID, target_user: User}) => { throw new Error('Error')}
+            }
+          },
+          auth: {
+            namespaced: true,
+            getters: {
+              is_logged_in: () => true,
+              user_id: () => user_2.user_id
+            }
+          }
+        }
+      })
+      const wrapper = mount(UserCard, {
+        attachTo: 'body',
+        global: {
+          plugins: [store1]
+        },
+        props: {
+          room_id: 'fake_room_id',
+          user_prop: {
+            user: user_1,
+            displayname: user_1.displayname,
+            user_type: 'Member',
+            is_self: false,
+            avatar_url: ''
+          }
+        }
+      })
+      await wrapper.find('#card-settle-button').trigger('click')
       await flushPromises()
-      await expect(wrapper.find('#settlement-modal_' + selectorify(user_1.user_id)).classes('modal-open')).toBe(false)
+      await wrapper.find('#settle-button').trigger('click')
+      await flushPromises()
+      expect((wrapper.emitted()['on-error'][0] as Array<Error>)[0]).toEqual(Error('Error'))
+    })
+    it('Test balance Display', async () => {
+      let action_called = false
+      const store1 = createStore({
+        modules: {
+          tx: {
+            namespaced: true,
+            getters: {
+              get_grouped_transactions_for_room: () => (room_id: MatrixRoomID) => [],
+              get_total_open_balance_for_user_for_room: () => (room_id: MatrixRoomID, source_user_id: MatrixUserID) => -10,
+              get_open_balance_against_user_for_room: () => () => -10,
+            },
+            actions: {
+              action_settle_for_room: (context, payload: {room_id: MatrixRoomID, target_user: User}) => { action_called = true }
+            }
+          },
+          auth: {
+            namespaced: true,
+            getters: {
+              is_logged_in: () => true,
+              user_id: () => user_2.user_id
+            }
+          }
+        }
+      })
+      const wrapper = mount(UserCard, {
+        attachTo: 'body',
+        global: {
+          plugins: [store1]
+        },
+        props: {
+          room_id: 'fake_room_id',
+          user_prop: {
+            user: user_1,
+            displayname: user_1.displayname,
+            user_type: 'Member',
+            is_self: false,
+            avatar_url: ''
+          }
+        }
+      })
+      await expect(wrapper.find('#balance_display_usercard').element.innerHTML.includes('Oweing you: 0.10€')).toBe(true)
+    })
+    it('Test balance Display for left user', async () => {
+      let action_called = false
+      const store1 = createStore({
+        modules: {
+          tx: {
+            namespaced: true,
+            getters: {
+              get_grouped_transactions_for_room: () => (room_id: MatrixRoomID) => [],
+              get_total_open_balance_for_user_for_room: () => (room_id: MatrixRoomID, source_user_id: MatrixUserID) => -10,
+              get_open_balance_against_user_for_room: () => () => -10,
+            },
+            actions: {
+              action_settle_for_room: (context, payload: {room_id: MatrixRoomID, target_user: User}) => { action_called = true }
+            }
+          },
+          auth: {
+            namespaced: true,
+            getters: {
+              is_logged_in: () => true,
+              user_id: () => user_2.user_id
+            }
+          }
+        }
+      })
+      const wrapper = mount(UserCard, {
+        attachTo: 'body',
+        global: {
+          plugins: [store1]
+        },
+        props: {
+          room_id: 'fake_room_id',
+          user_prop: {
+            user: user_1,
+            displayname: user_1.displayname,
+            user_type: 'Left',
+            is_self: false,
+            avatar_url: ''
+          }
+        }
+      })
+      await expect(wrapper.find('#balance_display_usercard').element.innerHTML.includes('Oweing you: 0.10€')).toBe(true)
     })
   })
 })

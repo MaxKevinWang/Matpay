@@ -293,6 +293,50 @@ describe('Test TxDetail Component', () => {
       await wrapper.find('#modify-confirm').trigger('click')
       expect(popover_amount_called).toBeTruthy()
     })
+    it('Test empty description', async () => {
+      const wrapper = shallowMount(ModificationDialog, {
+        attachTo: document.querySelector('html') as HTMLElement,
+        global: {
+          plugins: [store]
+        },
+        props: {
+          tx: {
+            from: user_1,
+            group_id: uuidgen(),
+            state: 'approved',
+            txs: [
+              {
+                to: user_2,
+                tx_id: uuidgen(),
+                amount: 10
+              }
+            ],
+            description: 'Title',
+            participants: [],
+            timestamp: new Date('1/15/2022'),
+            pending_approvals: []
+          },
+          users_info: [
+            {
+              user: user_1,
+              displayname: user_1.displayname,
+              user_type: 'Member',
+              is_self: true,
+              avatar_url: ''
+            }, {
+              user: user_2,
+              displayname: user_2.displayname,
+              user_type: 'Member',
+              is_self: false,
+              avatar_url: ''
+            }
+          ]
+        }
+      })
+      await wrapper.find('#input-description-modification').setValue('')
+      await wrapper.find('#modify-confirm').trigger('click')
+      expect(popover_description_called).toBeTruthy()
+    })
     it('Test default description shows', async () => {
       const wrapper = shallowMount(ModificationDialog, {
         attachTo: document.querySelector('html') as HTMLElement,

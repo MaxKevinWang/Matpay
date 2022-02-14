@@ -1,9 +1,10 @@
 import store from '@/store/tx'
-import { MatrixEventID, MatrixRoomID, MatrixUserID } from '@/models/id.model'
+import { GroupID, MatrixEventID, MatrixRoomID, MatrixUserID } from '@/models/id.model'
 import { room_01_user_info, user_1, user_2, user_3 } from '../mocks/mocked_user'
 import { TxApproveEvent, TxCreateEvent, TxModifyEvent, TxSettleEvent } from '@/interface/tx_event.interface'
 import { uuidgen } from '@/utils/utils'
-import { GroupedTransaction, PendingApproval, TxGraph } from '@/models/transaction.model'
+import { GroupedTransaction, PendingApproval, SimpleTransaction, TxGraph } from '@/models/transaction.model'
+import { TxApprovedPlaceholder } from '@/models/chat.model'
 
 interface State {
   transactions: Record<MatrixRoomID, {
@@ -859,6 +860,69 @@ describe('Test tx store validation actions', () => {
           tx_event: event
         })).resolves.toEqual(false)
       })
+      it('Test Everything is fine', async () => {
+        const getters = {
+          get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
+          get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
+          get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
+          get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
+        }
+        const fake_group_id = uuidgen()
+        const fake_tx_id = uuidgen()
+        state.transactions[room_id].basic.push({
+          state: 'approved',
+          group_id: fake_group_id,
+          txs: [
+            {
+              to: user_2,
+              amount: 50,
+              tx_id: fake_tx_id
+            }
+          ],
+          pending_approvals: [],
+          from: user_1,
+          description: 'aaaa',
+          timestamp: new Date()
+        })
+        const event: TxModifyEvent = {
+          type: 'com.matpay.modify',
+          sender: user_2.user_id,
+          room_id: room_id,
+          origin_server_ts: 60000,
+          event_id: 'e02',
+          content: {
+            txs: [
+              {
+                to: user_2.user_id,
+                amount: 60,
+                tx_id: fake_tx_id
+              }
+            ],
+            group_id: fake_group_id,
+            description: 'aaa'
+          }
+        }
+        let commit_called = false
+        const commit = (commit_string: string, payload: {
+          room_id: MatrixRoomID,
+          pending_approval: PendingApproval
+        }) => {
+          if (commit_string === 'mutation_add_pending_approval_for_room' && payload.pending_approval.description === 'aaa' && payload.pending_approval.txs[0].amount === 60 && payload.pending_approval.txs[0].tx_id === fake_tx_id) {
+            commit_called = true
+          }
+        }
+        await expect(action({
+          state,
+          commit: commit,
+          dispatch: jest.fn(),
+          getters: getters,
+          rootGetters: rootGetters
+        }, {
+          room_id: room_id,
+          tx_event: event
+        }))
+        expect(commit_called).toBeTruthy()
+      })
       /*
       it('Test Tx has been Frozen', async () => {
         const getters = {
@@ -1008,12 +1072,13 @@ describe('Test tx store validation actions', () => {
           type: 'create',
           group_id: uuidgen(),
           txs: [],
-          approvals: {},
+          approvals: {
+            '@test-1:dsn.tm.kit.edu': true
+          },
           from: user_1,
           description: 'dfsdgs',
           timestamp: new Date()
         }
-        existing_approval.approvals[user_1.user_id] = true
         state.transactions[room_id].pending_approvals.push(existing_approval)
         await expect(action({
           state,
@@ -1025,6 +1090,226 @@ describe('Test tx store validation actions', () => {
           room_id: room_id,
           tx_event: event
         })).resolves.toEqual(false)
+      })
+      it('Test committing mark user as approved fails', async () => {
+        const getters = {
+          get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
+          get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
+          get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
+          get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
+        }
+        const commit = (commit_string: string, payload: {
+          room_id: MatrixRoomID,
+          user_id: MatrixUserID,
+          event_id: MatrixEventID
+        }) => {
+          if (commit_string === 'mutation_mark_user_as_approved_for_room') {
+            throw new Error()
+          }
+        }
+        const event: TxApproveEvent = {
+          type: 'com.matpay.approve',
+          sender: user_1.user_id,
+          room_id: room_id,
+          origin_server_ts: 60000,
+          event_id: 'e01',
+          content: {
+            event_id: 'e01'
+          }
+        }
+        const existing_approval: PendingApproval = {
+          event_id: 'e01',
+          type: 'create',
+          group_id: uuidgen(),
+          txs: [],
+          approvals: {
+            '@test-1:dsn.tm.kit.edu': false
+          },
+          from: user_1,
+          description: 'dfsdgs',
+          timestamp: new Date()
+        }
+        state.transactions[room_id].pending_approvals.push(existing_approval)
+        await expect(action({
+          state,
+          commit: commit,
+          dispatch: jest.fn(),
+          getters: getters,
+          rootGetters: rootGetters
+        }, {
+          room_id: room_id,
+          tx_event: event
+        })).resolves.toEqual(false)
+      })
+      it('Test all have approved and type of existing Pending Approval is modify', async () => {
+        const getters = {
+          get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
+          get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
+          get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
+          get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
+        }
+        let modify_grouped_transaction = false
+        let change_tx_state = false
+        let remove_pending_approval = false
+        const commit = (commit_string: string, payload: {
+          room_id: MatrixRoomID,
+          user_id: MatrixUserID,
+          event_id: MatrixEventID,
+          group_id: GroupID,
+          description: string,
+          txs: SimpleTransaction[],
+          state: string
+        }) => {
+          if (commit_string === 'mutation_mark_user_as_approved_for_room') {
+            const approval = state.transactions[payload.room_id].pending_approvals.filter(i => i.event_id === payload.event_id)
+            approval[0].approvals[payload.user_id] = true
+          } else if (commit_string === 'mutation_modify_grouped_transaction_for_room') {
+            modify_grouped_transaction = true
+          } else if (commit_string === 'mutation_change_tx_state_for_room') {
+            change_tx_state = true
+          } else if (commit_string === 'mutation_remove_pending_approval_for_room') {
+            remove_pending_approval = true
+          }
+        }
+        let dispatch_called = false
+        const dispatch = (type: string, payload: {
+          room_id: MatrixRoomID,
+          grouped_tx: GroupedTransaction[]
+        }) => {
+          if (type === 'chat/action_parse_single_grouped_tx_for_room') {
+            dispatch_called = true
+          }
+        }
+        const event: TxApproveEvent = {
+          type: 'com.matpay.approve',
+          sender: user_1.user_id,
+          room_id: room_id,
+          origin_server_ts: 60000,
+          event_id: 'e01',
+          content: {
+            event_id: 'e01'
+          }
+        }
+        const existing_approval: PendingApproval = {
+          event_id: 'e01',
+          type: 'modify',
+          group_id: uuidgen(),
+          txs: [],
+          approvals: {
+            '@test-1:dsn.tm.kit.edu': false,
+            '@test-3:dsn.tm.kit.edu': true,
+            '@test-2:dsn.tm.kit.edu': true
+          },
+          from: user_1,
+          description: 'dfsdgs',
+          timestamp: new Date()
+        }
+        state.transactions[room_id].pending_approvals.push(existing_approval)
+        await expect(action({
+          state,
+          commit: commit,
+          dispatch: dispatch,
+          getters: getters,
+          rootGetters: rootGetters
+        }, {
+          room_id: room_id,
+          tx_event: event
+        })).resolves.toEqual(true)
+        expect(dispatch_called).toBe(true)
+        expect(remove_pending_approval).toBe(true)
+        expect(change_tx_state).toBe(true)
+        expect(modify_grouped_transaction).toBe(true)
+      })
+      it('Test all have approved and type of existing Pending Approval is create', async () => {
+        const getters = {
+          get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
+          get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
+          get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
+          get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null)
+        }
+        let modify_grouped_transaction = false
+        let change_tx_state = false
+        let remove_pending_approval = false
+        const commit = (commit_string: string, payload: {
+          room_id: MatrixRoomID,
+          user_id: MatrixUserID,
+          event_id: MatrixEventID,
+          group_id: GroupID,
+          description: string,
+          txs: SimpleTransaction[],
+          state: string
+          grouped_tx: GroupedTransaction
+        }) => {
+          if (commit_string === 'mutation_mark_user_as_approved_for_room') {
+            const approval = state.transactions[payload.room_id].pending_approvals.filter(i => i.event_id === payload.event_id)
+            approval[0].approvals[payload.user_id] = true
+          } else if (commit_string === 'mutation_modify_grouped_transaction_for_room') {
+            modify_grouped_transaction = true
+          } else if (commit_string === 'mutation_change_tx_state_for_room') {
+            change_tx_state = true
+          } else if (commit_string === 'mutation_remove_pending_approval_for_room') {
+            remove_pending_approval = true
+          } else if (commit_string === 'mutation_add_approved_grouped_transaction_for_room') {
+            state.transactions[payload.room_id].basic.push(payload.grouped_tx)
+          }
+        }
+        let dispatch_called = false
+        const dispatch = (type: string, payload: {
+          room_id: MatrixRoomID,
+          grouped_tx: GroupedTransaction[]
+        }) => {
+          if (type === 'chat/action_parse_single_grouped_tx_for_room') {
+            dispatch_called = true
+          }
+        }
+        const event: TxApproveEvent = {
+          type: 'com.matpay.approve',
+          sender: user_1.user_id,
+          room_id: room_id,
+          origin_server_ts: 60000,
+          event_id: 'e01',
+          content: {
+            event_id: 'e01'
+          }
+        }
+        const existing_approval: PendingApproval = {
+          event_id: 'e01',
+          type: 'create',
+          group_id: uuidgen(),
+          txs: [],
+          approvals: {
+            '@test-1:dsn.tm.kit.edu': false,
+            '@test-3:dsn.tm.kit.edu': true,
+            '@test-2:dsn.tm.kit.edu': true
+          },
+          from: user_1,
+          description: 'dfsdgs',
+          timestamp: new Date()
+        }
+        state.transactions[room_id].pending_approvals.push(existing_approval)
+        await expect(action({
+          state,
+          commit: commit,
+          dispatch: dispatch,
+          getters: getters,
+          rootGetters: rootGetters
+        }, {
+          room_id: room_id,
+          tx_event: event
+        })).resolves.toEqual(true)
+        expect(dispatch_called).toBe(true)
+        expect(remove_pending_approval).toBe(true)
+        expect(change_tx_state).toBe(false)
+        expect(modify_grouped_transaction).toBe(false)
+        expect(state.transactions[room_id].basic).toEqual([{
+          from: existing_approval.from,
+          txs: existing_approval.txs,
+          timestamp: existing_approval.timestamp,
+          group_id: existing_approval.group_id,
+          pending_approvals: [],
+          description: existing_approval.description,
+          state: 'approved'
+        }])
       })
     })
     describe('Test parse settle event', () => {
