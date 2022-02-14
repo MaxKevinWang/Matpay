@@ -38,7 +38,8 @@ describe('Test TxApprovedMessageBox Interface', () => {
         reference: reference
       }
     })
-    await expect(wrapper.findAll('p').filter(i => i.element.innerHTML.includes('1/15/2022')).length).toBe(1)
+    const date = new Date('1/15/2022')
+    await expect(wrapper.findAll('p').filter(i => i.element.innerHTML.includes(date.toLocaleDateString())).length).toBe(1)
     await expect(wrapper.findAll('p').filter(i => i.element.innerHTML.includes('Schnitzel')).length).toBe(1)
     await expect(wrapper.findAll('p').filter(i => i.element.innerHTML.includes(user_1.displayname + ' paid ')).length).toBe(1)
   })
