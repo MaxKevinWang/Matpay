@@ -52,13 +52,26 @@ export const sync_store = {
       state.cached_tx_events[payload] = []
     },
     mutation_remove_room (state: State, payload: MatrixRoomID) {
-      console.log('Destroying room structure for room:', payload)
-      delete state.room_events[payload]
-      delete state.room_state_events[payload]
-      delete state.room_tx_prev_batch_id[payload]
-      delete state.room_tx_sync_complete[payload]
-      delete state.cached_tx_events[payload]
-      delete state.room_message_prev_batch_id[payload]
+      if (state.room_events[payload]) {
+        console.log('Destroying room structure for room:', payload)
+        // Important: remove parsed events
+        const parsed_message_event_id = state.room_events[payload].filter(i => i.room_id === payload).map(i => i.event_id)
+        const parsed_state_event_id = state.room_state_events[payload].filter(i => i.room_id === payload).map(i => i.event_id)
+        for (const event_id of parsed_message_event_id) {
+          state.processed_events_id.delete(event_id)
+        }
+        for (const event_id of parsed_state_event_id) {
+          state.processed_events_id.delete(event_id)
+        }
+        delete state.room_events[payload]
+        delete state.room_state_events[payload]
+        delete state.room_tx_prev_batch_id[payload]
+        delete state.room_tx_sync_complete[payload]
+        delete state.cached_tx_events[payload]
+        delete state.room_message_prev_batch_id[payload]
+      } else {
+        console.log('Room already destroyed.')
+      }
     },
     mutation_add_cached_tx_event (state: State, payload: {
       room_id: MatrixRoomID,
@@ -70,6 +83,7 @@ export const sync_store = {
       room_id: MatrixRoomID,
       event: MatrixRoomEvent
     }) {
+      console.log('Central event processing sees event: ', payload.event)
       if ('state_key' in payload.event) {
         state.room_state_events[payload.room_id].push(payload.event as MatrixRoomStateEvent)
       } else {
@@ -595,4 +609,11 @@ export const sync_store = {
         return !state.room_message_prev_batch_id[room_id]
       }
   }
+}
+
+export default {
+  state: sync_store.state,
+  mutations: sync_store.mutations,
+  actions: sync_store.actions,
+  getters: sync_store.getters
 }
