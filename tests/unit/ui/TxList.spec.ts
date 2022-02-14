@@ -20,6 +20,7 @@ describe('Test Txlist Component', () => {
   it('Test if the component shows information correctly', () => {
     const fake_group_id1 = uuidgen()
     const fake_group_id2 = uuidgen()
+    const date: Date = new Date('1/15/2022')
     const group_tx1: GroupedTransaction = {
       from: user_1,
       group_id: fake_group_id1,
@@ -37,7 +38,7 @@ describe('Test Txlist Component', () => {
       txs: [],
       description: 'Title',
       participants: [],
-      timestamp: new Date('1/15/2022'),
+      timestamp: date,
       pending_approvals: []
     }
     const wrapper = shallowMount(TxList, {
@@ -54,8 +55,8 @@ describe('Test Txlist Component', () => {
     const tx1 = wrapper.findAll('.list-tab').filter(w => w.attributes('data-test') === fake_group_id1)
     const tx2 = wrapper.findAll('.list-tab').filter(w => w.attributes('data-test') === fake_group_id2)
     expect(wrapper.findAll('.list-tab')).toHaveLength(2)
-    expect(tx1[0].element.innerHTML.includes('1/15/2022 Title: DSN Test Account No 1 paid 0€')).toBeTruthy()
-    expect(tx2[0].element.innerHTML.includes('1/15/2022 Title: DSN Test Account No 2 paid 0€')).toBeTruthy()
+    expect(tx1[0].element.innerHTML.includes(date.toLocaleDateString() + ' Title: DSN Test Account No 1 paid 0€')).toBeTruthy()
+    expect(tx2[0].element.innerHTML.includes(date.toLocaleDateString() + ' Title: DSN Test Account No 2 paid 0€')).toBeTruthy()
   })
   it('Test emit', () => {
     const fake_group_id1 = uuidgen()
