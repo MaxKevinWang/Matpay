@@ -596,3 +596,10 @@ export const sync_store = {
       }
   }
 }
+
+export default {
+  state: sync_store.state,
+  mutations: sync_store.mutations,
+  actions: sync_store.actions,
+  getters: sync_store.getters
+}
