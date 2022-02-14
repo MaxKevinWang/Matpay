@@ -263,6 +263,55 @@ describe('Test sync store', function () {
 
   })
   describe('Test store getters', function () {
-
+    let state : State = {
+      next_batch: '',
+      processed_events_id: new Set(),
+      room_events: {},
+      room_state_events: {},
+      init_state_complete: false,
+      room_tx_prev_batch_id: {},
+      room_message_prev_batch_id: {},
+      room_tx_sync_complete: {},
+      cached_tx_events: {},
+      sync_filter: '',
+      long_poll_controller: new AbortController()
+    }
+    beforeEach(function () {
+      state = {
+        next_batch: 'abcd-efgh',
+        processed_events_id: new Set(),
+        room_events: {},
+        room_state_events: {},
+        init_state_complete: true,
+        room_tx_prev_batch_id: {},
+        room_message_prev_batch_id: {
+          aaa: 'abcd',
+          bbb: null
+        },
+        room_tx_sync_complete: {
+          aaa: true
+        },
+        cached_tx_events: {},
+        sync_filter: '',
+        long_poll_controller: new AbortController()
+      }
+    })
+    it('Test getter get_next_batch_id', function () {
+      const getter = store.getters.get_next_batch_id
+      expect(getter(state, null, null, null)).toEqual('abcd-efgh')
+    })
+    it('Test getter is_initial_sync_complete', function () {
+      const getter = store.getters.is_initial_sync_complete
+      expect(getter(state, null, null, null)).toEqual(true)
+    })
+    it('Test getter is_room_synced', function () {
+      const getter = store.getters.is_room_synced(state, null, null, null)
+      expect(getter('aaa')).toEqual(true)
+    })
+    it('Test getter is_chat_sync_complete', function () {
+      const getter = store.getters.is_chat_sync_complete(state, null, null, null)
+      expect(getter('aaa')).toEqual(false)
+      expect(getter('bbb')).toEqual(true)
+    })
   })
 })
