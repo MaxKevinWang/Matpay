@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
-import Home from '../tabs/Home.vue'
 import Login from '@/tabs/Login.vue'
 import Rooms from '@/tabs/Rooms.vue'
 import RoomDetail from '@/views/RoomDetail.vue'
@@ -9,8 +8,8 @@ import Register from '@/views/Register.vue'
 export const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    name: 'home',
-    component: Home
+    name: 'default',
+    component: Rooms
   },
   {
     path: '/login',
@@ -44,7 +43,7 @@ const router = createRouter({
   routes
 })
 router.beforeEach((to, from) => {
-  if (to.name === 'login' || to.name === 'home' || to.name === 'register') {
+  if (to.name === 'login' || to.name === 'register') {
     return
   }
   if (!localStorage.getItem('access_token')) {
