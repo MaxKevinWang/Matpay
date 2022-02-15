@@ -408,6 +408,65 @@ describe('Test chatComponent', () => {
       expect(wrapper.emitted()).toHaveProperty('on-error')
       expect((wrapper.emitted()['on-error'][0] as Array<Error>)[0]).toEqual(Error('Error, sending is failed'))
     })
+    it('Test create TX dialog shows up', async () => {
+      const room_id = 'aaa'
+      const $route = {
+        fullPath: 'full/path'
+      }
+      const mock_chat_message : ChatMessage = {
+        sender: user_1,
+        content: 'Hello,Allen',
+        timestamp: new Date('2022/1/16')
+      }
+      const mock_chatlog : ChatLog = { messages: [mock_chat_message] }
+      const store = createStore({
+        modules: {
+          auth: {
+            namespaced: true,
+            getters: {
+              is_logged_in: () => true,
+              user_id: jest.fn(),
+              homeserver: jest.fn(),
+              auth_id: () => 'fdsfsd'
+            }
+          },
+          chat: {
+            namespaced: true,
+            getters: {
+              get_chat_log_for_room: (room_id) => () => mock_chatlog
+            },
+            actions: {
+              action_send_chat_message_for_room: () => { throw new Error('Error, sending is failed') }
+            }
+          },
+          rooms: {
+            namespaced: true,
+            getters: {
+            }
+          }
+        }
+      })
+      const wrapper = mount(ChatComponent, {
+        attachTo: document.querySelector('html') as HTMLElement,
+        global: {
+          plugins: [store],
+          mocks: {
+            $route: {
+              params: {
+                room_id: room_01_room_id
+              }
+            }
+          }
+        },
+        props: {
+          users_info: [mocked_user_info1],
+          room_id: 'aaa'
+        }
+      })
+      await wrapper.find('#sendInputText').setValue('hello,allen')
+      expect((wrapper.find('#sendButton').element as HTMLButtonElement).disabled).toBe(false)
+      await wrapper.find('#sendButton').trigger('click')
+    })
   })
   describe('Test CreateTxDialog', () => {
     it('Test empty input(description)', async () => {
