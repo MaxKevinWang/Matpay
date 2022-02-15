@@ -8,7 +8,12 @@ import Register from '@/views/Register.vue'
 export const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    alias: '/rooms',
+    redirect: {
+      name: 'rooms'
+    }
+  },
+  {
+    path: '/rooms',
     name: 'rooms',
     component: Rooms
   },
