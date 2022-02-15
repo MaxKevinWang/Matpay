@@ -1,17 +1,25 @@
 <template>
-  <div>
-    <div v-for="message in chat_log.messages" :key="message.timestamp" >
+  <div class="mb-5">
+    <div v-for="(message, index) in chat_log.messages" :key="message.timestamp" >
       <component v-if="message.grouped_tx" :is="TxApprovedMessageBox" :reference="message" :room_id="room_id"/>
       <component v-if="message.approval" :is="TxPendingMessageBox" :reference="message" :room_id="room_id" @on-error="on_error"/>
       <component v-if="message.content" :is="ChatMessageBox" :chat_message="message" :room_id="room_id" />
+      <span v-if="index === chat_log.messages.length - 1 && !sent_message_echoed" class="d-flex flex-row justify-content-end mb-5 p-5 me-3 border"></span>
+      <span v-if="index === chat_log.messages.length - 1" class="scroll-container"></span>
     </div>
+  </div>
+  <div class="position-fixed bottom-50 end-0 me-1" v-if="new_message">
+    <button class="btn btn-info" type="button" data-bs-toggle="tooltip" data-bs-placement="top"
+            title="Go to bottom" @click="on_bottom_clicked()">
+      <i class="bi bi-arrow-bar-down"></i>
+    </button>
   </div>
   <div>
     <div class="input-group mb-3 position-fixed bottom-0" >
       <div class="d-flex">
         <div class="col-12" id="sendInput">
           <input type="text" v-model="chat_message" class="form-control" placeholder="Send a message"
-                 aria-describedby="button-addon2" id="sendInputText">
+                 aria-describedby="button-addon2" id="sendInputText" @keyup.enter="on_send_click">
         </div>
         <div class="d-flex" id="createButton">
           <button class="btn btn-light" type="button" data-bs-toggle="tooltip" data-bs-placement="top"
@@ -54,7 +62,9 @@ export default defineComponent({
       TxPendingMessageBox: 'TxPendingMessageBox' as string,
       ChatMessageBox: 'ChatMessageBox' as string,
       room_name: '' as string,
-      chat_message: null as string | null
+      chat_message: null as string | null,
+      new_message: false as boolean,
+      sent_message_echoed: false as boolean
     }
   },
   computed: {
@@ -95,18 +105,44 @@ export default defineComponent({
     async on_send_click () {
       if (this.chat_message) {
         try {
+          this.sent_message_echoed = false
           await this.action_send_chat_message_for_room({
             room_id: this.room_id,
             message: this.chat_message
           })
+          const scroll = document.querySelector('.scroll-container')
+          if (scroll) {
+            scroll.scrollIntoView({
+              behavior: 'smooth'
+            })
+            this.new_message = false
+          }
           this.chat_message = null
         } catch (e) {
           this.$emit('on-error', e)
         }
       }
     },
+    on_bottom_clicked () {
+      const scroll = document.querySelector('.scroll-container')
+      if (scroll) {
+        scroll.scrollIntoView({
+          behavior: 'smooth'
+        })
+        this.new_message = false
+      }
+    },
     on_error (e: string) {
       this.$emit('on-error', e)
+    }
+  },
+  watch: {
+    chat_log: {
+      handler () {
+        this.new_message = true
+        this.sent_message_echoed = true
+      },
+      immediate: true
     }
   }
 })
