@@ -8,18 +8,14 @@ import Register from '@/views/Register.vue'
 export const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    name: 'default',
+    alias: '/rooms',
+    name: 'rooms',
     component: Rooms
   },
   {
     path: '/login',
     name: 'login',
     component: Login
-  },
-  {
-    path: '/rooms',
-    name: 'rooms',
-    component: Rooms
   },
   {
     path: '/room/:room_id',
