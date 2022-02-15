@@ -11,27 +11,29 @@
       Loading...
     </div>
     <h3>Joined Rooms</h3>
-    <table class="table" v-if="!is_loading && this.rooms.length >= 0">
-      <thead>
-      <tr>
-        <th scope="col">Name</th>
-        <th scope="col">Member Count</th>
-        <th scope="col">User Type</th>
-        <th scope="col">Actions</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr v-for="room in rooms" :key="room.room_id">
-        <th scope="row">{{ room.name }}</th>
-        <td>{{ room.member_count }}</td>
-        <td>{{ room.user_type }}</td>
-        <td>
-          <button id="RoomDetailButton" class="btn btn-primary" @click="enter_room_detail(room.room_id)">Details</button>
-          <button id="RoomHistoryButton" class="btn btn-info" @click="enter_room_history(room.room_id)">History</button>
-        </td>
-      </tr>
-      </tbody>
-    </table>
+    <div class="table-responsive">
+      <table class="table" v-if="!is_loading && this.rooms.length >= 0">
+        <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col">Member Count</th>
+          <th scope="col">User Type</th>
+          <th scope="col">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="room in rooms" :key="room.room_id">
+          <th scope="row">{{ room.name }}</th>
+          <td>{{ room.member_count }}</td>
+          <td>{{ room.user_type }}</td>
+          <td>
+            <button id="RoomDetailButton" class="btn btn-primary" @click="enter_room_detail(room.room_id)">Details</button>
+            <button id="RoomHistoryButton" class="btn btn-info" @click="enter_room_history(room.room_id)">History</button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
     <h3>Received Invitations</h3>
     <table class="table" v-if="!is_loading && this.get_invited_rooms">
       <thead>
@@ -184,5 +186,9 @@ export default defineComponent({
 <style scoped>
 .btn {
   margin-right: 5px
+}
+
+#create-dialog-button {
+  margin-bottom: 20px
 }
 </style>
