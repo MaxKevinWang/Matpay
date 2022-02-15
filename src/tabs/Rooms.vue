@@ -14,7 +14,6 @@
     <table class="table" v-if="!is_loading && this.rooms.length >= 0">
       <thead>
       <tr>
-        <th scope="col">ID</th>
         <th scope="col">Name</th>
         <th scope="col">Member Count</th>
         <th scope="col">User Type</th>
@@ -23,8 +22,7 @@
       </thead>
       <tbody>
       <tr v-for="room in rooms" :key="room.room_id">
-        <th scope="row">{{ room.room_id_display }}</th>
-        <td>{{ room.name }}</td>
+        <th scope="row">{{ room.name }}</th>
         <td>{{ room.member_count }}</td>
         <td>{{ room.user_type }}</td>
         <td>
