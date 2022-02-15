@@ -48,15 +48,17 @@ export const chat_store = {
       if ('type' in payload.msg) {
         let group_id : GroupID
         if ('grouped_tx' in payload.msg) {
+          // approved tx
           group_id = payload.msg.grouped_tx.group_id
+          const prev_tx_msg = messages.filter(i => 'grouped_tx' in i && i.grouped_tx.group_id === group_id)
+          const prev_approval_msg = messages.filter(i => 'approval' in i && i.approval.group_id === group_id)
+          for (const prev_msg of prev_tx_msg.concat(prev_approval_msg)) {
+            const index = messages.indexOf(prev_msg)
+            messages.splice(index, 1)
+          }
         } else {
+          // pending approval
           group_id = payload.msg.approval.group_id
-        }
-        const prev_tx_msg = messages.filter(i => 'grouped_tx' in i && i.grouped_tx.group_id === group_id)
-        const prev_approval_msg = messages.filter(i => 'approval' in i && i.approval.group_id === group_id)
-        for (const prev_msg of prev_tx_msg.concat(prev_approval_msg)) {
-          const index = messages.indexOf(prev_msg)
-          messages.splice(index, 1)
         }
       }
       state.chat_log[payload.room_id].messages.push(payload.msg)
@@ -67,7 +69,8 @@ export const chat_store = {
     },
     mutation_reset_state (state: State) {
       Object.assign(state, {
-        chat_log: {}
+        chat_log: {},
+        rejected_events: {}
       })
     }
   },
