@@ -7,7 +7,8 @@ import {
   room_02_permission,
   room_03_permission, room_04_user_info,
   user_1,
-  user_2
+  user_2,
+  user_3
 } from '../mocks/mocked_user'
 import MemberList from '@/components/MemberList.vue'
 import { createStore } from 'vuex'
@@ -87,6 +88,12 @@ describe('Test MemberList Component', () => {
               user_type: 'Member',
               is_self: false,
               avatar_url: ''
+            }, {
+              user: user_3,
+              displayname: user_2.displayname,
+              user_type: 'Left',
+              is_self: false,
+              avatar_url: ''
             }]
         }
       })
@@ -94,6 +101,7 @@ describe('Test MemberList Component', () => {
       expect(wrapper.find('#usercard_' + selectorify(user_1.user_id)).element.innerHTML.includes(user_1.displayname)).toBeTruthy()
       expect(wrapper.find('#usercard_' + selectorify(user_1.user_id)).element.innerHTML.includes('Yourself')).toBeTruthy()
       expect(wrapper.find('#usercard_' + selectorify(user_1.user_id)).element.innerHTML.includes('Member')).toBeTruthy()
+      expect(wrapper.find('#usercard_' + selectorify(user_3.user_id)).element.innerHTML.includes('Left')).toBeTruthy()
       expect(wrapper.find('#usercard_' + selectorify(user_2.user_id)).element.innerHTML.includes(user_2.displayname)).toBeTruthy()
       // const list1 = wrapper.find('.clearfix').filter(i => i.attributes('data-test') === user_1.user_id)
       // expect(list1[0].find('#"\'usercard_\' + user_id"').element.innerHTML.includes(user_1.displayname)).toBeTruthy()
@@ -424,54 +432,105 @@ describe('Test MemberList Component', () => {
       // expect((wrapper.emitted()['on-error'][0] as Array<Error>)[0]).toEqual(Error('Error, something is fucked'))
       await expect(wrapper.find('#confirm-modal').element.innerHTML.includes('you want to ban user?')).toEqual(true)
     })
-  })
-  it('Test the on_leave + confirm dialog', async () => {
-    const store = createStore({
-      modules: {
-        rooms: {
-          namespaced: true,
-          getters: {
-          }
-        },
-        auth: {
-          namespaced: true,
-          getters: {
-            is_logged_in: () => true,
-            user_id: () => user_1.user_id,
-            homeserver: jest.fn()
-          }
-        },
-        user: {
-          namespaced: true,
-          getters: {
-            get_permissions_for_room: () => (room_id: MatrixRoomID) => {
-              return cloneDeep(room_03_permission)
+    it('Test the on_leave + confirm dialog', async () => {
+      const store = createStore({
+        modules: {
+          rooms: {
+            namespaced: true,
+            getters: {
+            }
+          },
+          auth: {
+            namespaced: true,
+            getters: {
+              is_logged_in: () => true,
+              user_id: () => user_1.user_id,
+              homeserver: jest.fn()
+            }
+          },
+          user: {
+            namespaced: true,
+            getters: {
+              get_permissions_for_room: () => (room_id: MatrixRoomID) => {
+                return cloneDeep(room_03_permission)
+              }
+            }
+          },
+          tx: {
+            namespaced: true,
+            getters: {
+              get_open_balance_against_user_for_room: () => () => 10
             }
           }
+        }
+      })
+      const wrapper = mount(MemberList, {
+        attachTo: document.querySelector('html') as HTMLElement,
+        global: {
+          plugins: [store]
         },
-        tx: {
-          namespaced: true,
-          getters: {
-            get_open_balance_against_user_for_room: () => () => 10
+        props: {
+          room_id: 'fake_room_id',
+          can_i_kick_user: true,
+          users_info: room_04_user_info
+        }
+      })
+      await (wrapper.find('#usercard_' + selectorify(user_1.user_id)).find('#leaveButton')).trigger('click')
+      await flushPromises()
+      // expect(wrapper.emitted()).toHaveProperty('on-kick')
+      // expect((wrapper.emitted()['on-error'][0] as Array<Error>)[0]).toEqual(Error('Error, something is fucked'))
+      await expect(wrapper.find('#confirm-modal').element.innerHTML.includes('you want to leave room?')).toEqual(true)
+    })
+    it('Test confirm-dialog emit-error', async () => {
+      const store = createStore({
+        modules: {
+          rooms: {
+            namespaced: true,
+            getters: {
+            }
+          },
+          auth: {
+            namespaced: true,
+            getters: {
+              is_logged_in: () => true,
+              user_id: () => user_1.user_id,
+              homeserver: jest.fn()
+            }
+          },
+          user: {
+            namespaced: true,
+            getters: {
+              get_permissions_for_room: () => (room_id: MatrixRoomID) => {
+                return cloneDeep(room_03_permission)
+              }
+            },
+            actions: {
+              action_leave_room: () => { throw new Error('Error,shit') }
+            }
+          },
+          tx: {
+            namespaced: true,
+            getters: {
+              get_open_balance_against_user_for_room: () => () => 10
+            }
           }
         }
-      }
+      })
+      const wrapper = mount(MemberList, {
+        attachTo: document.querySelector('html') as HTMLElement,
+        global: {
+          plugins: [store]
+        },
+        props: {
+          room_id: 'fake_room_id',
+          can_i_kick_user: true,
+          users_info: room_04_user_info
+        }
+      })
+      await (wrapper.find('#usercard_' + selectorify(user_1.user_id)).find('#leaveButton')).trigger('click')
+      await flushPromises()
+      expect(wrapper.emitted()).toHaveProperty('on-error')
+      expect((wrapper.emitted()['on-error'][0] as Array<Error>)[0]).toEqual(Error('Error,shit'))
     })
-    const wrapper = mount(MemberList, {
-      attachTo: document.querySelector('html') as HTMLElement,
-      global: {
-        plugins: [store]
-      },
-      props: {
-        room_id: 'fake_room_id',
-        can_i_kick_user: true,
-        users_info: room_04_user_info
-      }
-    })
-    await (wrapper.find('#usercard_' + selectorify(user_1.user_id)).find('#leaveButton')).trigger('click')
-    await flushPromises()
-    // expect(wrapper.emitted()).toHaveProperty('on-kick')
-    // expect((wrapper.emitted()['on-error'][0] as Array<Error>)[0]).toEqual(Error('Error, something is fucked'))
-    await expect(wrapper.find('#confirm-modal').element.innerHTML.includes('you want to leave room?')).toEqual(true)
   })
 })
