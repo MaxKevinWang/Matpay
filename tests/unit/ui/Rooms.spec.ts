@@ -85,7 +85,7 @@ describe('Test Rooms Tab', () => {
         }
       })
       await flushPromises()
-      await expect(wrapper.findAll('td').filter(i => i.element.innerHTML.includes('Room1')).length).toBe(1)
+      await expect(wrapper.findAll('th').filter(i => i.element.innerHTML.includes('Room1')).length).toBe(1)
     })
     it('Test clicking Detail redirects', async () => {
       let redirected = false
