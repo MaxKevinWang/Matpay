@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <div class="row">
-      <div class="col-4">
+      <div class="col-12 col-md-4">
         <h3>How to register</h3>
         MatPay itself does not support registration and storing account information. To create
         an account register on a
@@ -12,10 +12,10 @@
         you can register your new account. The register page is for a chat client called "Element" that is also based on
         Matrix. You can use your registered account on Element and MatPay.
       </div>
-      <div class="col-4">
+      <div class="col-6 col-md-4">
         <img src="@/assets/CreateAccountTchncs.jpg" alt="Create Account">
       </div>
-      <div class="col-4">
+      <div class="col-6 col-md-4">
         <img src="@/assets/RegisterPageElement.jpg" alt="Register Page">
       </div>
     </div>
