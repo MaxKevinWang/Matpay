@@ -1,7 +1,7 @@
 <template>
   <div class="card" style="background-color: rgba(255, 193, 193,.5)">
     <div class="card-body">
-      <div class>
+      <div class="row">
         <div class="col">
           <p>{{this.reference.timestamp.toLocaleDateString()}}</p>
         </div>
