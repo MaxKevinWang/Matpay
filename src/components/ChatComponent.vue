@@ -17,7 +17,7 @@
   <div>
     <div class="input-group mb-3 position-fixed bottom-0" >
       <div class="d-flex">
-        <div class="col-12" id="sendInput">
+        <div class="col-6 col-sm-12" id="sendInput">
           <input type="text" v-model="chat_message" class="form-control" placeholder="Send a message"
                  aria-describedby="button-addon2" id="sendInputText" @keyup.enter="on_send_click">
         </div>
