@@ -48,11 +48,7 @@ describe('Test chatComponent', () => {
   }
 
   describe('Test component UI', () => {
-    it('Test show up', async () => {
-      const $route = {
-        fullPath: 'full/path'
-      }
-      const room_id = 'aaa'
+    it('Test show up of createTxdialog', async () => {
       const mock_chat_message : ChatMessage = {
         sender: user_1,
         content: 'Hello,Allen',
@@ -77,7 +73,7 @@ describe('Test chatComponent', () => {
             namespaced: true,
             getters: {
               is_logged_in: () => true,
-              user_id: () => user_2.user_id
+              user_id: () => user_1.user_id
             }
           }
         }
@@ -85,14 +81,20 @@ describe('Test chatComponent', () => {
       const wrapper = mount(ChatComponent, {
         attachTo: document.querySelector('html') as HTMLElement,
         global: {
-          plugins: [router, store],
+          plugins: [store],
           stubs: {
             ConfirmDialog: true,
             SplitCreateDialog: true
+          },
+          mocks: {
+            $route: {
+              params: {
+                room_id: room_01_room_id
+              }
+            }
           }
         },
         props: {
-          room_id: 'aaa',
           users_info: [
             {
               user: user_1,
@@ -113,6 +115,74 @@ describe('Test chatComponent', () => {
       await wrapper.find('#createButton').trigger('click')
       await flushPromises()
       await expect(wrapper.vm.$refs.create_tx_dialog.is_shown).toBe(true)
+    })
+    xit('Test show up of SplitTxdialog', async () => {
+      const mock_chat_message : ChatMessage = {
+        sender: user_1,
+        content: 'Hello,Allen',
+        timestamp: new Date('2022/1/16')
+      }
+      const mock_chatlog : ChatLog = { messages: [mock_chat_message] }
+      const store = createStore({
+        modules: {
+          rooms: {
+            namespaced: true,
+            getters: {
+              get_room_name: (room_id) => () => 'fake_room_name'
+            }
+          },
+          chat: {
+            namespaced: true,
+            getters: {
+              get_chat_log_for_room: (room_id) => () => mock_chatlog
+            }
+          },
+          auth: {
+            namespaced: true,
+            getters: {
+              is_logged_in: () => true,
+              user_id: () => user_1.user_id
+            }
+          }
+        }
+      })
+      const wrapper = mount(ChatComponent, {
+        attachTo: document.querySelector('html') as HTMLElement,
+        global: {
+          plugins: [store],
+          stubs: {
+            ConfirmDialog: true
+          },
+          mocks: {
+            $route: {
+              params: {
+                room_id: room_01_room_id
+              }
+            }
+          }
+        },
+        props: {
+          users_info: [
+            {
+              user: user_1,
+              displayname: user_1.displayname,
+              user_type: 'Member',
+              is_self: true,
+              avatar_url: ''
+            }, {
+              user: user_2,
+              displayname: user_2.displayname,
+              user_type: 'Member',
+              is_self: false,
+              avatar_url: ''
+            }
+          ]
+        }
+      })
+      await wrapper.find('#createButton').trigger('click')
+      await flushPromises()
+      await wrapper.find('#split_button').trigger('click')
+      await expect(wrapper.vm.$refs.split_dialog.is_shown).toBe(true)
     })
     it('All the buttons show correctly', function () {
       const room_id = 'aaa'

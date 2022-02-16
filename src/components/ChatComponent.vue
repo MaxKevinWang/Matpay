@@ -21,8 +21,8 @@
           <input type="text" v-model="chat_message" class="form-control" placeholder="Send a message"
                  aria-describedby="button-addon2" id="sendInputText" @keyup.enter="on_send_click">
         </div>
-        <div class="d-flex" id="createButton">
-          <button class="btn btn-light" type="button" data-bs-toggle="tooltip" data-bs-placement="top"
+        <div class="d-flex">
+          <button class="btn btn-light" id="createButton" type="button" data-bs-toggle="tooltip" data-bs-placement="top"
                   title="Create Transaction" @click="on_tx_clicked()">
             <i class="bi bi-receipt"></i>
           </button>
