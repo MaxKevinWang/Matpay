@@ -2,7 +2,7 @@ import { ActionTree, GetterTree, MutationTree } from 'vuex'
 import { MatrixSyncResponse } from '@/interface/sync.interface'
 import axios from 'axios'
 import { MatrixEventID, MatrixRoomID } from '@/models/id.model'
-import { MatrixRoomEvent, MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
+import { MatrixRoomEvent, MatrixRoomJoinRulesStateEvent, MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
 import { RoomEventFilter } from '@/interface/filter.interface'
 import { GETRoomEventsResponse, POSTFilterCreateResponse } from '@/interface/api.interface'
 import { MatrixError } from '@/interface/error.interface'
@@ -19,7 +19,8 @@ interface State {
   room_tx_sync_complete: Record<MatrixRoomID, boolean>,
   cached_tx_events: Record<MatrixRoomID, Array<TxEvent>>,
   sync_filter: string,
-  long_poll_controller: AbortController
+  long_poll_controller: AbortController,
+  ignored_rooms: Set<MatrixRoomID>
 }
 
 export const sync_store = {
@@ -36,7 +37,8 @@ export const sync_store = {
       room_tx_sync_complete: {},
       cached_tx_events: {},
       sync_filter: '',
-      long_poll_controller: new AbortController()
+      long_poll_controller: new AbortController(),
+      ignored_rooms: new Set()
     }
   },
   mutations: <MutationTree<State>>{
@@ -123,6 +125,9 @@ export const sync_store = {
     mutation_set_sync_filter (state: State, payload: string) {
       state.sync_filter = payload
     },
+    mutation_add_ignored_room (state: State, payload: MatrixRoomID) {
+      state.ignored_rooms.add(payload)
+    },
     mutation_reset_state (state: State) {
       Object.assign(state, {
         next_batch: '',
@@ -135,7 +140,8 @@ export const sync_store = {
         room_tx_sync_complete: {},
         cached_tx_events: {},
         sync_filter: '',
-        long_poll_controller: new AbortController()
+        long_poll_controller: new AbortController(),
+        ignored_rooms: new Set()
       })
     }
   },
@@ -160,7 +166,18 @@ export const sync_store = {
         const response_filter = await axios.post<POSTFilterCreateResponse>(`${homeserver}/_matrix/client/r0/user/${user_id}/filter`, {
           room: {
             timeline: {
-              limit: 20
+              limit: 20,
+              lazy_load_members: true,
+              types: [
+                'm.room.*',
+                'com.matpay.*'
+              ],
+              not_types: [
+                'm.room.encrypted'
+              ]
+            },
+            state: {
+              not_types: ['*']
             },
             ephemeral: {
               not_types: ['*']
@@ -176,7 +193,7 @@ export const sync_store = {
         commit('mutation_set_sync_filter', response_filter.data.filter_id)
         const response = await axios.get<MatrixSyncResponse>(`${homeserver}/_matrix/client/r0/sync`, {
           params: {
-            full_state: true
+            filter: state.sync_filter
           }
         })
         commit('mutation_set_next_batch', { next_batch: response.data.next_batch })
@@ -187,18 +204,26 @@ export const sync_store = {
             dispatch('rooms/action_parse_invited_rooms', response.data.rooms.invite, { root: true })
           }
           if (response.data.rooms.join) {
-            // 1. create room structure for every existing room
+            // ignore public rooms
+            const promises_room_type_async: Promise<any>[] = []
             for (const room_id of Object.keys(response.data.rooms.join)) {
-              commit('mutation_create_new_room', room_id)
+              promises_room_type_async.push(axios.get<MatrixRoomJoinRulesStateEvent['content']>(`${homeserver}/_matrix/client/v3/rooms/${room_id}/state/m.room.join_rules/`)
+                .then((state_response) => {
+                  if (state_response.status !== 200 || state_response.data.join_rule === 'public') {
+                    commit('mutation_add_ignored_room', room_id)
+                  }
+                })
+              )
             }
-            // 2. Parse existing events
-            // Do it async
+            await Promise.all(promises_room_type_async)
             const promises_room_async: Promise<any>[] = []
-            for (const room_id of Object.keys(response.data.rooms.join)) {
-              // state events first
-              // this ensures that when init is marked true, basic room information can be displayed.
+            for (const room_id of Object.keys(response.data.rooms.join).filter(i => !state.ignored_rooms.has(i))) {
               promises_room_async.push(axios.get<MatrixRoomStateEvent[]>(`${homeserver}/_matrix/client/r0/rooms/${room_id}/state`)
                 .then((state_response) => {
+                  // 1. create room structure for every existing room
+                  commit('mutation_create_new_room', room_id)
+                  // state events first
+                  // this ensures that when init is marked true, basic room information can be displayed.
                   for (const event of state_response.data) {
                     if (!state.processed_events_id.has(event.event_id)) {
                       commit('mutation_process_event', {
@@ -220,7 +245,7 @@ export const sync_store = {
             })
             // Then pass single events
             const promises_event_async: Promise<any>[] = []
-            for (const [room_id, room_data] of Object.entries(response.data.rooms.join)) {
+            for (const [room_id, room_data] of Object.entries(response.data.rooms.join).filter(i => !state.ignored_rooms.has(i[0]))) {
               promises_room_async.push(new Promise(() => {
                 // parse account data
                 const account_data = room_data.account_data
@@ -433,8 +458,14 @@ export const sync_store = {
           commit('mutation_set_next_batch', { next_batch: response.data.next_batch })
           if (response.data.rooms && response.data.rooms.join) {
             // 1. create room structure for every new room
-            for (const room_id of Object.keys(response.data.rooms.join)) {
+            for (const room_id of Object.keys(response.data.rooms.join).filter(i => !state.ignored_rooms.has(i))) {
               if (!Object.keys(state.room_events).includes(room_id)) {
+                // discard public room
+                const join_rules_response = await axios.get<MatrixRoomJoinRulesStateEvent['content']>(`${homeserver}/_matrix/client/v3/rooms/${room_id}/state/m.room.join_rules/`)
+                if (join_rules_response.status !== 200 || join_rules_response.data.join_rule === 'public') {
+                  commit('mutation_add_ignored_room', room_id)
+                  continue
+                }
                 // wait for initial state of this new root
                 await dispatch('action_resync_initial_state_for_room', {
                   room_id: room_id
@@ -442,7 +473,7 @@ export const sync_store = {
               }
             }
             // Then pass single events
-            for (const [room_id, room_data] of Object.entries(response.data.rooms.join)) {
+            for (const [room_id, room_data] of Object.entries(response.data.rooms.join).filter(i => !state.ignored_rooms.has(i[0]))) {
               const timeline = room_data.timeline
               const account_data = room_data.account_data
               for (const event of account_data.events) {

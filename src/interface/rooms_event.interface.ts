@@ -33,7 +33,12 @@ export interface MatrixRoomMemberStateEvent extends MatrixRoomStateEvent {
     }
   }
 }
-
+export interface MatrixRoomJoinRulesStateEvent extends MatrixRoomStateEvent {
+  type: 'm.room.join_rules',
+  content: {
+    join_rule: 'public' | 'knock' | 'invite' | 'private'
+  }
+}
 export interface MatrixRoomPermissionConfiguration extends Record<string, unknown> {
   ban: number,
   events: Record<MatrixEventID, number>,
