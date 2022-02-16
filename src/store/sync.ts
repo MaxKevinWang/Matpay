@@ -177,6 +177,7 @@ export const sync_store = {
               ]
             },
             state: {
+              lazy_load_members: true,
               not_types: ['*']
             },
             ephemeral: {
@@ -193,7 +194,8 @@ export const sync_store = {
         commit('mutation_set_sync_filter', response_filter.data.filter_id)
         const response = await axios.get<MatrixSyncResponse>(`${homeserver}/_matrix/client/r0/sync`, {
           params: {
-            filter: state.sync_filter
+            filter: state.sync_filter,
+            timeout: 0
           }
         })
         commit('mutation_set_next_batch', { next_batch: response.data.next_batch })
@@ -525,9 +527,12 @@ export const sync_store = {
           // Kick myself out if self leaving is detected
           if (response.data.rooms && response.data.rooms.leave) {
             for (const left_room_id of Object.keys(response.data.rooms.leave)) {
-              dispatch('rooms/action_i_am_kicked_from_room', {
-                room_id: left_room_id
-              }, { root: true })
+              // don't kick myself if I'm not joined
+              if (Object.keys(state.room_events).includes(left_room_id)) {
+                dispatch('rooms/action_i_am_kicked_from_room', {
+                  room_id: left_room_id
+                }, { root: true })
+              }
             }
           }
         } catch (e) {
@@ -564,11 +569,32 @@ export const sync_store = {
       // perform one additional full sync to retrieve previous batch ids
       const response = await axios.get<MatrixSyncResponse>(`${homeserver}/_matrix/client/r0/sync`, {
         params: {
-          full_state: true,
           since: state.next_batch,
           filter: {
             room: {
-              rooms: [payload.room_id]
+              rooms: [payload.room_id],
+              timeline: {
+                lazy_load_members: true,
+                types: [
+                  'm.room.*',
+                  'com.matpay.*'
+                ],
+                not_types: [
+                  'm.room.encrypted'
+                ]
+              },
+              state: {
+                not_types: ['*']
+              },
+              ephemeral: {
+                not_types: ['*']
+              }
+            },
+            presence: {
+              not_types: ['*']
+            },
+            account_data: {
+              not_types: ['*']
             }
           }
         }
