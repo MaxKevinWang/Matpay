@@ -1,7 +1,7 @@
 import store from '@/store/tx'
 import { MatrixEventID, MatrixRoomID, MatrixUserID } from '@/models/id.model'
 import { room_01_user_info, user_1, user_2, user_3 } from '../mocks/mocked_user'
-import { TxModifyEvent } from '@/interface/tx_event.interface'
+import { TxApproveEvent, TxModifyEvent } from '@/interface/tx_event.interface'
 import { uuidgen } from '@/utils/utils'
 import { GroupedTransaction, PendingApproval, TxGraph } from '@/models/transaction.model'
 import axios, { AxiosResponse } from 'axios'

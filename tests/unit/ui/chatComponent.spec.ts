@@ -1,4 +1,4 @@
-import { config, mount, shallowMount } from '@vue/test-utils'
+import { config, flushPromises, mount, shallowMount } from '@vue/test-utils'
 import { room_01_room_id, user_1, user_2 } from '../mocks/mocked_user'
 import { ChatLog, ChatMessage, TxApprovedPlaceholder } from '@/models/chat.model'
 import { selectorify, split_percentage, sum_amount, to_currency_display, uuidgen } from '@/utils/utils'
@@ -6,10 +6,11 @@ import ChatComponent from '@/components/ChatComponent.vue'
 import { createStore } from 'vuex'
 import { newStore } from '@/store'
 import router from '@/router'
-import { RoomUserInfo } from '@/models/user.model'
+import { RoomUserInfo, User } from '@/models/user.model'
 import bootstrap from 'bootstrap'
 import CreateTxDialog from '@/dialogs/CreateTxDialog.vue'
 import { GroupedTransaction } from '@/models/transaction.model'
+import { MatrixRoomID, MatrixUserID } from '@/models/id.model'
 
 jest.mock('bootstrap')
 const mockedBootstrap = bootstrap as jest.Mocked<typeof bootstrap>
@@ -47,6 +48,72 @@ describe('Test chatComponent', () => {
   }
 
   describe('Test component UI', () => {
+    it('Test show up', async () => {
+      const $route = {
+        fullPath: 'full/path'
+      }
+      const room_id = 'aaa'
+      const mock_chat_message : ChatMessage = {
+        sender: user_1,
+        content: 'Hello,Allen',
+        timestamp: new Date('2022/1/16')
+      }
+      const mock_chatlog : ChatLog = { messages: [mock_chat_message] }
+      const store = createStore({
+        modules: {
+          rooms: {
+            namespaced: true,
+            getters: {
+              get_room_name: (room_id) => () => 'fake_room_name'
+            }
+          },
+          chat: {
+            namespaced: true,
+            getters: {
+              get_chat_log_for_room: (room_id) => () => mock_chatlog
+            }
+          },
+          auth: {
+            namespaced: true,
+            getters: {
+              is_logged_in: () => true,
+              user_id: () => user_2.user_id
+            }
+          }
+        }
+      })
+      const wrapper = mount(ChatComponent, {
+        attachTo: document.querySelector('html') as HTMLElement,
+        global: {
+          plugins: [router, store],
+          stubs: {
+            ConfirmDialog: true,
+            SplitCreateDialog: true
+          }
+        },
+        props: {
+          room_id: 'aaa',
+          users_info: [
+            {
+              user: user_1,
+              displayname: user_1.displayname,
+              user_type: 'Member',
+              is_self: true,
+              avatar_url: ''
+            }, {
+              user: user_2,
+              displayname: user_2.displayname,
+              user_type: 'Member',
+              is_self: false,
+              avatar_url: ''
+            }
+          ]
+        }
+      })
+      await wrapper.find('#createButton').trigger('click')
+      await flushPromises()
+      await expect(wrapper.vm.$refs.create_tx_dialog.is_shown).toBe(true)
+    })
     it('All the buttons show correctly', function () {
       const room_id = 'aaa'
       const mock_chat_message : ChatMessage = {

@@ -487,6 +487,9 @@ describe('Test MemberList Component', () => {
           rooms: {
             namespaced: true,
             getters: {
+            },
+            actions: {
+              action_leave_room: () => { throw new Error('Error,shit') }
             }
           },
           auth: {
@@ -503,9 +506,6 @@ describe('Test MemberList Component', () => {
               get_permissions_for_room: () => (room_id: MatrixRoomID) => {
                 return cloneDeep(room_03_permission)
               }
-            },
-            actions: {
-              action_leave_room: () => { throw new Error('Error,shit') }
             }
           },
           tx: {
@@ -528,6 +528,7 @@ describe('Test MemberList Component', () => {
         }
       })
       await (wrapper.find('#usercard_' + selectorify(user_1.user_id)).find('#leaveButton')).trigger('click')
+      await wrapper.find('#yes-button').trigger('click')
       await flushPromises()
       expect(wrapper.emitted()).toHaveProperty('on-error')
       expect((wrapper.emitted()['on-error'][0] as Array<Error>)[0]).toEqual(Error('Error,shit'))

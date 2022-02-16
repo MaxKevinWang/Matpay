@@ -10,7 +10,7 @@
           <p style="white-space: pre-wrap;">{{ confirm_message }}</p>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-danger" @click="on_confirm">Yes</button>
+          <button type="button" class="btn btn-danger" id="yes-button" @click="on_confirm">Yes</button>
           <button type="button" class="btn btn-secondary" @click="on_reject">No</button>
         </div>
       </div>
