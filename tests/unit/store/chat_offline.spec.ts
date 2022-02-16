@@ -142,7 +142,8 @@ describe('Test chat store', function () {
       // Test TxPendingPlaceholder
       state.chat_log.aaa.messages.push(fake_msg_pending_approval_previous)
       mutation(state, { room_id: 'aaa', msg: fake_msg_pending_approval })
-      expect(state.chat_log.aaa.messages[0]).toEqual(fake_msg_pending_approval)
+      expect(state.chat_log.aaa.messages[0]).toEqual(fake_msg_pending_approval_previous)
+      expect(state.chat_log.aaa.messages[1]).toEqual(fake_msg_pending_approval)
       // Test sorting with timestamp
       state.chat_log.aaa.messages = []
       fake_msg_TX_Approved.timestamp.setTime(100)
@@ -197,8 +198,30 @@ describe('Test chat store', function () {
         content: '',
         timestamp: new Date()
       }
+      const fake_group_tx_Approved: GroupedTransaction = {
+        from: user_1,
+        group_id: uuidgen(),
+        state: 'approved',
+        txs: [],
+        description: 'Overwritten',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      const fake_msg_TX_Approved: TxApprovedPlaceholder = {
+        type: 'approved',
+        timestamp: new Date(),
+        grouped_tx: fake_group_tx_Approved
+      }
       state.chat_log.aaa.messages.push(fake_msg)
+      state.chat_log.aaa.messages.push(fake_msg_TX_Approved)
+      expect(getter('aaaa')).toEqual({ messages: [] })
       expect(getter('aaa')).toEqual(state.chat_log.aaa)
+    })
+    it('Test getters get_rejected_events_for_room', function () {
+      const getter = store.getters.get_rejected_events_for_room(state, null, null, null)
+      state.rejected_events.aaa.add(uuidgen())
+      expect(getter('aaa')).toEqual(state.rejected_events.aaa)
     })
   })
   describe('Test store action', () => {
