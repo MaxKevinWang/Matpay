@@ -17,7 +17,8 @@ interface State {
   room_tx_sync_complete: Record<MatrixRoomID, boolean>,
   cached_tx_events: Record<MatrixRoomID, Array<TxEvent>>,
   sync_filter: string,
-  long_poll_controller: AbortController
+  long_poll_controller: AbortController,
+  ignored_rooms: Set<MatrixRoomID>
 }
 describe('Test sync store', function () {
   describe('Test store mutations', function () {
@@ -32,7 +33,8 @@ describe('Test sync store', function () {
       room_tx_sync_complete: {},
       cached_tx_events: {},
       sync_filter: '',
-      long_poll_controller: new AbortController()
+      long_poll_controller: new AbortController(),
+      ignored_rooms: new Set()
     }
     beforeEach(function () {
       state = {
@@ -46,7 +48,8 @@ describe('Test sync store', function () {
         room_tx_sync_complete: {},
         cached_tx_events: {},
         sync_filter: '',
-        long_poll_controller: new AbortController()
+        long_poll_controller: new AbortController(),
+        ignored_rooms: new Set()
       }
     })
     it('Test mutation mutation_set_next_batch', function () {
@@ -293,7 +296,8 @@ describe('Test sync store', function () {
         },
         cached_tx_events: {},
         sync_filter: '',
-        long_poll_controller: new AbortController()
+        long_poll_controller: new AbortController(),
+        ignored_rooms: new Set()
       }
     })
     it('Test getter get_next_batch_id', function () {

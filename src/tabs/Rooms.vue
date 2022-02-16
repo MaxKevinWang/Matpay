@@ -4,10 +4,10 @@
     <div class="alert alert-danger" role="alert" v-if="error">
       {{ error }}
     </div>
-    <div class="alert alert-danger" role="alert" v-if="this.rooms.length === 0 && !is_loading">
+    <div class="alert alert-danger" role="alert" v-if="this.rooms.length === 0 && !is_loading && is_everything_ready">
       No rooms joined.
     </div>
-    <div class="alert alert-primary" role="alert" v-if="is_loading">
+    <div class="alert alert-primary" role="alert" v-if="!is_everything_ready">
       Loading...
     </div>
     <h3>Joined Rooms</h3>
@@ -71,7 +71,8 @@ export default defineComponent({
   data () {
     return {
       error: null as string | null,
-      is_loading: true as boolean
+      is_loading: true as boolean,
+      is_everything_ready: false as boolean
     }
   },
   components: {
@@ -88,6 +89,9 @@ export default defineComponent({
     ...mapGetters('sync', [
       'is_initial_sync_complete'
     ]),
+    is_initial_sync_complete () : boolean {
+      return this.is_initial_sync_complete
+    },
     rooms () : RoomTableRow[] {
       if (this.is_loading) {
         return []
@@ -173,11 +177,21 @@ export default defineComponent({
   },
   async created () {
     await this.action_sync_initial_state()
-    this.is_loading = false
+    this.is_everything_ready = true
   },
   mounted () {
     if (this.$route.query.not_joined) {
       this.error = 'Error: You are no longer member of the room!'
+    }
+  },
+  watch: {
+    is_initial_sync_complete: {
+      handler () {
+        if (!this.is_initial_sync_complete) {
+          this.is_loading = false
+        }
+      },
+      immediate: true
     }
   }
 })

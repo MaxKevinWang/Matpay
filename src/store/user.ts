@@ -152,9 +152,9 @@ export const user_store = {
           },
           displayname: member_event.content.displayname || member_event.state_key,
           avatar_url: member_event.content.avatar_url,
-          user_type: permissions.users[member_event.state_key] >= 100
+          user_type: permissions ? (permissions.users[member_event.state_key] >= 100
             ? 'Admin'
-            : permissions.users[member_event.state_key] >= 50 ? 'Moderator' : 'Member',
+            : permissions.users[member_event.state_key] >= 50 ? 'Moderator' : 'Member') : 'Member',
           is_self: member_event.state_key === self_user_id
         }
         // Remove previous user infos

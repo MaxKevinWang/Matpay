@@ -46,7 +46,6 @@ export const sync_store = {
       state.next_batch = payload.next_batch
     },
     mutation_create_new_room (state: State, payload: MatrixRoomID) {
-      console.log('Creating room structure for room:', payload)
       state.room_events[payload] = []
       state.room_state_events[payload] = []
       state.room_tx_prev_batch_id[payload] = ''
@@ -218,6 +217,7 @@ export const sync_store = {
               )
             }
             await Promise.all(promises_room_type_async)
+            commit('mutation_init_state_complete')
             const promises_room_async: Promise<any>[] = []
             for (const room_id of Object.keys(response.data.rooms.join).filter(i => !state.ignored_rooms.has(i))) {
               promises_room_async.push(axios.get<MatrixRoomStateEvent[]>(`${homeserver}/_matrix/client/r0/rooms/${room_id}/state`)
@@ -238,7 +238,6 @@ export const sync_store = {
               )
             }
             await Promise.all(promises_room_async)
-            commit('mutation_init_state_complete')
             // Wait for user info be ready
             await dispatch('rooms/action_parse_state_events_for_all_rooms', null, { root: true })
             // Start long polling
