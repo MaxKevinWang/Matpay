@@ -20,6 +20,7 @@
       </div>
     </div>
   </div>
+  <DetailDialog ref="detail_dialog" :room_id="room_id" :reference="reference"/>
 </template>
 
 <script lang="ts">
@@ -28,6 +29,7 @@ import { mapGetters } from 'vuex'
 import { User } from '@/models/user.model'
 import { MatrixRoomID } from '@/models/id.model'
 import { TxApprovedPlaceholder } from '@/models/chat.model'
+import DetailDialog from '@/dialogs/DetailDialog.vue'
 
 export default defineComponent({
   name: 'TxApprovedMessageBox',
@@ -52,16 +54,10 @@ export default defineComponent({
       'get_grouped_transactions_for_room'
     ])
   },
-  components: {},
+  components: { DetailDialog },
   methods: {
     on_detail_click () {
-      this.$router.push({
-        name: 'room_history',
-        params: {
-          room_id: this.room_id,
-          current_group_id: this.reference?.grouped_tx.group_id
-        }
-      })
+      this.$refs.detail_dialog.show()
     }
   }
 })
