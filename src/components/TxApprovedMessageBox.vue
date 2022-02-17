@@ -1,26 +1,30 @@
 <template>
-  <div class="card" style="background-color: rgba(105, 105, 105,.5)">
-    <div class="card-body">
-      <div class="row">
-        <div class="col">
-          <p>{{ this.reference.timestamp.toLocaleDateString() }}</p>
-        </div>
-        <div class="col">
-          <p>{{ this.reference.grouped_tx.description }}</p>
-        </div>
-        <div class="col">
-          <p>
-            {{ this.reference.grouped_tx.from.displayname + ' paid ' + to_currency_display(sum_amount(this.reference.grouped_tx)) }}</p>
-        </div>
-        <div class="col">
-          <button @click="on_detail_click" class="btn btn-primary">
-            Details
-          </button>
+  <div>
+    <div class="card" style="background-color: rgba(105, 105, 105,.5)">
+      <div class="card-body">
+        <div class="row">
+          <div class="col">
+            <p>{{ this.reference.timestamp.toLocaleDateString() }}</p>
+          </div>
+          <div class="col">
+            <p>{{ this.reference.grouped_tx.description }}</p>
+          </div>
+          <div class="col">
+            <p>
+              {{
+                this.reference.grouped_tx.from.displayname + ' paid ' + to_currency_display(sum_amount(this.reference.grouped_tx))
+              }}</p>
+          </div>
+          <div class="col">
+            <button @click="on_detail_click" class="btn btn-primary m-1">
+              Details
+            </button>
+          </div>
         </div>
       </div>
     </div>
+    <DetailDialog ref="detail_dialog" :room_id="room_id" :reference="reference"/>
   </div>
-  <DetailDialog ref="detail_dialog" :room_id="room_id" :reference="reference"/>
 </template>
 
 <script lang="ts">

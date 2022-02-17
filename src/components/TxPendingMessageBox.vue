@@ -12,7 +12,8 @@
           <p>{{this.reference.approval.from.displayname + " paid " + to_currency_display(sum_amount(this.reference.approval))}}</p>
         </div>
         <div class="col">
-          <button href="#" class="btn btn-primary" @click="approval_click()">Details</button>
+          <button class="btn btn-primary m-1" @click="approval_click()">Details</button>
+          <button v-if="this.reference.approval.type === 'modify'" class="btn btn-info m-1" @click="previous_click">Jump to Previous</button>
         </div>
       </div>
     </div>
@@ -28,7 +29,7 @@ import TxDetail from '@/components/TxDetail.vue'
 import { User } from '@/models/user.model'
 import { GroupID, MatrixEventID, MatrixRoomID, MatrixUserID, TxID } from '@/models/id.model'
 import { GroupedTransaction, PendingApproval, SimpleTransaction } from '@/models/transaction.model'
-import { TxPlaceholder } from '@/models/chat.model'
+import { TxPendingPlaceholder, TxPlaceholder } from '@/models/chat.model'
 import CreateRoomDialog from '@/dialogs/CreateRoomDialog.vue'
 import ApprovalDialog from '@/dialogs/ApprovalDialog.vue'
 
@@ -36,7 +37,7 @@ export default defineComponent({
   name: 'TxPendingMessageBox',
   props: {
     reference: {
-      type: Object as PropType<TxPlaceholder>
+      type: Object as PropType<TxPendingPlaceholder>
     },
     room_id: {
       type: String as PropType<MatrixRoomID>
@@ -51,7 +52,8 @@ export default defineComponent({
     }
   },
   emits: [
-    'on-error'
+    'on-error',
+    'on-previous'
   ],
   computed: {
     ...mapGetters('tx', [
@@ -68,6 +70,9 @@ export default defineComponent({
     ]),
     approval_click () {
       this.$refs.approve_dialog.show()
+    },
+    previous_click () {
+      this.$emit('on-previous', this.reference?.approval)
     },
     async on_approval (approval: PendingApproval) {
       try {
