@@ -84,7 +84,6 @@ export const sync_store = {
       room_id: MatrixRoomID,
       event: MatrixRoomEvent
     }) {
-      console.log('Central event processing sees event: ', payload.event)
       if ('state_key' in payload.event) {
         state.room_state_events[payload.room_id].push(payload.event as MatrixRoomStateEvent)
       } else {
