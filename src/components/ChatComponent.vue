@@ -9,7 +9,7 @@
         :reference="message"
         :room_id="room_id"/>
       <component
-        :id="`pending-message-box-${message.approval.event_id}`"
+        :id="`pending-message-box-${message.approval.event_id.substring(1)}`"
         data-box-type="pending"
         v-if="message.approval"
         :is="TxPendingMessageBox"
@@ -165,7 +165,7 @@ export default defineComponent({
         const corresponding_approved = approved_boxes
           .filter(m => m.id === `approved-message-box-${approval.group_id}`)[0]
         const corresponding_pending = pending_boxes
-          .filter(m => m.id === `pending-message-box-${approval.event_id}`)[0]
+          .filter(m => m.id === `pending-message-box-${approval.event_id.substring(1)}`)[0]
         // prepare for return
         this.return_to_pending_approval = corresponding_pending
         if (corresponding_approved) {
