@@ -3,6 +3,21 @@ import { MatrixRoomID } from '@/models/id.model'
 import { GroupedTransaction, PendingApproval, TxGraph } from '@/models/transaction.model'
 import { room_01_user_info, user_1, user_2, user_a, user_3 } from '../mocks/mocked_user'
 import { uuidgen } from '@/utils/utils'
+import axios from 'axios'
+
+let url = ''
+let body = {}
+
+jest.mock('axios', () => ({
+  put: (_url: string, _body: any) => {
+    return new Promise((resolve) => {
+      url = _url
+      body = _body
+      resolve(true)
+    })
+  }
+}))
+const mockedAxios = axios as jest.Mocked<typeof axios>
 
 interface State {
   transactions: Record<MatrixRoomID, {
@@ -36,9 +51,8 @@ describe('Test action_create_tx_for_room', () => {
         return room_01_user_info
       }
     },
-    'auth/user_id': () => {
-      return user_2.user_id
-    }
+    'auth/user_id': user_2.user_id,
+    'auth/homeserver': 'https://tchncs.de'
   }
   const getters = {
     get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
@@ -61,6 +75,8 @@ describe('Test action_create_tx_for_room', () => {
         }
       }
     }
+    url = ''
+    body = {}
   })
   describe('Test against implementation errors', () => {
     it('Test UUID´s are filled', async () => {
@@ -191,6 +207,127 @@ describe('Test action_create_tx_for_room', () => {
         room_id: 'aaa',
         tx: fake_grouped_tx1
       })).rejects.toThrow(new Error('Error: current user not part of the transaction!'))
+    })
+    it('Test duplicate to site', async () => {
+      const fake_grouped_tx1: GroupedTransaction = {
+        from: user_1,
+        group_id: '',
+        state: 'defined',
+        txs: [{
+          to: user_2,
+          tx_id: '',
+          amount: 5
+        }, {
+          to: user_2,
+          tx_id: '',
+          amount: 5
+        }],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      await expect(action({
+        state,
+        commit: jest.fn(),
+        dispatch: jest.fn(),
+        getters: getters,
+        rootGetters: rootGetters
+      }, {
+        room_id: 'aaa',
+        tx: fake_grouped_tx1
+      })).rejects.toThrow(new Error('Error: duplicate transaction target detected!'))
+    })
+    it('Test amount must be positive after splitting', async () => {
+      const fake_grouped_tx1: GroupedTransaction = {
+        from: user_1,
+        group_id: '',
+        state: 'defined',
+        txs: [{
+          to: user_3,
+          tx_id: '',
+          amount: 5
+        }, {
+          to: user_2,
+          tx_id: '',
+          amount: -5
+        }],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      await expect(action({
+        state,
+        commit: jest.fn(),
+        dispatch: jest.fn(),
+        getters: getters,
+        rootGetters: rootGetters
+      }, {
+        room_id: 'aaa',
+        tx: fake_grouped_tx1
+      })).rejects.toThrow(new Error('Error: all amounts after splitting must be positive!'))
+    })
+    it('Test description must be non-empty', async () => {
+      const fake_grouped_tx1: GroupedTransaction = {
+        from: user_1,
+        group_id: '',
+        state: 'defined',
+        txs: [{
+          to: user_3,
+          tx_id: '',
+          amount: 5
+        }, {
+          to: user_2,
+          tx_id: '',
+          amount: 5
+        }],
+        description: '',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      await expect(action({
+        state,
+        commit: jest.fn(),
+        dispatch: jest.fn(),
+        getters: getters,
+        rootGetters: rootGetters
+      }, {
+        room_id: 'aaa',
+        tx: fake_grouped_tx1
+      })).rejects.toThrow(new Error('Error: description must be non-empty!'))
+    })
+  })
+  xdescribe('Test creating event and sending to Matrix', () => {
+    it('Test non 200 status', async () => {
+      const fake_grouped_tx1: GroupedTransaction = {
+        from: user_1,
+        group_id: '',
+        state: 'defined',
+        txs: [{
+          to: user_3,
+          tx_id: '',
+          amount: 5
+        }, {
+          to: user_2,
+          tx_id: '',
+          amount: 5
+        }],
+        description: 'Meal',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      const response = {
+        status: 400,
+        data: {
+          errcode: 'M_UNKNOWN',
+          error: 'An unknown error occurred'
+        }
+      }
+      if ()
+      mockedAxios.put.mockResolvedValue(response)
     })
   })
 })

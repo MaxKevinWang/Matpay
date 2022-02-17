@@ -1,14 +1,16 @@
-import { config, shallowMount } from '@vue/test-utils'
+import { config, shallowMount, mount } from '@vue/test-utils'
 import TxApprovedMessageBox from '@/components/TxApprovedMessageBox.vue'
 import { room_01_room_id, user_1, user_2, user_3 } from '../mocks/mocked_user'
 import { TxApprovedPlaceholder } from '@/models/chat.model'
-import { sum_amount, to_currency_display } from '@/utils/utils'
+import { sum_amount, to_currency_display, split_percentage } from '@/utils/utils'
+import DetailDialog from '@/dialogs/DetailDialog.vue'
 
 describe('Test TxApprovedMessageBox Interface', () => {
   beforeAll(() => {
     config.global.mocks = {
       sum_amount: sum_amount,
-      to_currency_display: to_currency_display
+      to_currency_display: to_currency_display,
+      split_percentage: split_percentage
     }
   })
   const reference : TxApprovedPlaceholder = {
@@ -44,23 +46,14 @@ describe('Test TxApprovedMessageBox Interface', () => {
     await expect(wrapper.findAll('p').filter(i => i.element.innerHTML.includes(user_1.displayname + ' paid ')).length).toBe(1)
   })
   it('Test pressing Details redirects', async () => {
-    let redirected = false
-    const wrapper = shallowMount(TxApprovedMessageBox, {
-      global: {
-        mocks: {
-          $router: {
-            push: () => {
-              redirected = true
-            }
-          }
-        }
-      },
+    const wrapper = mount(TxApprovedMessageBox, {
       props: {
         reference: reference,
         room_id: room_01_room_id
-      }
+      },
+      attachTo: 'body'
     })
     await wrapper.find('button').trigger('click')
-    expect(redirected).toBe(true)
+    expect(wrapper.findComponent(DetailDialog).vm.$data.is_shown).toBeTruthy()
   })
 })
