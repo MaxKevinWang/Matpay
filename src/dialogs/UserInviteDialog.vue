@@ -53,8 +53,7 @@ export default defineComponent({
       'get_permission_event_for_room'
     ])
   },
-  components: {
-  },
+  emits: ['on-success'],
   methods: {
     ...mapActions('user', [
       'action_change_user_membership_on_room'
@@ -87,6 +86,7 @@ export default defineComponent({
             user_id: this.invite_user_id,
             action: 'invite'
           })
+          this.$emit('on-success', `Invitation sent to user ${this.invite_user_id}.`)
           this.invite_user_id = ''
           this.hide()
         } catch (error) {

@@ -20,12 +20,12 @@
             </div>
           </div>
           <hr class="solid">
-          <div v-for="simple_tx in reference.grouped_tx.txs" :key="simple_tx.tx_id">
+          <div v-for="simple_tx in reference.grouped_tx.txs" :key="simple_tx.tx_id" :data-test="simple_tx.tx_id" class="list-tab">
             <div class="row">
-              <div class="col-8" id="detailed-tx">
+              <div class="col-8">
                 <p>{{ simple_tx.to.displayname + ' owe ' + to_currency_display(simple_tx.amount) }}</p>
               </div>
-              <div class="col-2" id="split-percentage">
+              <div class="col-2">
                 <p>{{(split_percentage(this.reference.grouped_tx)[simple_tx.tx_id] * 100).toFixed(2) + "%"}}</p>
               </div>
             </div>

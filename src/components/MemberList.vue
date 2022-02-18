@@ -13,7 +13,7 @@
         <button class="btn btn-primary" id="inviteButton" @click="on_invite_user_clicked()">Invite user</button>
       </li>
     </ul>
-    <UserInviteDialog ref="invite_dialog" :room_id="room_id"/>
+    <UserInviteDialog ref="invite_dialog" :room_id="room_id" @on-success="on_success"/>
     <ConfirmDialog ref="confirm_dialog" />
   </div>
 </template>
@@ -30,11 +30,7 @@ import { cloneDeep } from 'lodash'
 
 export default defineComponent({
   name: 'MemberList',
-  emits: {
-    'on-error': (error: string) => {
-      return !!error
-    }
-  },
+  emits: ['on-error', 'on-success'],
   props: {
     room_id: {
       type: String as PropType<string>
@@ -82,6 +78,9 @@ export default defineComponent({
     ...mapActions('rooms', [
       'action_leave_room'
     ]),
+    on_success (success: string) {
+      this.$emit('on-success', success)
+    },
     show_member_detail () {
       const users_tmp = cloneDeep(this.users_info)
       if (users_tmp) {

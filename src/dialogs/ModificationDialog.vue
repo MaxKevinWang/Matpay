@@ -146,6 +146,12 @@ export default defineComponent({
               tx_old: this.tx,
               tx_new: tx_new
             })
+            this.$router.push({
+              name: 'room_detail',
+              params: {
+                room_id: this.room_id
+              }
+            })
           } catch (e) {
             this.$emit('on-error', e)
             return
