@@ -3,12 +3,15 @@
     <div class="alert alert-danger" role="alert" v-if="error !== ''">
       {{ error }}
     </div>
+    <div class="alert alert-primary" role="alert" v-if="success !== ''">
+      {{ success }}
+    </div>
     <div class="row">
       <h2>Room: {{ room_name }}</h2>
     </div>
     <div class="row clearfix">
       <div class="col-lg-3 chat-frame">
-        <MemberList :room_id="room_id" :users_info="users_info" @on-error="on_error"/>
+        <MemberList :room_id="room_id" :users_info="users_info" @on-error="on_error" @on-success="on_success"/>
       </div>
       <div class="col-lg-9 chat-frame">
         <h4>Chat</h4>
@@ -42,6 +45,7 @@ export default defineComponent({
   data () {
     return {
       error: '' as string,
+      success: '' as string,
       is_tx_fully_loaded: false
     }
   },
@@ -88,6 +92,12 @@ export default defineComponent({
     ]),
     on_error (error: string) {
       this.error = error
+    },
+    on_success (success: string) {
+      this.success = success
+      setTimeout(() => {
+        this.success = ''
+      }, 4000)
     },
     on_load_chat () {
       this.action_sync_batch_message_events_for_room({
