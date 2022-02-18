@@ -108,6 +108,39 @@ describe('Test MemberList Component', () => {
     })
   })
   describe('Test PermissionDialog', () => {
+    it('Test inviting the user success-emit', async () => {
+      const store = createStore({
+        modules: {
+          auth: {
+            namespaced: true,
+            getters: {
+              is_logged_in: () => true,
+              user_id: () => user_1.user_id,
+              homeserver: jest.fn()
+            }
+          },
+          user: {
+            namespaced: true,
+            actions: {
+              action_change_user_membership_on_room: jest.fn()
+            }
+          }
+        }
+      })
+      const wrapper = shallowMount(UserInviteDialog, {
+        attachTo: document.querySelector('html') as HTMLElement,
+        global: {
+          plugins: [store]
+        },
+        props: {
+          room_id: 'fake_room_id'
+        }
+      })
+      await wrapper.find('#invite-userid').setValue('@test-2:dsn.tm.kit.edu')
+      await wrapper.find('#invite-confirm').trigger('click')
+      expect(wrapper.emitted()).toHaveProperty('on-success')
+      expect((wrapper.emitted()['on-success'][0] as Array<Error>)[0]).toEqual('Invitation sent to user @test-2:dsn.tm.kit.edu.')
+    })
     it('Test empty input(without userid)', async () => {
       const wrapper = shallowMount(UserInviteDialog, {
         attachTo: document.querySelector('html') as HTMLElement,
