@@ -8,6 +8,7 @@
     "test:unit": "vue-cli-service test:unit",
     "test:e2e": "vue-cli-service test:e2e --mode cypress",
     "test:e2e:ci": "vue-cli-service test:e2e --mode cypress-ci --headless",
+    "test:e2e:wsl": "sudo /etc/init.d/dbus start &> /dev/null; DISPLAY=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2; exit;}'):0.0 vue-cli-service test:e2e --mode cypress",
     "lint": "vue-cli-service lint",
     "mkdir:reports": "mkdir reports || true",
     "precopy:reports": "npm run mkdir:reports",

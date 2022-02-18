@@ -65,13 +65,7 @@ export default defineComponent({
   computed: {
     ...mapGetters('auth', [
       'user_id'
-    ]),
-    is_current_user_participant () {
-      return this.reference?.grouped_tx.from.user_id === this.user_id ||
-        (this.reference?.grouped_tx.txs.map(u => u.to.user_id).includes(this.user_id))
-    }
-  },
-  components: {
+    ])
   },
   methods: {
     show () {
