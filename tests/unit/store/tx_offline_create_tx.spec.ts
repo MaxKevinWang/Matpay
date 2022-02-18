@@ -335,7 +335,7 @@ describe('Test action_create_tx_for_room', () => {
         tx: fake_grouped_tx1
       })).rejects.toThrow(new Error('An unknown error occurred'))
     })
-    xit('Test second axios.put fails with a 400 error', async () => {
+    it('Test second axios.put fails with a 400 error', async () => {
       const fake_grouped_tx1: GroupedTransaction = {
         from: user_1,
         group_id: '',

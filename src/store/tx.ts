@@ -252,7 +252,7 @@ export const tx_store = {
         { validateStatus: () => true }
       )
       if (response_approve.status !== 200) {
-        throw new Error((response.data as unknown as MatrixError).error)
+        throw new Error((response_approve.data as unknown as MatrixError).error)
       }
     },
     async action_modify_tx_for_room ({
