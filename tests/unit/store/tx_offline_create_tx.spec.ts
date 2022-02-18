@@ -8,15 +8,8 @@ import axios from 'axios'
 let url = ''
 let body = {}
 
-jest.mock('axios', () => ({
-  put: (_url: string, _body: any) => {
-    return new Promise((resolve) => {
-      url = _url
-      body = _body
-      resolve(true)
-    })
-  }
-}))
+jest.mock('axios')
+
 const mockedAxios = axios as jest.Mocked<typeof axios>
 
 interface State {
@@ -299,8 +292,8 @@ describe('Test action_create_tx_for_room', () => {
       })).rejects.toThrow(new Error('Error: description must be non-empty!'))
     })
   })
-  xdescribe('Test creating event and sending to Matrix', () => {
-    it('Test non 200 status', async () => {
+  describe('Test creating event and sending to Matrix', () => {
+    it('Test first axios.put fails with a 400 error', async () => {
       const fake_grouped_tx1: GroupedTransaction = {
         from: user_1,
         group_id: '',
@@ -326,8 +319,72 @@ describe('Test action_create_tx_for_room', () => {
           error: 'An unknown error occurred'
         }
       }
-      if ()
-      mockedAxios.put.mockResolvedValue(response)
+      mockedAxios.put.mockImplementation(async (url: string) => {
+        if (url.split('/').filter(i => i === 'com.matpay.create').length > 0) {
+          return Promise.resolve(response)
+        }
+      })
+      await expect(action({
+        state,
+        commit: jest.fn(),
+        dispatch: jest.fn(),
+        getters: getters,
+        rootGetters: rootGetters
+      }, {
+        room_id: 'aaa',
+        tx: fake_grouped_tx1
+      })).rejects.toThrow(new Error('An unknown error occurred'))
+    })
+    it('Test second axios.put fails with a 400 error', async () => {
+      const fake_grouped_tx1: GroupedTransaction = {
+        from: user_1,
+        group_id: '',
+        state: 'defined',
+        txs: [{
+          to: user_3,
+          tx_id: '',
+          amount: 5
+        }, {
+          to: user_2,
+          tx_id: '',
+          amount: 5
+        }],
+        description: 'Meal',
+        participants: [],
+        timestamp: new Date(),
+        pending_approvals: []
+      }
+      const create_event_response = {
+        status: 200,
+        data: {
+          event_id: 'ID'
+        }
+      }
+      const approve_event_response = {
+        status: 400,
+        data: {
+          errcode: 'M_UNKNOWN',
+          error: 'Approve event failed!'
+        }
+      }
+      mockedAxios.put.mockImplementation(async (url: string) => {
+        if (url.split('/').filter(i => i === 'com.matpay.create').length > 0) {
+          return Promise.resolve(create_event_response)
+        } else if (url.split('/').filter(i => i === 'com.matpay.approve').length > 0) {
+          return Promise.resolve(approve_event_response)
+        }
+      })
+      await expect(action({
+        state,
+        commit: jest.fn(),
+        dispatch: jest.fn(),
+        getters: getters,
+        rootGetters: rootGetters
+      }, {
+        room_id: 'aaa',
+        tx: fake_grouped_tx1
+      })).rejects.toThrow(new Error('Approve event failed!'))
+      expect(create_event_response.data.event_id).toEqual('ID')
     })
   })
 })
