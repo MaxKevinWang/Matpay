@@ -349,7 +349,7 @@ describe('Test RoomTxHistory', () => {
       }
     })
     await flushPromises()
-    await wrapper.find('#Txlist_button').trigger('click')
+    await wrapper.find('.list-group-item-action').trigger('click')
     await flushPromises()
     await expect(wrapper.find('#TXDetail-header').element.innerHTML.includes('Details')).toEqual(true)
   })
