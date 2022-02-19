@@ -32,11 +32,9 @@ describe('Test US Input Tx Information 1', function () {
                 cy.get('#create-confirm').click()
                   .then(() => {
                     cy.wait(3000)
-                    cy.get('.mb-5').children().last().get('.card').get('.card-body')
-                      .get('.row').eq(2)
-                      .within(() => {
-                        cy.get('p').contains(random_tx_name)
-                      })
+                    cy.get('.mb-5').children().last().find('.card').find('.card-body')
+                      .find('.row').children().eq(1)
+                      .find('p').contains(random_tx_name)
                   })
               })
           })
@@ -52,7 +50,17 @@ describe('Test US Input Tx Information 1', function () {
         cy.wait(1000)
         cy.get('#split_button').click()
           .then(() => {
-            cy.get('.alert').contains('Description cannot be empty')
+            cy.get(`#split-checkbox${selectorify(user_1.user_id)}`).click()
+            cy.wait(1000)
+            cy.get('#default-split').click()
+            cy.wait(1000)
+            cy.get('#split_create_save').click()
+              .then(() => {
+                cy.get('#create-confirm').click()
+                  .then(() => {
+                    cy.get('.popover').contains('Description cannot be empty')
+                  })
+              })
           })
       })
   })
@@ -62,14 +70,23 @@ describe('Test US Input Tx Information 1', function () {
       .then(() => {
         cy.get('#input-description').type(random_tx_name)
         cy.wait(1000)
-        cy.wait(1000)
         cy.get('#input-amount').type('sadsad')
         cy.wait(1000)
         cy.get('#select-member').select(user_1.displayname)
         cy.wait(1000)
         cy.get('#split_button').click()
           .then(() => {
-            cy.get('.alert').contains('Amount has to be a positive number')
+            cy.get(`#split-checkbox${selectorify(user_1.user_id)}`).click()
+            cy.wait(1000)
+            cy.get('#default-split').click()
+            cy.wait(1000)
+            cy.get('#split_create_save').click()
+              .then(() => {
+                cy.get('#create-confirm').click()
+                  .then(() => {
+                    cy.get('.popover').contains('Amount has to be a positive number')
+                  })
+              })
           })
       })
   })
@@ -84,7 +101,32 @@ describe('Test US Input Tx Information 1', function () {
         cy.wait(1000)
         cy.get('#split_button').click()
           .then(() => {
-            cy.get('.alert').contains('You have to select a payer!')
+            cy.get(`#split-checkbox${selectorify(user_1.user_id)}`).click()
+            cy.wait(1000)
+            cy.get('#default-split').click()
+            cy.wait(1000)
+            cy.get('#split_create_save').click()
+              .then(() => {
+                cy.get('#create-confirm').click()
+                  .then(() => {
+                    cy.get('.popover').contains('You have to select a payer!')
+                  })
+              })
+          })
+      })
+  })
+  it('Test did not select payer error', function () {
+    const random_tx_name = uuidgen().substring(0, 7)
+    cy.get('#createButton').click()
+      .then(() => {
+        cy.get('#input-description').type(random_tx_name)
+        cy.wait(1000)
+        cy.get('#input-amount').type('20')
+        cy.wait(1000)
+        cy.get('#select-member').select(user_1.displayname)
+        cy.get('#create-confirm').click()
+          .then(() => {
+            cy.get('.popover').contains('You have to specify a split!')
           })
       })
   })
