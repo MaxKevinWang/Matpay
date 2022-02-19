@@ -420,7 +420,7 @@ describe('Test chatComponent', () => {
         }
       })
       expect(wrapper.findAllComponents({ name: 'TxApprovedMessageBox' })[0].element.innerHTML.includes('Hello transaction')).toBe(true)
-      expect(wrapper.findAllComponents({ name: 'TxApprovedMessageBox' })[0].element.innerHTML.includes(new Date(2022, 0, 15).toLocaleDateString())).toBe(true)
+      expect(wrapper.findAllComponents({ name: 'TxApprovedMessageBox' })[0].element.innerHTML.includes('1/15/2022')).toBe(true)
       expect(wrapper.findAllComponents({ name: 'TxApprovedMessageBox' })[0].element.innerHTML.includes(user_1.displayname)).toBe(true)
     })
     it('Test if the user can send messages when he types in correct messages', async () => {
