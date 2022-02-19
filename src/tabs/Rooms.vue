@@ -142,8 +142,8 @@ export default defineComponent({
             room_id: room_id
           }
         })
-      } catch (e: unknown) {
-        this.error = (e as Error).toString()
+      } catch (e) {
+        this.error = e
       }
     },
     async accept_invitation (room_id: string) {
@@ -161,7 +161,7 @@ export default defineComponent({
         this.is_loading = false
         this.error = null
       } catch (e) {
-        this.error = (e as Error).toString()
+        this.error = e
       }
     },
     async reject_invitation (room_id: string) {
@@ -171,7 +171,7 @@ export default defineComponent({
         })
         this.error = null
       } catch (e) {
-        this.error = (e as Error).toString()
+        this.error = e
       }
     }
   },

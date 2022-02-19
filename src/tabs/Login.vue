@@ -64,8 +64,8 @@ export default defineComponent({
         })
         await this.$router.push('/rooms')
         this.error = ''
-      } catch (reason: unknown) {
-        this.error = (reason as Error).toString()
+      } catch (reason) {
+        this.error = reason
       }
     }
   },
