@@ -1454,6 +1454,84 @@ describe('Test tx store validation actions', () => {
           tx_event: event
         })).resolves.toEqual(false)
       })
+      it('There are no txs in the room', async () => {
+        const getters = {
+          get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
+          get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
+          get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
+          get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null),
+          get_open_balance_against_user_for_room: store.getters.get_open_balance_against_user_for_room(state, null, null, null),
+          get_total_open_balance_for_user_for_room: store.getters.get_total_open_balance_for_user_for_room(state, null, null, null)
+        }
+        const event: TxSettleEvent = {
+          type: 'com.matpay.settle',
+          sender: user_1.user_id,
+          room_id: room_id,
+          origin_server_ts: 60000,
+          event_id: 'e01',
+          content: {
+            user_id: user_2.user_id,
+            amount: 50
+          }
+        }
+        await expect(action({
+          state,
+          commit: jest.fn(),
+          dispatch: jest.fn(),
+          getters: getters,
+          rootGetters: rootGetters
+        }, {
+          room_id: room_id,
+          tx_event: event
+        })).resolves.toEqual(false)
+      })
+      it('settle amount < 0', async () => {
+        const getters = {
+          get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
+          get_pending_approvals_for_room: store.getters.get_pending_approvals_for_room(state, null, null, null),
+          get_existing_group_ids_for_room: store.getters.get_existing_group_ids_for_room(state, null, null, null),
+          get_existing_tx_ids_for_room: store.getters.get_existing_tx_ids_for_room(state, null, null, null),
+          get_open_balance_against_user_for_room: () => () => -10,
+          get_total_open_balance_for_user_for_room: store.getters.get_total_open_balance_for_user_for_room(state, null, null, null)
+        }
+        state.transactions[room_id].basic.push({
+          from: user_2,
+          state: 'approved',
+          group_id: uuidgen(),
+          txs: [
+            {
+              to: user_1,
+              tx_id: uuidgen(),
+              amount: 5
+            }
+          ],
+          description: 'dfsdgs',
+          timestamp: new Date(),
+          pending_approvals: []
+        })
+        const event: TxSettleEvent = {
+          type: 'com.matpay.settle',
+          sender: user_1.user_id,
+          room_id: room_id,
+          origin_server_ts: 60000,
+          event_id: 'e01',
+          content: {
+            user_id: user_2.user_id,
+            amount: -5
+          }
+        }
+        await expect(action({
+          state,
+          commit: jest.fn(),
+          dispatch: jest.fn(),
+          getters: getters,
+          rootGetters: rootGetters
+        }, {
+          room_id: room_id,
+          tx_event: event
+        })).resolves.toEqual(false)
+      })
+
       it('Amount < 0', async () => {
         const getters = {
           get_grouped_transactions_for_room: store.getters.get_grouped_transactions_for_room(state, null, null, null),
