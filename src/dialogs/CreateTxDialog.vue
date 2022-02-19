@@ -174,8 +174,8 @@ export default defineComponent({
           this.split = {}
           this.error = null
           this.hide()
-        } catch (e) {
-          this.error = e.message
+        } catch (e: unknown) {
+          this.error = (e as Error).toString()
         }
       } else {
         this.popover_hint(this.description.length >= 1,

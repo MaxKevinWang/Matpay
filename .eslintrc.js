@@ -13,7 +13,8 @@ module.exports = {
     ecmaVersion: 2020,
     vueFeatures: {
       interpolationAsNonHTML: true
-    }
+    },
+    parser: '@typescript-eslint/parser'
   },
   rules: {
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
@@ -21,7 +22,8 @@ module.exports = {
     camelcase: 'off',
     '@typescript-eslint/camelcase': 'off',
     ignoreComments: 'off',
-    'no-use-before-define': 'off'
+    'no-use-before-define': 'off',
+    'vue/multi-word-component-names': 'off'
   },
   overrides: [
     {
