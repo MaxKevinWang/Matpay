@@ -141,7 +141,7 @@ export const user_store = {
       const permissions = state.permissions[room_id]
       const member_event = payload.member_event
       const self_user_id = rootGetters['auth/user_id']
-      let result : RoomUserInfo | null = null
+      let result: RoomUserInfo | null = null
       // Case 1: member joined
       if (member_event.content.membership === 'join') {
         console.log('Parsing new join member event:', member_event)
@@ -152,9 +152,11 @@ export const user_store = {
           },
           displayname: member_event.content.displayname || member_event.state_key,
           avatar_url: member_event.content.avatar_url,
-          user_type: permissions ? (permissions.users[member_event.state_key] >= 100
-            ? 'Admin'
-            : permissions.users[member_event.state_key] >= 50 ? 'Moderator' : 'Member') : 'Member',
+          user_type: permissions
+            ? (permissions.users[member_event.state_key] >= 100
+                ? 'Admin'
+                : permissions.users[member_event.state_key] >= 50 ? 'Moderator' : 'Member')
+            : 'Member',
           is_self: member_event.state_key === self_user_id
         }
         // Remove previous user infos
