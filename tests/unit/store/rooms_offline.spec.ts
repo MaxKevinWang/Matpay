@@ -608,6 +608,53 @@ describe('Test rooms store', function () {
       })
       expect(commit_called.aaa).toEqual(true)
     })
+    it('Test action_parse_single_state_event_for_room(have previous event)', async function () {
+      state.joined_rooms.push({
+        room_id: 'aaa',
+        name: '',
+        state_events: [{
+          room_id: 'abc',
+          sender: user_1.user_id,
+          origin_server_ts: 0,
+          event_id: 'test_event',
+          content: {},
+          type: 'm.room.name',
+          state_key: 'test_key'
+        }]
+      })
+      const resp = {
+        status: 200,
+        data: ''
+      }
+      const commit_called: Record<MatrixRoomID, boolean> = {
+        aaa: false
+      }
+      const commit = (commit_name: string, payload: string) => {
+        if (commit_name === 'mutation_set_name_for_joined_room') {
+          commit_called.aaa = true
+        }
+      }
+      const action = store.actions.action_parse_single_state_event_for_room as (context: any, payload: any) => Promise<any>
+      mockedAxios.post.mockImplementation(() => Promise.resolve(resp))
+      await action({
+        state,
+        commit,
+        dispatch: jest.fn(),
+        rootGetters: rootGetters
+      }, {
+        room_id: 'aaa',
+        state_event: {
+          room_id: 'abc',
+          sender: user_1.user_id,
+          origin_server_ts: 1,
+          event_id: 'test_event',
+          content: {},
+          type: 'm.room.name',
+          state_key: 'test_key'
+        }
+      })
+      expect(commit_called.aaa).toEqual(true)
+    })
     it('Test action_leave_room_1)', async function () {
       state.joined_rooms.push({
         room_id: 'aaa',
@@ -701,6 +748,10 @@ describe('Test rooms store', function () {
         state_events: []
       })
       expect(getter('abc')).toEqual('ABCD')
+    })
+    it('Test getter get_room_name (there is no room)', function () {
+      const getter = store.getters.get_room_name(state, null, null, null)
+      expect(() => getter('abc')).toThrow(new Error('Room does not exist!'))
     })
     it('Test get_all_joined_rooms', function () {
       const getter = store.getters.get_all_joined_rooms(state, null, null, null)
