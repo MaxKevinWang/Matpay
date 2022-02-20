@@ -7,7 +7,7 @@ describe('Test US Create Payment Group 1', function () {
   })
   it('Create Payment Group', function () {
     cy.visit('/rooms')
-    cy.wait(5000)
+    cy.get('.alert-primary').should('not.exist', { timeout: 6000 })
     cy.get('#create-dialog-button').click()
       .then(() => {
         const random_room_name = uuidgen().substring(0, 7)
@@ -17,17 +17,16 @@ describe('Test US Create Payment Group 1', function () {
           .then(() => {
             cy.get('#create-room-button').click()
               .then(() => {
-                cy.wait(1000)
+                cy.get('.spinner').should('not.exist', { timeout: 3000 })
                 cy.url().should('includes', 'room')
                 cy.contains('h2', random_room_name)
                 cy.contains('.about', user_1.displayname)
                 cy.contains('.about', 'Admin')
                 cy.get('.chat-message').should('not.exist')
                 cy.wait(3000)
-                cy.visit('/rooms')
+                cy.go('back')
                   .then(() => {
-                    cy.wait(3000)
-                    cy.contains('td', random_room_name)
+                    cy.get('table').find('th').contains(random_room_name)
                   })
               })
           })

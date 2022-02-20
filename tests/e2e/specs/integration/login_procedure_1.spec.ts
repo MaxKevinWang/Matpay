@@ -15,7 +15,7 @@ describe('Test login procedure', () => {
         cy.contains('h3', 'Joined Rooms')
         cy.contains('h3', 'Received Invitations')
         cy.contains('tr', 'Name')
-        cy.contains('td', 'Test00001', { timeout: 5000 })
+        cy.contains('th', 'Test00001', { timeout: 5000 })
       })
   })
   it('Test login procedure fail', () => {
