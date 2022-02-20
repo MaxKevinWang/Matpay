@@ -116,7 +116,7 @@ describe('Test chatComponent', () => {
       await flushPromises()
       await expect(wrapper.vm.$refs.create_tx_dialog.is_shown).toBe(true)
     })
-    xit('Test show up of SplitTxdialog', async () => {
+    it('Test show up of SplitTxdialog', async () => {
       const mock_chat_message : ChatMessage = {
         sender: user_1,
         content: 'Hello,Allen',
