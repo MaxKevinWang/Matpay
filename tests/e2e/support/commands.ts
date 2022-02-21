@@ -25,6 +25,8 @@
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
 import { test_account1, test_account2, test_account3, test_homeserver } from '../../test_utils'
 import { POSTLoginResponse } from '@/interface/api.interface'
+import { user_1, user_2 } from '../../unit/mocks/mocked_user'
+import { selectorify } from '@/utils/utils'
 
 Cypress.Commands.add('login', (id: 1 | 2 | 3) => {
   const homeserver = test_homeserver
@@ -57,4 +59,31 @@ Cypress.Commands.add('login', (id: 1 | 2 | 3) => {
 
 Cypress.Commands.add('logout', () => {
   return cy.get('#logout_button').click()
+})
+
+Cypress.Commands.add('createTx', (description: string) => {
+  cy.get('#createButton').click()
+    .then(() => {
+      cy.wait(1000)
+      cy.get('#input-description').type(description)
+      cy.wait(1000)
+      cy.get('#input-amount').type('20')
+      cy.wait(1000)
+      cy.get('#select-member').select(user_1.displayname)
+      cy.wait(1000)
+      cy.get('#split_button').click()
+        .then(() => {
+          cy.get(`#split-checkbox${selectorify(user_1.user_id)}`).click()
+          cy.wait(1000)
+          cy.get(`#split-checkbox${selectorify(user_2.user_id)}`).click()
+          cy.wait(1000)
+          cy.get('#default-split').click()
+          cy.wait(1000)
+          cy.get('#split_create_save').click()
+            .then(() => {
+              cy.wait(3000)
+              cy.get('#create-confirm').click()
+            })
+        })
+    })
 })
