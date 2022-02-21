@@ -15,7 +15,7 @@ describe('Test recall_tx_history', function () {
     cy.visit('room/!boXqlLQELBngYvdxpE:dsn.tm.kit.edu')
     cy.get('.alert-primary').should('not.exist', { timeout: 6000 })
     cy.get('.mb-5').children().last().find('.card').find('.card-body')
-      .find('.row').children().eq(3).find('[data-cy=detail]').click()
+      .find('.row').children().eq(3).find('[F-cy=detail]').click()
       .then(() => {
         cy.get('[data-cy=reject]').click()
         cy.get('.mb-5').should('not.exist', { timeout: 3000 })

@@ -18,7 +18,7 @@ describe('Test Permission Management', function () {
       cy.wait(1000)
       cy.visit('/rooms')
       cy.wait(5000)
-      cy.get('#accept_button').click().then(() => {
+      cy.get('[data-cy=accept-invitation]').click().then(() => {
         cy.wait(1000)
         cy.logout()
         cy.wait(1000)
@@ -26,13 +26,13 @@ describe('Test Permission Management', function () {
       )
     })
   })
-  it('Test kick a member', function () {
+  it('Test kick a member(without open balance)', function () {
     cy.login(1)
     cy.visit('room/!nuBRUbeiPmOujBXxnS:dsn.tm.kit.edu')
     cy.wait(5000)
     cy.get('#usercard_' + selectorify(user_2.user_id)).get('#kickButton').click().then(() => {
       cy.wait(1000)
-      cy.get('#yes-button').click().then(() => {
+      cy.get('[data-cy=Yes]').click().then(() => {
         cy.get('#usercard_' + selectorify(user_2.user_id)).should('not.exist', { timeout: 3000 })
       }
       )
