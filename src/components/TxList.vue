@@ -1,6 +1,9 @@
 <template>
   <div class="list-group list-tab" role="tablist" v-for="tx in tx_list" :key="tx.group_id" :data-test="tx.group_id">
-    <button type="button" class="list-group-item list-group-item-action btn btn-primary" @click="on_click_event(tx)">{{ tx.timestamp.toLocaleDateString() }} {{ tx.description }}: {{ tx.from.displayname }} paid {{ sum_amount(tx) / 100 }}€</button>
+    <button type="button"
+            class="list-group-item list-group-item-action btn btn-primary"
+            :data-bs-dismiss="this.width < 768 ? 'offcanvas' : ''"
+            @click="on_click_event(tx)">{{ tx.timestamp.toLocaleDateString() }} {{ tx.description }}: {{ tx.from.displayname }} paid {{ sum_amount(tx) / 100 }}€</button>
   </div>
 </template>
 
@@ -18,6 +21,9 @@ export default defineComponent({
   props: {
     tx_list: {
       type: Object as PropType<Array<GroupedTransaction>>
+    },
+    width: {
+      type: Number as PropType<number>
     }
   },
   data () {

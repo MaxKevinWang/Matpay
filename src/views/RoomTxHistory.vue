@@ -16,7 +16,7 @@
       </button>
     </div>
     <h2 id="history_room_name">History: {{ room_name }}</h2>
-    <div class="row">
+    <div class="row" v-if="this.is_tx_fully_loaded">
       <div v-if="balance >= 0" id="balance-display-positive">
         <p>You owe in total: {{ to_currency_display(balance) }}</p>
       </div>
@@ -24,7 +24,7 @@
         <p>Oweing you in total: {{ to_currency_display(-balance) }} </p>
       </div>
     </div>
-    <div class="card mb-3">
+    <div class="card mb-3" v-if="width >= 768">
       <div class="card-body">
         <h5 class="card-title">Search & Filter</h5>
         <label for="tx-search" class="card-text me-1">Search transactions: </label>
@@ -35,12 +35,55 @@
         </div>
       </div>
     </div>
-    <div class="row" v-if="this.is_tx_fully_loaded">
-        <div class="col-lg-4" v-if="tx_list.length >= 1">
-          <TxList :tx_list="tx_list" @on-click="on_click"/>
+    <div class="position-fixed bottom-50 start-0 expand-button">
+      <div class="row m-1">
+        <button v-if="width < 768 && this.is_tx_fully_loaded"
+                class="btn btn-secondary" type="button"
+                data-bs-toggle="offcanvas"
+                data-bs-target="#txlist"
+                aria-controls="txlist"
+                title="Expand">
+          <i class="bi bi-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+    <div class="row" v-if="width >= 768 && this.is_tx_fully_loaded">
+      <div class="col-md-4" v-if="tx_list.length >= 1">
+        <TxList :tx_list="tx_list" :width="width" @on-click="on_click"/>
+      </div>
+      <div class="col-md-8" v-if="show_detail">
+        <TxDetail :tx="tx" :room_id="room_id" @on-error="on_error"/>
+      </div>
+    </div>
+    <div class="row" v-if="width < 768 && this.is_tx_fully_loaded">
+        <div id="txlist"
+             class="offcanvas offcanvas-start">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvas-label">Transactions</h5>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">Search & Filter</h5>
+                <label for="tx-search" class="card-text me-1">Search transactions: </label>
+                <input type="text" placeholder="Search for description" class="me-1" id="tx-search-mobile" v-model="filter_string">
+                <div>
+                  <input type="checkbox" class="me-1" id="tx-participated-filter-mobile" v-model="only_participating">
+                  <label for="tx-participated-filter">Only show transactions participating</label>
+                </div>
+              </div>
+            </div>
+            <TxList :tx_list="tx_list" :width="width" @on-click="on_click"/>
+          </div>
         </div>
-        <div class="col-lg-8" v-if="show_detail">
+        <div id="txdetail"
+             class="col-md-12"
+             v-if="show_detail">
           <TxDetail :tx="tx" :room_id="room_id" @on-error="on_error"/>
+        </div>
+        <div v-if="!show_detail">
+          Expand sidebar to select a transaction.
         </div>
     </div>
   </div>
@@ -54,6 +97,7 @@ import TxList from '@/components/TxList.vue'
 import TxDetail from '@/components/TxDetail.vue'
 import { validate } from 'uuid'
 import router from '@/router'
+import { Offcanvas } from 'bootstrap'
 
 export default defineComponent({
   name: 'RoomTxHistory',
@@ -65,7 +109,8 @@ export default defineComponent({
       is_tx_fully_loaded: false,
       filter_string: '' as string,
       only_participating: false as boolean,
-      error: '' as string
+      error: '' as string,
+      width: window.innerWidth as number
     }
   },
   computed: {
@@ -144,6 +189,9 @@ export default defineComponent({
       this.error = ''
       this.room_name = this.get_room_name(this.room_id)
       this.is_tx_fully_loaded = true
+      window.addEventListener('resize', () => {
+        this.width = window.innerWidth
+      })
     })
   },
   watch: {
@@ -181,5 +229,8 @@ export default defineComponent({
   left: 0;
   top: 0;
   padding: 20px;
+}
+.expand-button {
+  z-index: 1000;
 }
 </style>

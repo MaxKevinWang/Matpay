@@ -54,11 +54,11 @@
                   title="Create Transaction" @click="on_tx_clicked()">
             <i class="bi bi-receipt"></i>
           </button>
-          <router-link :to="{name: 'room_history', params: {room_id: room_id}}" class="btn btn-light" id="historyButton"
+          <button class="btn btn-light" id="historyButton" @click="on_history_click()"
                        type="button"
                        data-bs-toggle="tooltip" data-bs-placement="top" title="History">
             <i class="bi bi-clock-history"></i>
-          </router-link>
+          </button>
           <button class="btn btn-primary" id="sendButton" type="button" :disabled="!(this.chat_message)"
                   @click="on_send_click">Send
           </button>
@@ -135,6 +135,14 @@ export default defineComponent({
     on_tx_clicked () {
       this.room_name = this.get_room_name(this.room_id)
       this.$refs.create_tx_dialog.show()
+    },
+    on_history_click () {
+      this.$router.push({
+        name: 'room_history',
+        params: {
+          room_id: this.room_id
+        }
+      })
     },
     on_return_clicked () {
       if (this.return_to_pending_approval) {
