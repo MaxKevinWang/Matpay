@@ -11,22 +11,22 @@
       Loading...
     </div>
     <h3>Joined Rooms</h3>
-    <div class="col-auto col-sm-12">
+    <div class="table-responsive">
       <table class="table" v-if="!is_loading && this.rooms.length >= 0">
         <thead>
-        <tr>
-          <th scope="col">Name</th>
-          <th scope="col">Member Count</th>
-          <th scope="col">User Type</th>
-          <th scope="col">Actions</th>
+        <tr class="d-flex">
+          <th class="col-3" scope="col">Name</th>
+          <th class="col-3" scope="col">Member Count</th>
+          <th class="col-3" scope="col">User Type</th>
+          <th class="col-3" scope="col">Actions</th>
         </tr>
         </thead>
         <tbody>
-        <tr v-for="room in rooms" :key="room.room_id">
-          <th scope="row">{{ room.name }}</th>
-          <td>{{ room.member_count }}</td>
-          <td>{{ room.user_type }}</td>
-          <td>
+        <tr class="d-flex" v-for="room in rooms" :key="room.room_id">
+          <th class="col-3 text-wrap text-break" scope="row">{{ room.name }}</th>
+          <td class="col-3">{{ room.member_count }}</td>
+          <td class="col-3">{{ room.user_type }}</td>
+          <td class="col-3">
             <button id="RoomDetailButton" class="btn-sm btn-primary" @click="enter_room_detail(room.room_id)">Details</button>
             <button id="RoomHistoryButton" class="btn-sm btn-info" @click="enter_room_history(room.room_id)">History</button>
           </td>
