@@ -11,7 +11,7 @@
       Loading...
     </div>
     <h3>Joined Rooms</h3>
-    <div class="table-responsive">
+    <div class="col-auto col-sm-12">
       <table class="table" v-if="!is_loading && this.rooms.length >= 0">
         <thead>
         <tr>
@@ -27,8 +27,8 @@
           <td>{{ room.member_count }}</td>
           <td>{{ room.user_type }}</td>
           <td>
-            <button id="RoomDetailButton" class="btn btn-primary" @click="enter_room_detail(room.room_id)">Details</button>
-            <button id="RoomHistoryButton" class="btn btn-info" @click="enter_room_history(room.room_id)">History</button>
+            <button id="RoomDetailButton" class="btn-sm btn-primary" @click="enter_room_detail(room.room_id)">Details</button>
+            <button id="RoomHistoryButton" class="btn-sm btn-info" @click="enter_room_history(room.room_id)">History</button>
           </td>
         </tr>
         </tbody>
