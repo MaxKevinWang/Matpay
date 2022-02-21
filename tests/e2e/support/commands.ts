@@ -54,3 +54,7 @@ Cypress.Commands.add('login', (id: 1 | 2 | 3) => {
       window.localStorage.setItem('homeserver', homeserver)
     })
 })
+
+Cypress.Commands.add('logout', () => {
+  return cy.get('#logout_button').click()
+})

@@ -22,6 +22,7 @@ declare global {
   namespace Cypress {
     interface Chainable {
       login(account: 1 | 2 | 3): void
+      logout(): Cypress.Chainable
     }
   }
 }

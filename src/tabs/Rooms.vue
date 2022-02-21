@@ -38,15 +38,13 @@
     <table class="table" v-if="!is_loading && this.get_invited_rooms">
       <thead>
       <tr>
-        <th scope="col">ID</th>
         <th scope="col">Name</th>
         <th scope="col">Actions</th>
       </tr>
       </thead>
       <tbody>
       <tr v-for="room in this.get_invited_rooms()" :key="room.room_id">
-        <th scope="row">{{ room.room_id.split(':')[0].substring(1) }}</th>
-        <td>{{ room.name ? room.name : 'NO NAME' }}</td>
+        <th scope="row">{{ room.name ? room.name : 'NO NAME' }}</th>
         <td>
           <button class="btn btn-success" @click="accept_invitation(room.room_id)">Accept</button>
           <button class="btn btn-warning" @click="reject_invitation(room.room_id)">Reject</button>

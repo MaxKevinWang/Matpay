@@ -75,6 +75,12 @@ describe('Test transaction Vuex store offline', () => {
       expect(state.transactions.aaa.pending_approvals).toEqual([])
       expect(state.transactions.aaa.graph.graph).toEqual({})
     })
+    it('Test mutation_remove_joined_room', function () {
+      const mutation = store.mutations.mutation_remove_joined_room
+      state.transactions = {}
+      mutation(state, 'aaa')
+      expect(state.transactions.aaa).toEqual(undefined)
+    })
     it('Test mutation_reset_state', function () {
       const mutation = store.mutations.mutation_reset_state
       const fake_grouped_tx: GroupedTransaction = {

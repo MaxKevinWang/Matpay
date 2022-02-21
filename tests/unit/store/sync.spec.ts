@@ -2,9 +2,15 @@ import store from '@/store/sync'
 import { MatrixEventID, MatrixRoomID } from '@/models/id.model'
 import { MatrixRoomEvent, MatrixRoomMemberStateEvent, MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
 import { TxCreateEvent, TxEvent } from '@/interface/tx_event.interface'
-import { user_1, user_2 } from '../mocks/mocked_user'
+import { user_1, user_2, user_3 } from '../mocks/mocked_user'
 import { uuidgen } from '@/utils/utils'
 import { random } from 'lodash'
+import axios, { AxiosResponse } from 'axios'
+import { POSTFilterCreateResponse } from '@/interface/api.interface'
+import { initial_sync_response, luka_room_states, sqtv_room_states, vrvx_room_states } from '../mocks/mocked_sync_data'
+
+jest.mock('axios')
+const mockedAxios = axios as jest.Mocked<typeof axios>
 
 interface State {
   next_batch: string,
@@ -20,37 +26,12 @@ interface State {
   long_poll_controller: AbortController,
   ignored_rooms: Set<MatrixRoomID>
 }
+
 describe('Test sync store', function () {
+  let state = store.state()
   describe('Test store mutations', function () {
-    let state : State = {
-      next_batch: '',
-      processed_events_id: new Set(),
-      room_events: {},
-      room_state_events: {},
-      init_state_complete: false,
-      room_tx_prev_batch_id: {},
-      room_message_prev_batch_id: {},
-      room_tx_sync_complete: {},
-      cached_tx_events: {},
-      sync_filter: '',
-      long_poll_controller: new AbortController(),
-      ignored_rooms: new Set()
-    }
     beforeEach(function () {
-      state = {
-        next_batch: '',
-        processed_events_id: new Set(),
-        room_events: {},
-        room_state_events: {},
-        init_state_complete: false,
-        room_tx_prev_batch_id: {},
-        room_message_prev_batch_id: {},
-        room_tx_sync_complete: {},
-        cached_tx_events: {},
-        sync_filter: '',
-        long_poll_controller: new AbortController(),
-        ignored_rooms: new Set()
-      }
+      state = store.state()
     })
     it('Test mutation mutation_set_next_batch', function () {
       const mutation = store.mutations.mutation_set_next_batch
@@ -93,7 +74,7 @@ describe('Test sync store', function () {
       const room_id = 'aaa'
       const group_id = uuidgen()
       const tx_id = uuidgen()
-      const event_1 : TxCreateEvent = {
+      const event_1: TxCreateEvent = {
         content: {
           description: 'tx1',
           from: user_1.user_id,
@@ -122,7 +103,7 @@ describe('Test sync store', function () {
       const room_id = 'aaa'
       const group_id = uuidgen()
       const tx_id = uuidgen()
-      const event_1 : TxCreateEvent = {
+      const event_1: TxCreateEvent = {
         content: {
           description: 'tx1',
           from: user_1.user_id,
@@ -150,7 +131,7 @@ describe('Test sync store', function () {
     it('Test mutation mutation_process_event - state event', function () {
       const mutation = store.mutations.mutation_process_event
       const room_id = 'aaa'
-      const event_1 : MatrixRoomMemberStateEvent = {
+      const event_1: MatrixRoomMemberStateEvent = {
         content: {
           avatar_url: '',
           displayname: user_1.displayname,
@@ -228,6 +209,11 @@ describe('Test sync store', function () {
       mutation(state, filter_id)
       expect(state.sync_filter).toEqual(filter_id)
     })
+    it('Test mutation mutation_add_ignored_room', function () {
+      const mutation = store.mutations.mutation_add_ignored_room
+      mutation(state, 'abc')
+      expect(state.ignored_rooms.has('abc')).toEqual(true)
+    })
     it('Test mutation mutation_reset_state', function () {
       const mutation = store.mutations.mutation_reset_state
       const room_id = 'aaa'
@@ -263,22 +249,117 @@ describe('Test sync store', function () {
     })
   })
   describe('Test store actions', function () {
-
+    describe('Test action action_sync_initial_state', function () {
+      const action = store.actions.action_sync_initial_state as (context: any, payload: any) => Promise<any>
+      // mock rootGetters
+      const rootGetters = {
+        'auth/homeserver': '',
+        'auth/user_id': user_3.user_id
+      }
+      beforeEach(function () {
+        state = store.state()
+        // mock filter response
+        mockedAxios.post.mockImplementation(async (url: string, data: unknown, config?: unknown): Promise<AxiosResponse<POSTFilterCreateResponse>> => {
+          if (url.includes('filter')) {
+            return {
+              status: 200,
+              data: {
+                filter_id: '1'
+              },
+              statusText: 'OK',
+              headers: {},
+              config: {}
+            }
+          } else {
+            return Promise.reject(new Error())
+          }
+        })
+        // Mock sync, state, join API
+        mockedAxios.get.mockImplementation(async (url: string, data: unknown, config?: unknown): Promise<AxiosResponse<any>> => {
+          if (url.includes('sync')) {
+            return {
+              status: 200,
+              data: initial_sync_response,
+              statusText: 'OK',
+              headers: {},
+              config: {}
+            }
+          } else if (url.includes('join_rules')) {
+            if (url.includes('ElXK')) {
+              return {
+                status: 200,
+                data: {
+                  join_rule: 'public'
+                },
+                statusText: 'OK',
+                headers: {},
+                config: {}
+              }
+            } else {
+              return {
+                status: 200,
+                data: {
+                  join_rule: 'invite'
+                },
+                statusText: 'OK',
+                headers: {},
+                config: {}
+              }
+            }
+          } else if (url.includes('state')) {
+            if (url.includes('Sqtv')) {
+              return {
+                status: 200,
+                data: sqtv_room_states,
+                statusText: 'OK',
+                headers: {},
+                config: {}
+              }
+            } else if (url.includes('VrVx')) {
+              return {
+                status: 200,
+                data: vrvx_room_states,
+                statusText: 'OK',
+                headers: {},
+                config: {}
+              }
+            } else if (url.includes('luka')) {
+              return {
+                status: 200,
+                data: luka_room_states,
+                statusText: 'OK',
+                headers: {},
+                config: {}
+              }
+            } else {
+              return Promise.reject(new Error('You should not request this room!'))
+            }
+          } else {
+            return Promise.reject(new Error('No matching API!'))
+          }
+        })
+      })
+      it('Test already synced', async function () {
+        state.init_state_complete = true
+        const dispatch = jest.fn()
+        const commit = jest.fn()
+        await action({
+          state,
+          commit: commit,
+          dispatch: dispatch,
+          rootGetters: rootGetters
+        }, null)
+        expect(mockedAxios.get).not.toHaveBeenCalled()
+        expect(mockedAxios.post).not.toHaveBeenCalled()
+        expect(commit).not.toHaveBeenCalled()
+        expect(dispatch).not.toHaveBeenCalled()
+      })
+      xit('Test sync with data', async function () {
+        console.log('Not tested yet')
+      })
+    })
   })
   describe('Test store getters', function () {
-    let state : State = {
-      next_batch: '',
-      processed_events_id: new Set(),
-      room_events: {},
-      room_state_events: {},
-      init_state_complete: false,
-      room_tx_prev_batch_id: {},
-      room_message_prev_batch_id: {},
-      room_tx_sync_complete: {},
-      cached_tx_events: {},
-      sync_filter: '',
-      long_poll_controller: new AbortController()
-    }
     beforeEach(function () {
       state = {
         next_batch: 'abcd-efgh',
