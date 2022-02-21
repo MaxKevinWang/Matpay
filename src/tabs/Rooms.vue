@@ -46,7 +46,7 @@
       <tr v-for="room in this.get_invited_rooms()" :key="room.room_id">
         <th scope="row">{{ room.name ? room.name : 'NO NAME' }}</th>
         <td>
-          <button class="btn btn-success" id="accept_button" @click="accept_invitation(room.room_id)">Accept</button>
+          <button class="btn btn-success" @click="accept_invitation(room.room_id)">Accept</button>
           <button class="btn btn-warning" @click="reject_invitation(room.room_id)">Reject</button>
         </td>
       </tr>
