@@ -146,7 +146,7 @@ describe('Test chatComponent', () => {
           }
         }
       })
-      const wrapper = mount(ChatComponent, {
+      const wrapper = mount(CreateTxDialog, {
         attachTo: document.querySelector('html') as HTMLElement,
         global: {
           plugins: [store],
@@ -179,9 +179,8 @@ describe('Test chatComponent', () => {
           ]
         }
       })
-      await wrapper.find('#createButton').trigger('click')
-      await flushPromises()
       await wrapper.find('#split_button').trigger('click')
+      await flushPromises()
       await expect(wrapper.vm.$refs.split_dialog.is_shown).toBe(true)
     })
     it('All the buttons show correctly', function () {
