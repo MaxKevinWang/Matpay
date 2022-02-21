@@ -15,35 +15,33 @@
         Transaction data won't be available before all messages are downloaded.
       </button>
     </div>
-    <div v-if="this.is_tx_fully_loaded">
-      <h4 id="history_room_name">History: {{ room_name }}</h4>
-      <div class="row">
-        <div v-if="balance >= 0" id="balance-display-positive">
-          <p>You owe in total: {{ to_currency_display(balance) }}</p>
-        </div>
-        <div v-if="balance < 0" id="balance-display-negative">
-          <p>Oweing you in total: {{ to_currency_display(-balance) }} </p>
-        </div>
-        <div class="card mb-3">
-          <div class="card-body">
-            <h5 class="card-title">Search & Filter</h5>
-            <label for="tx-search" class="card-text me-1">Search transactions: </label>
-            <input type="text" placeholder="Search for description" class="me-1" id="tx-search" v-model="filter_string">
-            <div>
-              <input type="checkbox" class="me-1" id="tx-participated-filter" v-model="only_participating">
-              <label for="tx-participated-filter">Only show transactions participating</label>
-            </div>
-          </div>
+    <h2 id="history_room_name">History: {{ room_name }}</h2>
+    <div class="row">
+      <div v-if="balance >= 0" id="balance-display-positive">
+        <p>You owe in total: {{ to_currency_display(balance) }}</p>
+      </div>
+      <div v-if="balance < 0" id="balance-display-negative">
+        <p>Oweing you in total: {{ to_currency_display(-balance) }} </p>
+      </div>
+    </div>
+    <div class="card mb-3">
+      <div class="card-body">
+        <h5 class="card-title">Search & Filter</h5>
+        <label for="tx-search" class="card-text me-1">Search transactions: </label>
+        <input type="text" placeholder="Search for description" class="me-1" id="tx-search" v-model="filter_string">
+        <div>
+          <input type="checkbox" class="me-1" id="tx-participated-filter" v-model="only_participating">
+          <label for="tx-participated-filter">Only show transactions participating</label>
         </div>
       </div>
-      <div class="row">
-        <div class="col-4" v-if="tx_list.length >= 1">
+    </div>
+    <div class="row" v-if="this.is_tx_fully_loaded">
+        <div class="col-lg-4" v-if="tx_list.length >= 1">
           <TxList :tx_list="tx_list" @on-click="on_click"/>
         </div>
-        <div class="col-8" v-if="show_detail">
+        <div class="col-lg-8" v-if="show_detail">
           <TxDetail :tx="tx" :room_id="room_id" @on-error="on_error"/>
         </div>
-      </div>
     </div>
   </div>
 </template>
