@@ -1,7 +1,7 @@
 import { user_1, user_2 } from '../../../unit/mocks/mocked_user'
 import { selectorify, split_percentage, sum_amount, to_currency_display, uuidgen } from '@/utils/utils'
 
-describe('Test US Input Tx Information 1', function () {
+xdescribe('Test US Input Tx Information 1', function () {
   beforeEach(function () {
     cy.login(1)
     cy.visit('room/!HJKUpUGgHFoSoqWlCj:dsn.tm.kit.edu')
