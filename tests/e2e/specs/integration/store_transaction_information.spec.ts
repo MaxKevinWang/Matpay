@@ -7,7 +7,7 @@ describe('Test store_transaction_message', function () {
     cy.visit('room/!HJKUpUGgHFoSoqWlCj:dsn.tm.kit.edu')
     cy.get('.alert-primary').should('not.exist', { timeout: 6000 })
   })
-  it('Check if approved message exists', function () {
+  xit('Check if approved message exists', function () {
     const random_tx_name = uuidgen().substring(0, 7)
     cy.createTx(random_tx_name)
     cy.logout()

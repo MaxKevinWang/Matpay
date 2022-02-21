@@ -7,7 +7,7 @@ describe('Test recall_tx_history', function () {
     cy.visit('room/!boXqlLQELBngYvdxpE:dsn.tm.kit.edu')
     cy.get('.alert-primary').should('not.exist', { timeout: 6000 })
   })
-  it('Test rejection', function () {
+  xit('Test rejection', function () {
     const random_tx_name = uuidgen().substring(0, 7)
     cy.createTx(random_tx_name)
     cy.logout()
@@ -21,7 +21,7 @@ describe('Test recall_tx_history', function () {
         cy.get('.mb-5').should('not.exist', { timeout: 3000 })
       })
   })
-  it('Test scroll to previous', function () {
+  xit('Test scroll to previous', function () {
     cy.viewport(550, 750)
     cy.viewport('iphone-6')
     cy.visit('room/!gqmGxtvBMcFMBWAAKb:dsn.tm.kit.edu')
