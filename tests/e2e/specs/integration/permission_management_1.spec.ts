@@ -37,7 +37,6 @@ describe('Test Permission Management', function () {
       }
       )
     }
-
     )
   })
 })
