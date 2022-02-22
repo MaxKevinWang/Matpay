@@ -87,6 +87,6 @@ export default defineComponent({
 </script>
 <style scoped>
 .modal-body h3 {
-  color: greenyellow;
+  color: green;
 }
 </style>
