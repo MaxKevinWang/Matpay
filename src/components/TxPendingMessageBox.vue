@@ -4,6 +4,7 @@
       <div class="row">
         <div class="col">
           <p>{{this.reference.timestamp.toLocaleDateString()}}</p>
+          <p v-if="this.reference.approval.type === 'modify'">(Modification)</p>
         </div>
         <div class="col">
           <p>{{this.reference.approval.description}}</p>
