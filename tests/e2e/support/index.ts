@@ -21,7 +21,7 @@ import '@cypress/code-coverage/support'
 declare global {
   namespace Cypress {
     interface Chainable {
-      login(account: 1 | 2 | 3): void
+      login(account: 1 | 2 | 3): Cypress.Chainable
       logout(): Cypress.Chainable
       createTx(description: string): void
     }

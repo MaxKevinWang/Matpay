@@ -41,7 +41,7 @@ Cypress.Commands.add('login', (id: 1 | 2 | 3) => {
     username = test_account3.username // choose the account you want
     password = test_account3.password // the same
   }
-  cy.request<POSTLoginResponse>('POST', `${homeserver}/_matrix/client/r0/login`, {
+  return cy.request<POSTLoginResponse>('POST', `${homeserver}/_matrix/client/r0/login`, {
     type: 'm.login.password',
     identifier: {
       type: 'm.id.user',
