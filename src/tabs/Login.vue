@@ -8,19 +8,19 @@
       <div class="form-group mb-3">
         <label for="username" class="form-label">Username</label>
         <input v-model="username" type="text" autofocus id="username" class="form-control" name="username"
-               placeholder="Username">
+               placeholder="Username" @keyup.enter="login">
       </div>
       <div class="form-group mb-3">
         <label for="homeserver" class="form-label">Homeserver</label>
         <input v-model="homeserver" id="homeserver" class="form-control" type="text" name="homeserver"
-               placeholder="Homeserver">
+               placeholder="Homeserver" @keyup.enter="login">
       </div>
       <div class="form-group mb-3">
         <label for="password" class="form-label">Password</label>
         <input v-model="password" id="password" class="form-control" type="password" name="password"
-               placeholder="Password">
+               placeholder="Password" @keyup.enter="login">
       </div>
-      <input class="btn btn-primary" @click="login()" value="Login" id="login">
+      <input class="btn btn-primary" @click="login" value="Login" id="login">
     </form>
     Don't have an account? <router-link to="register">Register here.</router-link>
   </div>

@@ -152,15 +152,13 @@ export default defineComponent({
                 room_id: this.room_id
               }
             })
+            this.amount_input = ''
+            this.description = ''
+            this.hide()
           } catch (e) {
             this.$emit('on-error', e)
-            return
           }
         }
-        this.amount_input = ''
-        this.description = ''
-        this.hide()
-        this.$emit('on-error', '')
       } else {
         this.popover_hint(this.description.length >= 1)
         this.popover_no_number(this.is_number())
