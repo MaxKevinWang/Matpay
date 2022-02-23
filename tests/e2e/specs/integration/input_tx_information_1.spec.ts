@@ -5,7 +5,7 @@ describe('Test US Input Tx Information 1', function () {
   beforeEach(function () {
     cy.login(1)
     cy.visit('room/!HJKUpUGgHFoSoqWlCj:dsn.tm.kit.edu')
-    cy.get('.alert-primary').should('not.exist', { timeout: 6000 })
+    cy.get('.spinner').should('not.exist', { timeout: 6000 })
   })
   it('Input Tx info', function () {
     const random_tx_name = uuidgen().substring(0, 7)
