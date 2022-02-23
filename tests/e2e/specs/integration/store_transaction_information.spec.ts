@@ -22,10 +22,10 @@ describe('Test store_transaction_message', function () {
             .then(() => {
               cy.get('[data-cy=approve]').filter(':visible').click()
                 .then(() => {
-                  cy.get('.mb-5').children().first().find('.card').find('.card-body')
+                  cy.get('.mb-5').children().last().find('.card').find('.card-body')
                     .find('.row').children().eq(1)
                     .find('p').contains(random_tx_name)
-                  cy.get('.mb-5').children().first().find('.card').find('.card-body')
+                  cy.get('.mb-5').children().last().find('.card').find('.card-body')
                     .find('.row').children().eq(2)
                     .find('p').contains('DSN Test Account No 1 paid 20.00€')
                 })
