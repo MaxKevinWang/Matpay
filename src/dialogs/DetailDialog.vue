@@ -84,6 +84,7 @@ export default defineComponent({
           current_group_id: this.reference?.grouped_tx.group_id
         }
       })
+      this.hide()
     }
   },
   mounted () {
