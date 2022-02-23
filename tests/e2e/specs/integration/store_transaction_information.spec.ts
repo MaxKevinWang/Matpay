@@ -20,7 +20,7 @@ describe('Test store_transaction_message', function () {
           cy.get('.mb-5').children().last().find('.card').find('.card-body')
             .find('.row').children().eq(3).find('.btn-primary').click()
             .then(() => {
-              cy.get('[data-cy=approve]').click()
+              cy.get('[data-cy=approve]').filter(':visible').click()
                 .then(() => {
                   cy.get('.mb-5').children().first().find('.card').find('.card-body')
                     .find('.row').children().eq(1)

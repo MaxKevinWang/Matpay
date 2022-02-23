@@ -22,7 +22,7 @@ describe('Test recall_tx_history', function () {
           cy.get('.mb-5').children().last().find('.card').find('.card-body')
             .find('.row').children().eq(3).find('.btn-primary').click()
             .then(() => {
-              cy.get('[data-cy=reject]').click()
+              cy.get('[data-cy=reject]').filter(':visible').click()
               cy.get('.mb-5').contains(random_tx_name).should('not.exist', { timeout: 3000 })
             })
         })
