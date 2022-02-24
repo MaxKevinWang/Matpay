@@ -7,7 +7,15 @@ import { uuidgen } from '@/utils/utils'
 import { random } from 'lodash'
 import axios, { AxiosResponse } from 'axios'
 import { POSTFilterCreateResponse } from '@/interface/api.interface'
-import { initial_sync_response, luka_room_states, sqtv_room_states, vrvx_room_states } from '../mocks/mocked_sync_data'
+import {
+  initial_sync_response, initial_sync_response_no_joined_rooms,
+  initial_sync_response_no_rooms,
+  luka_room_states,
+  sqtv_room_states,
+  vrvx_room_states
+} from '../mocks/mocked_sync_data'
+import { full_tx_data_batch } from '../mocks/mocked_full_tx_data'
+import { full_message_data_batch } from '../mocks/mocked_batch_message_data'
 
 jest.mock('axios')
 const mockedAxios = axios as jest.Mocked<typeof axios>
@@ -354,8 +362,212 @@ describe('Test sync store', function () {
         expect(commit).not.toHaveBeenCalled()
         expect(dispatch).not.toHaveBeenCalled()
       })
-      xit('Test sync with data', async function () {
-        console.log('Not tested yet')
+      it('Test initial sync no rooms', async function () {
+        mockedAxios.get.mockImplementation(async (url: string, data: unknown, config?: unknown): Promise<AxiosResponse<any>> => {
+          if (url.includes('sync')) {
+            return {
+              status: 200,
+              data: initial_sync_response_no_rooms,
+              statusText: 'OK',
+              headers: {},
+              config: {}
+            }
+          } else {
+            throw new Error('This should not be called!')
+          }
+        })
+        const dispatch = jest.fn()
+        const commit = (commit_string: string, payload: unknown) => {
+          store.mutations[commit_string](state, payload)
+        }
+        await action({
+          state,
+          commit: commit,
+          dispatch: dispatch,
+          rootGetters: rootGetters
+        }, null)
+        expect(state.init_state_complete).toEqual(true)
+        expect(state.room_events).toEqual({})
+      })
+      it('Test initial sync no joined rooms', async function () {
+        mockedAxios.get.mockImplementation(async (url: string, data: unknown, config?: unknown): Promise<AxiosResponse<any>> => {
+          if (url.includes('sync')) {
+            return {
+              status: 200,
+              data: initial_sync_response_no_joined_rooms,
+              statusText: 'OK',
+              headers: {},
+              config: {}
+            }
+          } else {
+            throw new Error('This should not be called!')
+          }
+        })
+        const dispatch = jest.fn()
+        const commit = (commit_string: string, payload: unknown) => {
+          store.mutations[commit_string](state, payload)
+        }
+        await action({
+          state,
+          commit: commit,
+          dispatch: dispatch,
+          rootGetters: rootGetters
+        }, null)
+        expect(state.init_state_complete).toEqual(true)
+        expect(state.room_events).toEqual({})
+      })
+      it('Test sync with data', async function () {
+        const dispatch_table : Record<string, boolean> = {
+          'rooms/action_parse_state_events_for_all_rooms': false,
+          action_update_state: false
+        }
+        const dispatch = (dispatch_string: string) => {
+          dispatch_table[dispatch_string] = true
+        }
+        const commit = (commit_string: string, payload: unknown) => {
+          store.mutations[commit_string](state, payload)
+        }
+        await action({
+          state,
+          commit: commit,
+          dispatch: dispatch,
+          rootGetters: rootGetters
+        }, null)
+        expect(state.init_state_complete).toEqual(true)
+        expect(Object.values(dispatch_table)).toSatisfyAll(i => i)
+        // check next batch
+        expect(state.next_batch).toEqual('s2226533_65457631_87720_1938204_312400_253_111327_2735296_33')
+        expect(Object.keys(state.room_events)).toContain('!SqtvWlRFkJPEsbntuD:dsn.tm.kit.edu')
+        expect(Object.keys(state.room_events)).toContain('!VrVxkmqIUvHOdhwHir:dsn.tm.kit.edu')
+        expect(Object.keys(state.room_events)).toContain('!lukaWOYXtUZYjnCqnz:dsn.tm.kit.edu')
+        expect(Object.keys(state.room_events)).not.toContain('!ElXKiDHBrqPJAcPXFS:dsn.tm.kit.edu')
+        expect(state.ignored_rooms.has('!ElXKiDHBrqPJAcPXFS:dsn.tm.kit.edu')).toEqual(true)
+        expect(state.room_state_events['!SqtvWlRFkJPEsbntuD:dsn.tm.kit.edu']).toBeArrayOfSize(11) // 2 old states contained
+      })
+    })
+    describe('Test action action_sync_full_tx_events_for_room', function () {
+      const action = store.actions.action_sync_full_tx_events_for_room as (context: any, payload: any) => Promise<any>
+      // mock rootGetters
+      const rootGetters = {
+        'auth/homeserver': '',
+        'auth/user_id': user_3.user_id
+      }
+      const room_id = '!jsadEoEqbILtDBnFqN:dsn.tm.kit.edu'
+      beforeEach(function () {
+        state = store.state()
+        state.init_state_complete = true
+        mockedAxios.get.mockImplementation(async (url: string, config?: unknown): Promise<AxiosResponse<any>> => {
+          const get_config = config as {
+            params: {
+              from: string
+            }
+          }
+          if (url.includes('messages')) {
+            return {
+              status: 200,
+              data: full_tx_data_batch[Number(get_config.params.from) - 1],
+              statusText: 'OK',
+              headers: {},
+              config: {}
+            }
+          } else {
+            return Promise.reject(new Error())
+          }
+        })
+      })
+      it('Test loading tx events', async function () {
+        state.room_tx_prev_batch_id[room_id] = '2'
+        state.room_tx_sync_complete[room_id] = false
+        state.room_events[room_id] = []
+        state.room_state_events[room_id] = []
+        state.cached_tx_events[room_id] = full_tx_data_batch[0].chunk as Array<TxEvent>
+        const dispatch = jest.fn()
+        const commit = (commit_string: string, payload: unknown) => {
+          store.mutations[commit_string](state, payload)
+        }
+        await action({
+          state,
+          commit: commit,
+          dispatch: dispatch,
+          rootGetters: rootGetters
+        }, {
+          room_id: room_id
+        })
+        expect(state.room_tx_sync_complete[room_id]).toEqual(true)
+        expect(state.processed_events_id.has('$ZA9ovJ8IjCVRY-EMsQjQ34Hw_7Ohyx_BXgYKtd75TMQ')).toEqual(true) // batch 1 processed
+        expect(state.processed_events_id.has('$6JFx_-yT3t9eyaFfzlo7jnsR9eszEshYh_c8CHHAfvc')).toEqual(true) // batch 2 processed
+        expect(state.processed_events_id.has('$-nvycSKjHFzs3fNjxmKxSHoGkO9UOlQyC6YnqjTjpl4')).toEqual(true) // batch 3 processed
+      })
+    })
+    describe('Test action action_sync_batch_message_events_for_room', function () {
+      const action = store.actions.action_sync_batch_message_events_for_room as (context: any, payload: any) => Promise<any>
+      // mock rootGetters
+      const rootGetters = {
+        'auth/homeserver': '',
+        'auth/user_id': user_3.user_id
+      }
+      const room_id = '!lukaWOYXtUZYjnCqnz:dsn.tm.kit.edu'
+      beforeEach(function () {
+        state = store.state()
+        state.init_state_complete = true
+        mockedAxios.get.mockImplementation(async (url: string, config?: unknown): Promise<AxiosResponse<any>> => {
+          const get_config = config as {
+            params: {
+              from: string
+            }
+          }
+          if (url.includes('messages')) {
+            return {
+              status: 200,
+              data: full_message_data_batch[Number(get_config.params.from) - 1],
+              statusText: 'OK',
+              headers: {},
+              config: {}
+            }
+          } else {
+            return Promise.reject(new Error())
+          }
+        })
+      })
+      it('Test message batch loading', async function () {
+        state.room_message_prev_batch_id[room_id] = '1'
+        state.room_events[room_id] = []
+        state.room_state_events[room_id] = []
+        const dispatch = jest.fn()
+        const commit = (commit_string: string, payload: unknown) => {
+          store.mutations[commit_string](state, payload)
+        }
+        await action({
+          state,
+          commit: commit,
+          dispatch: dispatch,
+          rootGetters: rootGetters
+        }, {
+          room_id: room_id
+        })
+        expect(state.room_events[room_id]).toBeArrayOfSize(30)
+        expect(state.processed_events_id.has('$hMVlQ5WwQQNiKZIdiG0fVt8b2qHqYieL57tgaXgqCv8')).toEqual(true)
+        expect(state.processed_events_id.has('$eGkGsWiHOBq6mdW8VV8v7Szl6c-Ec2DT09_9SVbKR7g')).toEqual(false)
+        await action({
+          state,
+          commit: commit,
+          dispatch: dispatch,
+          rootGetters: rootGetters
+        }, {
+          room_id: room_id
+        })
+        expect(state.room_events[room_id]).toBeArrayOfSize(60)
+        expect(state.processed_events_id.has('$eGkGsWiHOBq6mdW8VV8v7Szl6c-Ec2DT09_9SVbKR7g')).toEqual(true)
+        await action({
+          state,
+          commit: commit,
+          dispatch: dispatch,
+          rootGetters: rootGetters
+        }, {
+          room_id: room_id
+        })
+        expect(state.room_events[room_id]).toBeArrayOfSize(60)
+        expect(state.room_message_prev_batch_id[room_id]).toBeNull()
       })
     })
   })

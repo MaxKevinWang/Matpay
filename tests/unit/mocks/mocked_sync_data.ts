@@ -1512,7 +1512,6 @@ export const initial_sync_response = {
     }
   }
 }
-
 export const sqtv_room_states = [
   {
     type: 'm.room.create',
@@ -2073,3 +2072,12 @@ export const luka_room_states = [
     replaces_state: '$meQHUgAbysQtLJNIrsqEN9ozXr1NOxvwByEBTP8N01Y'
   }
 ]
+
+export const initial_sync_response_no_rooms = {
+  next_batch: 's2226533_65457631_87720_1938204_312400_253_111327_2735296_33'
+}
+
+export const initial_sync_response_no_joined_rooms = {
+  next_batch: 's2226533_65457631_87720_1938204_312400_253_111327_2735296_33',
+  rooms: {}
+}
