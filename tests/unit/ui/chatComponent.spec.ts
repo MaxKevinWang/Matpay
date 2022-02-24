@@ -508,9 +508,10 @@ describe('Test chatComponent', () => {
           room_id: room_01_room_id
         }
       })
+      // bug workaround
       expect(wrapper.findAllComponents({ name: 'TxApprovedMessageBox' })[0].element.innerHTML.includes('Hello transaction')).toBe(true)
       const button = wrapper.findAll('.btn-info').filter(w => w.attributes('data-test') === 'previous')
-      button[0].trigger('click')
+      await button[0].trigger('click')
       jest.advanceTimersByTime(1000)
       const animation = wrapper.findAll('.animation-emphasize')
       expect(animation).toHaveLength(1)
