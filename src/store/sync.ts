@@ -537,7 +537,7 @@ export const sync_store = {
           if ((e as Error).message === 'canceled') {
             console.log('Long poll cancelled.')
           } else {
-            throw e
+            console.log('An error occured while performing long poll. Retrying.')
           }
         }
       }

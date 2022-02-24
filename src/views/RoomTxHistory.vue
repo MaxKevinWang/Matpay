@@ -173,26 +173,30 @@ export default defineComponent({
     }
   },
   async created () {
-    await this.action_sync_initial_state()
-    if (!this.get_joined_status_for_room(this.room_id)) {
-      this.$router.push({
-        name: 'rooms',
-        query: {
-          not_joined: 1
-        }
+    try {
+      await this.action_sync_initial_state()
+      if (!this.get_joined_status_for_room(this.room_id)) {
+        this.$router.push({
+          name: 'rooms',
+          query: {
+            not_joined: 1
+          }
+        })
+      }
+      console.log('Checkpoint 1')
+      this.action_sync_full_tx_events_for_room({
+        room_id: this.room_id
+      }).then(() => {
+        this.error = ''
+        this.room_name = this.get_room_name(this.room_id)
+        this.is_tx_fully_loaded = true
+        window.addEventListener('resize', () => {
+          this.width = window.innerWidth
+        })
       })
+    } catch (e) {
+      this.error = (e as Error).toString()
     }
-    console.log('Checkpoint 1')
-    this.action_sync_full_tx_events_for_room({
-      room_id: this.room_id
-    }).then(() => {
-      this.error = ''
-      this.room_name = this.get_room_name(this.room_id)
-      this.is_tx_fully_loaded = true
-      window.addEventListener('resize', () => {
-        this.width = window.innerWidth
-      })
-    })
   },
   watch: {
     tx_list: {

@@ -174,8 +174,12 @@ export default defineComponent({
     }
   },
   async created () {
-    await this.action_sync_initial_state()
-    this.is_everything_ready = true
+    try {
+      await this.action_sync_initial_state()
+      this.is_everything_ready = true
+    } catch (e) {
+      this.error = (e as Error).toString()
+    }
   },
   mounted () {
     if (this.$route.query.not_joined) {

@@ -100,29 +100,37 @@ export default defineComponent({
       }, 4000)
     },
     on_load_chat () {
-      this.action_sync_batch_message_events_for_room({
-        room_id: this.room_id
-      })
+      try {
+        this.action_sync_batch_message_events_for_room({
+          room_id: this.room_id
+        })
+      } catch (e) {
+        this.error = (e as Error).toString()
+      }
     }
   },
   async mounted () {
-    await this.action_sync_initial_state()
-    if (!this.get_joined_status_for_room(this.room_id)) {
-      this.$router.push({
-        name: 'rooms',
-        query: {
-          not_joined: 1
-        }
+    try {
+      await this.action_sync_initial_state()
+      if (!this.get_joined_status_for_room(this.room_id)) {
+        this.$router.push({
+          name: 'rooms',
+          query: {
+            not_joined: 1
+          }
+        })
+      }
+      this.action_sync_batch_message_events_for_room({
+        room_id: this.room_id
       })
+      this.action_sync_full_tx_events_for_room({
+        room_id: this.room_id
+      }).then(() => {
+        this.is_tx_fully_loaded = true
+      })
+    } catch (e) {
+      this.error = (e as Error).toString()
     }
-    this.action_sync_batch_message_events_for_room({
-      room_id: this.room_id
-    })
-    this.action_sync_full_tx_events_for_room({
-      room_id: this.room_id
-    }).then(() => {
-      this.is_tx_fully_loaded = true
-    })
   }
 })
 </script>
