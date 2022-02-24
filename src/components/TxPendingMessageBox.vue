@@ -13,7 +13,7 @@
           <p>{{this.reference.approval.from.displayname + " paid " + to_currency_display(sum_amount(this.reference.approval))}}</p>
         </div>
         <div class="col">
-          <button class="btn btn-primary m-1" data-cy="detail" @click="approval_click()">Details</button>
+          <button class="btn btn-primary m-1" id="Approve" data-cy="detail" @click="approval_click()">Details</button>
           <button data-cy="previous" v-if="this.reference.approval.type === 'modify'" class="btn btn-info m-1" @click="previous_click">Jump to Previous</button>
         </div>
       </div>
