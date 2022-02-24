@@ -16,6 +16,8 @@ import {
 } from '../mocks/mocked_sync_data'
 import { full_tx_data_batch } from '../mocks/mocked_full_tx_data'
 import { full_message_data_batch } from '../mocks/mocked_batch_message_data'
+import { long_poll_data } from '../mocks/mocked_long_poll_data'
+import { resync_data } from '../mocks/mocked_resync_data'
 
 jest.mock('axios')
 const mockedAxios = axios as jest.Mocked<typeof axios>
@@ -568,6 +570,173 @@ describe('Test sync store', function () {
         })
         expect(state.room_events[room_id]).toBeArrayOfSize(60)
         expect(state.room_message_prev_batch_id[room_id]).toBeNull()
+      })
+    })
+    describe('Test action action_update_state', function () {
+      const action = store.actions.action_update_state as (context: any, payload: any) => Promise<any>
+      // mock rootGetters
+      const rootGetters = {
+        'auth/homeserver': '',
+        'auth/user_id': user_3.user_id
+      }
+      beforeEach(function () {
+        state = store.state()
+        state.init_state_complete = true
+        mockedAxios.get.mockImplementation(async (url: string, config?: unknown): Promise<AxiosResponse<any>> => {
+          if (url.includes('sync')) {
+            return {
+              status: 200,
+              data: long_poll_data,
+              statusText: 'OK',
+              headers: {},
+              config: {}
+            }
+          } else if (url.includes('join_rules')) {
+            return {
+              status: 200,
+              data: {
+                join_rule: 'invite'
+              },
+              statusText: 'OK',
+              headers: {},
+              config: {}
+            }
+          } else {
+            return Promise.reject(new Error())
+          }
+        })
+      })
+      it('Test long poll', async function () {
+        const room_id_1 = '!SqtvWlRFkJPEsbntuD:dsn.tm.kit.edu'
+        state.room_events[room_id_1] = []
+        state.room_state_events[room_id_1] = []
+        state.room_tx_sync_complete[room_id_1] = true
+        const room_id_2 = '!ElXKiDHBrqPJAcPXFS:dsn.tm.kit.edu'
+        state.room_events[room_id_2] = []
+        state.room_state_events[room_id_2] = []
+        state.cached_tx_events[room_id_2] = []
+        const dispatched = {
+          '!VrVxkmqIUvHOdhwHir:dsn.tm.kit.edu': false,
+          '!lukaWOYXtUZYjnCqnz:dsn.tm.kit.edu': false,
+          '!ElXKiDHBrqPJAcPXFS:dsn.tm.kit.edu': false
+        }
+        const dispatch = (dispatch_string: string, payload: {room_id: string}) => {
+          if (dispatch_string === 'action_resync_initial_state_for_room' &&
+            payload.room_id === '!VrVxkmqIUvHOdhwHir:dsn.tm.kit.edu') {
+            dispatched[payload.room_id] = true
+            state.cached_tx_events[payload.room_id] = []
+            state.room_events[payload.room_id] = []
+            state.room_state_events[payload.room_id] = []
+          }
+          if (dispatch_string === 'rooms/action_parse_invited_rooms' &&
+            Object.keys(payload).includes('!lukaWOYXtUZYjnCqnz:dsn.tm.kit.edu')) {
+            dispatched['!lukaWOYXtUZYjnCqnz:dsn.tm.kit.edu'] = true
+          }
+          if (dispatch_string === 'rooms/action_i_am_kicked_from_room' &&
+            payload.room_id === '!ElXKiDHBrqPJAcPXFS:dsn.tm.kit.edu') {
+            dispatched[payload.room_id] = true
+          }
+        }
+        const commit = (commit_string: string, payload: unknown) => {
+          store.mutations[commit_string](state, payload)
+        }
+        await action({
+          state,
+          commit: commit,
+          dispatch: dispatch,
+          rootGetters: rootGetters
+        }, {
+          timeout: 10
+        })
+        expect(Object.values(dispatched)).toSatisfyAll(i => i)
+        expect(state.processed_events_id.has('$vtEISdkvDDMus03ggfWHtHuiul9H7XLR-2M05ZlgJYM')).toEqual(true)
+        expect(state.cached_tx_events['!VrVxkmqIUvHOdhwHir:dsn.tm.kit.edu']).toSatisfyAny(i => i.event_id === '$dHHsmRzoBIUwmw0w_FpfVfi5YJO-hhfwYuoAxzx6WtY')
+      })
+    })
+    describe('Test action action_resync_initial_state_for_room', function () {
+      const action = store.actions.action_resync_initial_state_for_room as (context: any, payload: any) => Promise<any>
+      // mock rootGetters
+      const rootGetters = {
+        'auth/homeserver': '',
+        'auth/user_id': user_3.user_id
+      }
+      beforeEach(function () {
+        state = store.state()
+        // Mock sync, state, join API
+        mockedAxios.get.mockImplementation(async (url: string, data: unknown, config?: unknown): Promise<AxiosResponse<any>> => {
+          if (url.includes('sync')) {
+            return {
+              status: 200,
+              data: resync_data,
+              statusText: 'OK',
+              headers: {},
+              config: {}
+            }
+          } else if (url.includes('join_rules')) {
+            if (url.includes('ElXK')) {
+              return {
+                status: 200,
+                data: {
+                  join_rule: 'public'
+                },
+                statusText: 'OK',
+                headers: {},
+                config: {}
+              }
+            } else {
+              return {
+                status: 200,
+                data: {
+                  join_rule: 'invite'
+                },
+                statusText: 'OK',
+                headers: {},
+                config: {}
+              }
+            }
+          } else if (url.includes('state')) {
+            if (url.includes('luka')) {
+              return {
+                status: 200,
+                data: luka_room_states,
+                statusText: 'OK',
+                headers: {},
+                config: {}
+              }
+            } else {
+              return Promise.reject(new Error('You should not request this room!'))
+            }
+          } else {
+            return Promise.reject(new Error('No matching API!'))
+          }
+        })
+      })
+      it('Test sync one new room', async function () {
+        const room_id = '!lukaWOYXtUZYjnCqnz:dsn.tm.kit.edu'
+        let dispatched = false
+        const dispatch = (dispatch_string: string) => {
+          if (dispatch_string === 'rooms/action_parse_state_events_for_all_rooms') {
+            dispatched = true
+          }
+        }
+        const commit = (commit_string: string, payload: unknown) => {
+          store.mutations[commit_string](state, payload)
+        }
+        state.init_state_complete = true
+        await action({
+          state,
+          commit: commit,
+          dispatch: dispatch,
+          rootGetters: rootGetters
+        }, {
+          room_id: room_id
+        })
+        expect(state.init_state_complete).toEqual(true)
+        expect(state.next_batch).toEqual('1')
+        expect(Object.keys(state.room_events)).toContain(room_id)
+        expect(Object.keys(state.room_state_events)).toContain(room_id)
+        expect(Object.keys(state.cached_tx_events)).toContain(room_id)
+        expect(state.processed_events_id.has('$hqfOK70PxC-DcaY0Ueiw7lmAMQS-gRajsFjP8E1SSwk')).toEqual(true)
       })
     })
   })
