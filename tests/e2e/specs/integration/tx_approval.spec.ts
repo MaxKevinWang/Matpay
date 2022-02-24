@@ -24,6 +24,11 @@ describe('Test recall_tx_history', function () {
             .then(() => {
               cy.get('[data-cy=reject]').filter(':visible').click()
               cy.get('.mb-5').contains(random_tx_name).should('not.exist', { timeout: 3000 })
+              cy.visit('/rooms')
+              cy.get('.alert-primary').should('not.exist', { timeout: 6000 })
+              cy.get('table').contains('CypressApprovalTest').parent().contains('Detail').click()
+              cy.get('.spinner').should('not.exist', { timeout: 6000 })
+              cy.get('.mb-5').contains(random_tx_name).should('not.exist', { timeout: 3000 })
             })
         })
     })
