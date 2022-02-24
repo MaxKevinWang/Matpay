@@ -561,7 +561,8 @@ describe('Test MemberList Component', () => {
         }
       })
       await (wrapper.find('#usercard_' + selectorify(user_1.user_id)).find('#leaveButton')).trigger('click')
-      await wrapper.find('#yes-button').trigger('click')
+      await wrapper.findAll('button').filter(i => i.element.innerHTML.includes('Yes'))[0].trigger('click')
+      // await wrapper.find('#yes-button').trigger('click')
       await flushPromises()
       expect(wrapper.emitted()).toHaveProperty('on-error')
       expect((wrapper.emitted()['on-error'][0] as Array<Error>)[0]).toEqual(Error('Error,shit'))
