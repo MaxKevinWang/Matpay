@@ -7,7 +7,13 @@ import { uuidgen } from '@/utils/utils'
 import { random } from 'lodash'
 import axios, { AxiosResponse } from 'axios'
 import { POSTFilterCreateResponse } from '@/interface/api.interface'
-import { initial_sync_response, luka_room_states, sqtv_room_states, vrvx_room_states } from '../mocks/mocked_sync_data'
+import {
+  initial_sync_response, initial_sync_response_no_joined_rooms,
+  initial_sync_response_no_rooms,
+  luka_room_states,
+  sqtv_room_states,
+  vrvx_room_states
+} from '../mocks/mocked_sync_data'
 
 jest.mock('axios')
 const mockedAxios = axios as jest.Mocked<typeof axios>
@@ -354,8 +360,87 @@ describe('Test sync store', function () {
         expect(commit).not.toHaveBeenCalled()
         expect(dispatch).not.toHaveBeenCalled()
       })
-      xit('Test sync with data', async function () {
-        console.log('Not tested yet')
+      it('Test initial sync no rooms', async function () {
+        mockedAxios.get.mockImplementation(async (url: string, data: unknown, config?: unknown): Promise<AxiosResponse<any>> => {
+          if (url.includes('sync')) {
+            return {
+              status: 200,
+              data: initial_sync_response_no_rooms,
+              statusText: 'OK',
+              headers: {},
+              config: {}
+            }
+          } else {
+            throw new Error('This should not be called!')
+          }
+        })
+        const dispatch = jest.fn()
+        const commit = (commit_string: string, payload: unknown) => {
+          store.mutations[commit_string](state, payload)
+        }
+        await action({
+          state,
+          commit: commit,
+          dispatch: dispatch,
+          rootGetters: rootGetters
+        }, null)
+        expect(state.init_state_complete).toEqual(true)
+        expect(state.room_events).toEqual({})
+      })
+      it('Test initial sync no joined rooms', async function () {
+        mockedAxios.get.mockImplementation(async (url: string, data: unknown, config?: unknown): Promise<AxiosResponse<any>> => {
+          if (url.includes('sync')) {
+            return {
+              status: 200,
+              data: initial_sync_response_no_joined_rooms,
+              statusText: 'OK',
+              headers: {},
+              config: {}
+            }
+          } else {
+            throw new Error('This should not be called!')
+          }
+        })
+        const dispatch = jest.fn()
+        const commit = (commit_string: string, payload: unknown) => {
+          store.mutations[commit_string](state, payload)
+        }
+        await action({
+          state,
+          commit: commit,
+          dispatch: dispatch,
+          rootGetters: rootGetters
+        }, null)
+        expect(state.init_state_complete).toEqual(true)
+        expect(state.room_events).toEqual({})
+      })
+      it('Test sync with data', async function () {
+        const dispatch_table : Record<string, boolean> = {
+          'rooms/action_parse_state_events_for_all_rooms': false,
+          action_update_state: false
+        }
+        const dispatch = (dispatch_string: string) => {
+          dispatch_table[dispatch_string] = true
+        }
+        const commit = (commit_string: string, payload: unknown) => {
+          store.mutations[commit_string](state, payload)
+        }
+        await action({
+          state,
+          commit: commit,
+          dispatch: dispatch,
+          rootGetters: rootGetters
+        }, null)
+        expect(state.init_state_complete).toEqual(true)
+        expect(Object.values(dispatch_table)).toSatisfyAll(i => i)
+        // check next batch
+        expect(state.next_batch).toEqual('s2226533_65457631_87720_1938204_312400_253_111327_2735296_33')
+        expect(Object.keys(state.room_events)).toContain('!SqtvWlRFkJPEsbntuD:dsn.tm.kit.edu')
+        expect(Object.keys(state.room_events)).toContain('!VrVxkmqIUvHOdhwHir:dsn.tm.kit.edu')
+        expect(Object.keys(state.room_events)).toContain('!lukaWOYXtUZYjnCqnz:dsn.tm.kit.edu')
+        expect(Object.keys(state.room_events)).not.toContain('!ElXKiDHBrqPJAcPXFS:dsn.tm.kit.edu')
+        expect(state.ignored_rooms.has('!ElXKiDHBrqPJAcPXFS:dsn.tm.kit.edu')).toEqual(true)
+        expect(state.room_state_events['!SqtvWlRFkJPEsbntuD:dsn.tm.kit.edu']).toBeArrayOfSize(11) // 2 old states contained
       })
     })
   })
