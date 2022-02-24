@@ -611,9 +611,7 @@ export const tx_store = {
             room_id: room_id,
             pending_approval: new_pending_approval
           }, { root: true })
-          // TODO: notify other stores
           return true
-          break
         }
         case 'com.matpay.modify': {
           const tx_event_modify = tx_event as TxModifyEvent
@@ -738,7 +736,6 @@ export const tx_store = {
             room_id: room_id,
             pending_approval: new_pending_approval
           }, { root: true })
-          // TODO: notify other stores
           return true
           break
         }

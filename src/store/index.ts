@@ -34,9 +34,6 @@ export function newStore () {
               }
               break
             }
-            case 'sync/mutation_init_state_incomplete': {
-              break
-            }
             case 'sync/mutation_create_new_room': {
               const payload: MatrixRoomID = mutation.payload
               for (const st of normal_stores) {
@@ -95,9 +92,6 @@ export function newStore () {
                   })
                 }
               }
-              break
-            }
-            case 'sync/mutation_init_state_complete': {
               break
             }
             case 'sync/mutation_room_tx_sync_state_complete': {
