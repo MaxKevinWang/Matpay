@@ -14,7 +14,7 @@
         </div>
         <div class="col">
           <button class="btn btn-primary m-1" data-cy="detail" @click="approval_click()">Details</button>
-          <button data-cy="previous" v-if="this.reference.approval.type === 'modify'" class="btn btn-info m-1" @click="previous_click">Jump to Previous</button>
+          <button data-cy="previous" data-test="previous" v-if="this.reference.approval.type === 'modify'" class="btn btn-info m-1" @click="previous_click">Jump to Previous</button>
         </div>
       </div>
     </div>

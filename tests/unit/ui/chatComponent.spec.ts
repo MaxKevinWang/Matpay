@@ -1,6 +1,6 @@
 import { config, flushPromises, mount, shallowMount } from '@vue/test-utils'
 import { room_01_room_id, user_1, user_2 } from '../mocks/mocked_user'
-import { ChatLog, ChatMessage, TxApprovedPlaceholder } from '@/models/chat.model'
+import { ChatLog, ChatMessage, TxApprovedPlaceholder, TxPendingPlaceholder } from '@/models/chat.model'
 import { selectorify, split_percentage, sum_amount, to_currency_display, uuidgen } from '@/utils/utils'
 import ChatComponent from '@/components/ChatComponent.vue'
 import { createStore } from 'vuex'
@@ -9,8 +9,8 @@ import router from '@/router'
 import { RoomUserInfo, User } from '@/models/user.model'
 import bootstrap from 'bootstrap'
 import CreateTxDialog from '@/dialogs/CreateTxDialog.vue'
-import { GroupedTransaction } from '@/models/transaction.model'
-import { MatrixRoomID, MatrixUserID } from '@/models/id.model'
+import { GroupedTransaction, PendingApproval, SimpleTransaction } from '@/models/transaction.model'
+import { GroupID, MatrixEventID, MatrixRoomID, MatrixUserID } from '@/models/id.model'
 
 jest.mock('bootstrap')
 const mockedBootstrap = bootstrap as jest.Mocked<typeof bootstrap>
@@ -421,6 +421,99 @@ describe('Test chatComponent', () => {
       expect(wrapper.findAllComponents({ name: 'TxApprovedMessageBox' })[0].element.innerHTML.includes('Hello transaction')).toBe(true)
       expect(wrapper.findAllComponents({ name: 'TxApprovedMessageBox' })[0].element.innerHTML.includes(new Date(2022, 0, 15).toLocaleDateString())).toBe(true)
       expect(wrapper.findAllComponents({ name: 'TxApprovedMessageBox' })[0].element.innerHTML.includes(user_1.displayname)).toBe(true)
+    })
+    it('Test animation', async () => {
+      const room_id = 'aaa'
+      const $route = {
+        fullPath: 'full/path'
+      }
+      const fake_group_id1 = uuidgen()
+      const mock_grouped_tx : GroupedTransaction = {
+        from: user_1,
+        group_id: fake_group_id1,
+        state: 'approved',
+        txs: [],
+        description: 'Hello transaction',
+        participants: [],
+        timestamp: new Date('1/15/2022'),
+        pending_approvals: []
+      }
+      const mock_approved_message: TxApprovedPlaceholder = {
+        type: 'approved',
+        timestamp: new Date('1/15/2022'),
+        grouped_tx: mock_grouped_tx
+      }
+
+      const mock_modify_message: PendingApproval = {
+        event_id: uuidgen(),
+        type: 'modify',
+        group_id: fake_group_id1,
+        approvals: {},
+        from: user_1,
+        description: 'Hello',
+        timestamp: new Date('1/15/2022'),
+        txs: []
+      }
+
+      const mock_modification: TxPendingPlaceholder = {
+        type: 'pending',
+        timestamp: new Date('1/15/2022'),
+        approval: mock_modify_message
+      }
+
+      const mock_chatlog : ChatLog = { messages: [mock_approved_message, mock_modification] }
+      const store = createStore({
+        modules: {
+          auth: {
+            namespaced: true,
+            getters: {
+              is_logged_in: () => true,
+              user_id: jest.fn(),
+              homeserver: jest.fn(),
+              auth_id: () => 'fdsfsd'
+            }
+          },
+          chat: {
+            namespaced: true,
+            getters: {
+              get_chat_log_for_room: (room_id) => () => mock_chatlog
+            }
+          },
+          rooms: {
+            namespaced: true,
+            getters: {
+            }
+          }
+        }
+      })
+      jest.useFakeTimers()
+      const wrapper = mount(ChatComponent, {
+        attachTo: document.querySelector('html') as HTMLElement,
+        global: {
+          stubs: {
+            CreateTxDialog: true
+          },
+          plugins: [store],
+          mocks: {
+            $route: {
+              params: {
+                room_id: room_01_room_id
+              }
+            }
+          }
+        },
+        props: {
+          users_info: [mocked_user_info1],
+          reference: { mock_approved_message, mock_modification },
+          room_id: room_01_room_id
+        }
+      })
+      expect(wrapper.findAllComponents({ name: 'TxApprovedMessageBox' })[0].element.innerHTML.includes('Hello transaction')).toBe(true)
+      const button = wrapper.findAll('.btn-info').filter(w => w.attributes('data-test') === 'previous')
+      button[0].trigger('click')
+      jest.advanceTimersByTime(1000)
+      const animation = wrapper.findAll('.animation-emphasize')
+      expect(animation).toHaveLength(1)
     })
     it('Test if the user can send messages when he types in correct messages', async () => {
       const room_id = 'aaa'
