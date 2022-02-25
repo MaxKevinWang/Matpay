@@ -49,20 +49,18 @@
           <input type="text" v-model="chat_message" class="form-control" placeholder="Send a message"
                  aria-describedby="button-addon2" id="sendInputText" @keyup.enter="on_send_click">
         </div>
-        <div class="d-flex">
-          <button class="btn btn-light" id="createButton" type="button" data-bs-toggle="tooltip" data-bs-placement="top"
-                  title="Create Transaction" @click="on_tx_clicked()">
-            <i class="bi bi-receipt"></i>
-          </button>
-          <button class="btn btn-light" id="historyButton" @click="on_history_click()"
-                       type="button"
-                       data-bs-toggle="tooltip" data-bs-placement="top" title="History">
-            <i class="bi bi-clock-history"></i>
-          </button>
-          <button class="btn btn-primary" id="sendButton" type="button" :disabled="!(this.chat_message)"
-                  @click="on_send_click">Send
-          </button>
-        </div>
+        <button class="btn btn-light" id="createButton" type="button" data-bs-toggle="tooltip" data-bs-placement="top"
+                title="Create Transaction" @click="on_tx_clicked()">
+          <i class="bi bi-receipt"></i>
+        </button>
+        <button class="btn btn-light" id="historyButton" @click="on_history_click()"
+                     type="button"
+                     data-bs-toggle="tooltip" data-bs-placement="top" title="History">
+          <i class="bi bi-clock-history"></i>
+        </button>
+        <button class="btn btn-primary" id="sendButton" type="button" :disabled="!(this.chat_message)"
+                @click="on_send_click">Send
+        </button>
       </div>
     </div>
   </div>
