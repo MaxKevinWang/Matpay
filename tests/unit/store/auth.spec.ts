@@ -48,6 +48,38 @@ describe('Test Vuex Store auth', () => {
       expect(localStorage.getItem('access_token')).toBeFalsy()
     })
   })
+  describe('Test getters', () => {
+    let state: State = {
+      access_token: '',
+      homeserver: '',
+      user_id: '',
+      device_id: undefined
+    }
+    beforeEach(() => {
+      state = {
+        user_id: 'Allen',
+        homeserver: 'www.baidu.com',
+        access_token: 'ddd',
+        device_id: 'huawei'
+      }
+    })
+    it('Test get deviceId', () => {
+      const getter = store.getters.device_id(state, null, null, null)
+      expect(getter).toEqual('huawei')
+    })
+    it('Test get logged_in', () => {
+      const getter = store.getters.is_logged_in(state, null, null, null)
+      expect(getter).toEqual(true)
+    })
+    it('Test get user_id', () => {
+      const getter = store.getters.user_id(state, null, null, null)
+      expect(getter).toEqual('Allen')
+    })
+    it('Test get homeserver', () => {
+      const getter = store.getters.homeserver(state, null, null, null)
+      expect(getter).toEqual('www.baidu.com')
+    })
+  })
   describe('Test actions', () => {
     it('Test action action_login success', async () => {
       const action_login = store.actions.action_login as (context: any, payload: any) => Promise<any>
