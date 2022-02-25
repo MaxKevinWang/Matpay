@@ -57,8 +57,8 @@
           <div class="col-10"><p>You have already approved this transaction.</p></div>
         </div>
         <div class="modal-footer" v-if="!reference.approval.approvals[this.user_id] && is_current_user_participant">
-          <button data-cy="reject" type="button" class="btn btn-danger" @click="on_reject_click()">Reject</button>
-          <button data-cy="approve" type="button" class="btn btn-primary" @click="on_approve_click()" id="Approve">Approve</button>
+          <button data-cy="reject" type="button" class="btn btn-danger RejectBTN" @click="on_reject_click()">Reject</button>
+          <button data-cy="approve" type="button" class="btn btn-primary ApproveBTN" @click="on_approve_click()">Approve</button>
         </div>
       </div>
     </div>
