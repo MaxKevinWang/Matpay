@@ -19,7 +19,7 @@ describe('Test Permission Management', function () {
           cy.wait(1000)
           cy.visit('/rooms')
           cy.get('.alert-primary').should('not.exist', { timeout: 6000 })
-          cy.get('[data-cy=accept-invitation]').click().then(() => {
+          cy.get('[data-cy=accept-invitation]').eq(0).click().then(() => {
             cy.logout()
           }
           )

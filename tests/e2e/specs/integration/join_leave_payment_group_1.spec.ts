@@ -10,34 +10,34 @@ describe('Test join_leave_payment_group', function () {
     cy.get('.spinner').should('not.exist', { timeout: 6000 })
     // cy.visit('room/!XfSkhdwHMNwuyctFJP:dsn.tm.kit.edu')
     // cy.get('.spinner').should('not.exist', { timeout: 6000 })
-    cy.get('#usercard_' + selectorify(user_2.user_id)).get('#leaveButton').click().then(() => {
-      cy.get('[data-cy=Yes]').click().then(() => {
-        cy.logout()
-        cy.login(1)
-        cy.visit('/rooms')
-        cy.get('.alert-primary').should('not.exist', { timeout: 6000 })
-        cy.get('table').contains('test rojoin').parent().contains('Detail').click()
-        cy.get('.spinner').should('not.exist', { timeout: 6000 })
-        cy.get('#inviteButton').click().then(() => {
-          cy.get('#invite-userid').type('@test-2:dsn.tm.kit.edu')
-          cy.wait(1000)
-          cy.get('#invite-confirm').eq(0).click().then(() => {
-            cy.logout()
-            cy.login(2)
-            cy.visit('/rooms')
-            cy.get('.alert-primary').should('not.exist', { timeout: 6000 })
-            cy.get('[data-cy=accept-invitation]').click().then(() => {
-              cy.get('.mb-5').children().last().find('.card').find('.card-body').find('.row').children().eq(1)
-                .find('p').contains('test-rejoin').should('be.visible')
-            }
-            )
+    if (cy.$$('#usercard_' + selectorify(user_2.user_id))) {
+      cy.get('#usercard_' + selectorify(user_2.user_id)).get('#leaveButton').click().then(() => {
+        cy.get('[data-cy=Yes]').click().then(() => {
+          cy.logout()
+          cy.login(1)
+          cy.visit('/rooms')
+          cy.get('.alert-primary').should('not.exist', { timeout: 6000 })
+          cy.get('table').contains('test rojoin').parent().contains('Detail').click()
+          cy.get('.spinner').should('not.exist', { timeout: 6000 })
+          cy.get('#inviteButton').click().then(() => {
+            cy.get('#invite-userid').type('@test-2:dsn.tm.kit.edu')
+            cy.wait(1000)
+            cy.get('#invite-confirm').eq(0).click().then(() => {
+              cy.logout()
+              cy.login(2)
+              cy.visit('/rooms')
+              cy.get('.alert-primary').should('not.exist', { timeout: 6000 })
+              cy.get('[data-cy=accept-invitation]').eq(0).click().then(() => {
+                cy.get('.mb-5').children().last().find('.card').find('.card-body').find('.row').children().eq(1)
+                  .find('p').contains('test-rejoin').should('be.visible')
+              })
+            })
           })
-        }
-        )
-      }
-      )
+        })
+      })
     }
-    )
-  }
-  )
+  })
 })
+
+
+

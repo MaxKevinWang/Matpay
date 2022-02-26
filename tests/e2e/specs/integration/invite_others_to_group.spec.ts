@@ -2,14 +2,13 @@ import { selectorify, uuidgen } from '@/utils/utils'
 import { user_1, user_2 } from '../../../unit/mocks/mocked_user'
 
 describe('Test invite_others_to_group', function () {
-  beforeEach(function () {
+  before(function () {
     cy.login(1)
     cy.visit('/rooms')
     cy.get('.alert-primary').should('not.exist', { timeout: 6000 })
     cy.get('table').contains('test-invite').parent().contains('Detail').click()
     cy.get('.spinner').should('not.exist', { timeout: 6000 })
-    const $user2 = cy.$$('#usercard_' + selectorify(user_2.user_id))
-    if ($user2) {
+    if (cy.$$('#usercard_' + selectorify(user_2.user_id))) {
       cy.get('#usercard_' + selectorify(user_2.user_id)).get('#kickButton').click().then(() => {
         cy.get('[data-cy=Yes]').click().then(() => {
           cy.get('#usercard_' + selectorify(user_2.user_id)).should('not.exist', { timeout: 3000 })
@@ -50,17 +49,17 @@ describe('Test invite_others_to_group', function () {
       })
     })
   })
-  it('Test user can not invite others without permission(invite himself)', function () {
+  it('Test user can not invite others without permission(invite noone)', function () {
     cy.login(1)
     cy.visit('/rooms')
     cy.get('.alert-primary').should('not.exist', { timeout: 6000 })
     cy.get('table').contains('test-invite').parent().contains('Detail').click()
     cy.get('.spinner').should('not.exist', { timeout: 6000 })
     cy.get('#inviteButton').click().then(() => {
-      cy.get('#invite-userid').type('@test-1:dsn.tm.kit.edu')
       cy.wait(1000)
       cy.get('#invite-confirm').click().then(() => {
-        cy.get('.popover').contains('You cannot invite yourself!')
+        cy.get('.popover').contains('cannot be blank')
+        cy.get('[data-cy=close]').click()
       }
       )
     }

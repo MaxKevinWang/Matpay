@@ -1,7 +1,7 @@
 import { selectorify, uuidgen } from '@/utils/utils'
 import { user_1, user_2 } from '../../../unit/mocks/mocked_user'
 
-describe('Test Permission Management', function () {
+describe('Test Permission Management2', function () {
   beforeEach(function () {
     cy.login(1)
     cy.visit('/rooms')
