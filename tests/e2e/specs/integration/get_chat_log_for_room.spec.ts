@@ -16,7 +16,7 @@ describe('Test Permission Management', function () {
       type: 'm.login.password',
       identifier: {
         type: 'm.id.user',
-        user: '@test-3:dsn.tm.kit.edu',
+        user: '@test-3:dsn.tm.kit.edu'
       },
       password: '#CQy2pzWD7wK'
     })

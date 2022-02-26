@@ -21,7 +21,7 @@ describe('Test join_leave_payment_group', function () {
         cy.get('#inviteButton').click().then(() => {
           cy.get('#invite-userid').type('@test-2:dsn.tm.kit.edu')
           cy.wait(1000)
-          cy.get('#invite-confirm').click().then(() => {
+          cy.get('#invite-confirm').eq(0).click().then(() => {
             cy.logout()
             cy.login(2)
             cy.visit('/rooms')
