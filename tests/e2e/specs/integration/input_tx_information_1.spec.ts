@@ -4,7 +4,7 @@ import { selectorify, split_percentage, sum_amount, to_currency_display, uuidgen
 describe('Test US Input Tx Information 1', function () {
   beforeEach(function () {
     cy.login(1)
-    cy.visit('room/!HJKUpUGgHFoSoqWlCj:dsn.tm.kit.edu')
+    cy.visit('room/!mVsdWCahipapKphWsO:dsn.tm.kit.edu')
     cy.get('.spinner').should('not.exist', { timeout: 6000 })
   })
   it('Input Tx info', function () {
