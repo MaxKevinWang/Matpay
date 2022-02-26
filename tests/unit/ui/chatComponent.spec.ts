@@ -451,13 +451,13 @@ describe('Test chatComponent', () => {
         approvals: {},
         from: user_1,
         description: 'Hello',
-        timestamp: new Date('1/15/2022'),
+        timestamp: new Date('1/16/2022'),
         txs: []
       }
 
       const mock_modification: TxPendingPlaceholder = {
         type: 'pending',
-        timestamp: new Date('1/15/2022'),
+        timestamp: new Date('1/16/2022'),
         approval: mock_modify_message
       }
 
@@ -512,7 +512,7 @@ describe('Test chatComponent', () => {
       expect(wrapper.findAllComponents({ name: 'TxApprovedMessageBox' })[0].element.innerHTML.includes('Hello transaction')).toBe(true)
       const button = wrapper.findAll('.btn-info').filter(w => w.attributes('data-test') === 'previous')
       await button[0].trigger('click')
-      jest.advanceTimersByTime(1000)
+      jest.advanceTimersByTime(5000)
       const animation = wrapper.findAll('.animation-emphasize')
       expect(animation).toHaveLength(1)
     })
