@@ -166,8 +166,8 @@ export default defineComponent({
             .map(m => m.firstElementChild as HTMLDivElement)
         } else {
           // Bug workaround: Vue-jest does not support ref on v-for
-          message_boxes = Array.from((this.$refs.message_boxes as HTMLDivElement).children[0].children) as unknown as HTMLDivElement[]
-          console.log(message_boxes)
+          message_boxes = Array.from((this.$refs.message_boxes.parentElement.children) as unknown as HTMLDivElement[])
+            .map(m => m.firstElementChild as HTMLDivElement)
         }
         // get all approved & pending boxes
         const approved_boxes = message_boxes

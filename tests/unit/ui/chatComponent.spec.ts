@@ -487,6 +487,9 @@ describe('Test chatComponent', () => {
         }
       })
       jest.useFakeTimers()
+      // mock scrollIntoView
+      const scrollIntoView = jest.fn()
+      window.HTMLElement.prototype.scrollIntoView = scrollIntoView
       const wrapper = mount(ChatComponent, {
         attachTo: document.querySelector('html') as HTMLElement,
         global: {
@@ -515,6 +518,7 @@ describe('Test chatComponent', () => {
       jest.advanceTimersByTime(5000)
       const animation = wrapper.findAll('.animation-emphasize')
       expect(animation).toHaveLength(1)
+      expect(scrollIntoView).toBeCalled()
     })
     it('Test if the user can send messages when he types in correct messages', async () => {
       const room_id = 'aaa'
