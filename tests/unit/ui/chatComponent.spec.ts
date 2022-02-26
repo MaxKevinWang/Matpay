@@ -519,6 +519,11 @@ describe('Test chatComponent', () => {
       const animation = wrapper.findAll('.animation-emphasize')
       expect(animation).toHaveLength(1)
       expect(scrollIntoView).toBeCalled()
+      const button1 = wrapper.findAll('.btn-info').filter(w => w.attributes('data-test') === 'return')
+      await button1[0].trigger('click')
+      jest.advanceTimersByTime(5000)
+      const animation1 = wrapper.findAll('.animation-emphasize')
+      expect(animation1).toHaveLength(2)
     })
     it('Test if the user can send messages when he types in correct messages', async () => {
       const room_id = 'aaa'

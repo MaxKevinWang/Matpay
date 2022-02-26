@@ -37,7 +37,7 @@
     <div class="row m-1">
       <button v-if="return_to_pending_approval" class="btn btn-info" type="button" data-bs-toggle="tooltip"
               data-bs-placement="top"
-              title="Return to Pending Transaction" @click="on_return_clicked()">
+              title="Return to Pending Transaction" @click="on_return_clicked()" data-test="return">
         <i class="bi bi-layer-backward"></i>
       </button>
     </div>
