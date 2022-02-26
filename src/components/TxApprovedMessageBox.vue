@@ -6,10 +6,10 @@
           <div class="col">
             <p>{{ this.reference.timestamp.toLocaleDateString() }}</p>
           </div>
-          <div class="col">
+          <div class="col text-wrap text-break">
             <p>{{ this.reference.grouped_tx.description }}</p>
           </div>
-          <div class="col">
+          <div class="col text-wrap text-break">
             <p>
               {{
                 this.reference.grouped_tx.from.displayname + ' paid ' + to_currency_display(sum_amount(this.reference.grouped_tx))

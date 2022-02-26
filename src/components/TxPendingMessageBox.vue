@@ -6,10 +6,10 @@
           <p>{{this.reference.timestamp.toLocaleDateString()}}</p>
           <p v-if="this.reference.approval.type === 'modify'">(Modification)</p>
         </div>
-        <div class="col">
+        <div class="col text-wrap text-break">
           <p>{{this.reference.approval.description}}</p>
         </div>
-        <div class="col">
+        <div class="col text-wrap text-break">
           <p>{{this.reference.approval.from.displayname + " paid " + to_currency_display(sum_amount(this.reference.approval))}}</p>
         </div>
         <div class="col">
