@@ -2,7 +2,7 @@ import { selectorify, uuidgen } from '@/utils/utils'
 import { user_1, user_2 } from '../../../unit/mocks/mocked_user'
 import { POSTLoginResponse } from '@/interface/api.interface'
 
-describe('Test Permission Management', function () {
+describe('Test get_chat_log_for_room', function () {
   beforeEach(function () {
     cy.login(1)
     cy.visit('/rooms')

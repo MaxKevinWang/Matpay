@@ -27,15 +27,15 @@ describe('Test invite_others_to_group', function () {
       cy.wait(1000)
       cy.get('#invite-userid').type('@test-2:dsn.tm.kit.edu')
       cy.wait(1000)
-      cy.get('#invite-confirm').eq(0).click().then(() => {
+      cy.get('#invite-confirm').click().then(() => {
         cy.logout()
         cy.login(2)
         cy.visit('/rooms')
         cy.get('.alert-primary').should('not.exist', { timeout: 6000 })
         cy.get('[data-cy=accept-invitation]').should('be.visible', { timeout: 3000 }) // invited user can receive the invitation
-        cy.get('[data-cy=accept-invitation]').click().then(() => {
+        cy.get('[data-cy=accept-invitation]').eq(0).click().then(() => {
+          cy.wait(1000)
           cy.logout().then(() => {
-            cy.wait(1000)
             cy.login(1)
             cy.visit('/rooms')
             cy.get('.alert-primary').should('not.exist', { timeout: 6000 })
@@ -59,7 +59,7 @@ describe('Test invite_others_to_group', function () {
       cy.wait(1000)
       cy.get('#invite-confirm').click().then(() => {
         cy.get('.popover').contains('cannot be blank')
-        cy.get('[data-cy=close]').click()
+        cy.get('[data-cy=closeInvite]').click()
       }
       )
     }

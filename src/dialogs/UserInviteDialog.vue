@@ -17,7 +17,7 @@
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button data-cy="closeInvite" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           <button id="invite-confirm" type="button" class="btn btn-primary" @click="on_invite()">Invite</button>
         </div>
       </div>
