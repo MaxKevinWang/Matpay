@@ -8,24 +8,27 @@ describe('Test Permission Management2', function () {
     cy.get('.alert-primary').should('not.exist', { timeout: 6000 })
     cy.get('table').contains('permission management 2').parent().contains('Detail').click()
     cy.get('.spinner').should('not.exist', { timeout: 6000 })
-    cy.get('#inviteButton').click().then(() => {
-      cy.wait(1000)
-      cy.get('#invite-userid').type('@test-2:dsn.tm.kit.edu')
-      cy.wait(1000)
-      cy.get('#invite-confirm').click().then(() => {
-        cy.logout().then(() => {
-          cy.wait(1000)
-          cy.login(2)
-          cy.visit('/rooms')
-          cy.get('.alert-primary').should('not.exist', { timeout: 6000 })
-          cy.get('[data-cy=accept-invitation]').click().then(() => {
-            cy.logout()
+    if (cy.$$('#usercard_' + selectorify(user_2.user_id)).length === 0) {
+      cy.get('#inviteButton').click().then(() => {
+        cy.wait(1000)
+        cy.get('#invite-userid').type('@test-2:dsn.tm.kit.edu')
+        cy.wait(1000)
+        cy.get('#invite-confirm').click().then(() => {
+          cy.logout().then(() => {
+            cy.wait(1000)
+            cy.login(2)
+            cy.visit('/rooms')
+            cy.get('.alert-primary').should('not.exist', { timeout: 6000 })
+            cy.get('[data-cy=accept-invitation]').click().then(() => {
+              cy.logout()
+            })
           })
         })
       })
-    })
+    }
   })
   it('Test kick a member(with openbalance)', function () {
+    cy.wait(1000)
     cy.login(1)
     cy.visit('/rooms')
     cy.get('.alert-primary').should('not.exist', { timeout: 6000 })
