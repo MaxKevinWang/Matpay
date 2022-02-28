@@ -5,12 +5,12 @@ if [ ! -d /data/certs ] || [ ! -s /data/certs/fullchain.pem ] || [ ! -s /data/ce
 then
   mkdir -p /data/certs
   cd /data/certs
-  openssl genrsa -des3 -passout pass:x -out key.pem 2048
+  openssl genrsa -des3 -passout pass:asdfgh -out key.pem 2048
   cp key.pem key.pem.orig
-  openssl rsa -passin pass:x -in key.pem.orig -out privkey.pem
-  openssl req -new -key key.pem -out cert.csr -subj "/C=DE/ST=DE/L=Karlsruhe/O=MatPay/OU=Digital/CN=default"
-  openssl x509 -req -days 3650 -in cert.csr -signkey key.pem -out fullchain.pem
+  openssl rsa -passin pass:asdfgh -in key.pem.orig -out privkey.pem
+  openssl req -new -key privkey.pem -out cert.csr -subj "/C=DE/ST=DE/L=Karlsruhe/O=MatPay/OU=Digital/CN=default"
+  openssl x509 -req -days 3650 -in cert.csr -signkey privkey.pem -out fullchain.pem
 fi
-
+cd /
 exec "$@"
 
