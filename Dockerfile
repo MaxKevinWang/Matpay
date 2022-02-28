@@ -1,11 +1,11 @@
-FROM node:16-alpine
+FROM nginx
 
 RUN mkdir -p /srv/www/matpay
-RUN apk update && apk add nginx openssl
+RUN apt-get update && apt-get install -y openssl
 COPY conf/default.conf.template /etc/nginx/conf.d/default.conf
-COPY dist/* /srv/www/matpay/
+COPY dist/ /srv/www/matpay/
 COPY conf/docker-entrypoint.sh /
-RUN chmod +x /docker-entrypoint.sh
+RUN chown -R nginx:nginx /srv/ && chmod +x /docker-entrypoint.sh
 EXPOSE 80 443
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
