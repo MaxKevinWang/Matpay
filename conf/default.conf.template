@@ -1,0 +1,23 @@
+server {
+	listen 80;
+	listen [::]:80;
+	root /srv/www/matpay;
+	charset UTF-8;
+	location / {
+  		try_files $uri $uri/ /index.html;
+	}
+}
+
+server {
+	listen 443 ssl;
+	listen [::]:443 ssl;
+	root /srv/www/matpay;
+	charset UTF-8;
+	ssl_certificate     /data/certs/fullchain.pem;
+	ssl_certificate_key /data/certs/privkey.pem;
+	ssl_protocols       TLSv1.2 TLSv1.3;
+	ssl_ciphers         HIGH:!aNULL:!MD5;
+	location / {
+  		try_files $uri $uri/ /index.html;
+	}
+}
