@@ -1,6 +1,10 @@
 import { test_account1, test_homeserver } from '../../../test_utils'
 
 describe('Test login procedure', () => {
+  afterEach(() => {
+    cy.logout()
+    cy.wait(3000)
+  })
   it('Test login procedure', () => {
     cy.visit('/login')
     cy.contains('h2', 'Login')

@@ -2,6 +2,10 @@ import { user_1, user_2 } from '../../../unit/mocks/mocked_user'
 import { selectorify, split_percentage, sum_amount, to_currency_display, uuidgen } from '@/utils/utils'
 
 describe('Test US Input Tx Information 1', function () {
+  afterEach(() => {
+    cy.logout()
+    cy.wait(3000)
+  })
   beforeEach(function () {
     cy.login(1)
     cy.visit('room/!mVsdWCahipapKphWsO:dsn.tm.kit.edu')

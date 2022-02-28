@@ -5,6 +5,10 @@ describe('Test US Create Payment Group 1', function () {
   beforeEach(function () {
     cy.login(1)
   })
+  afterEach(() => {
+    cy.logout()
+    cy.wait(3000)
+  })
   it('Create Payment Group', function () {
     cy.visit('/rooms')
     cy.get('.alert-primary').should('not.exist', { timeout: 6000 })

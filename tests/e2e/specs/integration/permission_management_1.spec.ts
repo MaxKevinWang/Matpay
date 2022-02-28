@@ -2,6 +2,10 @@ import { selectorify, uuidgen } from '@/utils/utils'
 import { user_1, user_2 } from '../../../unit/mocks/mocked_user'
 
 describe('Test Permission Management', function () {
+  afterEach(() => {
+    cy.logout()
+    cy.wait(3000)
+  })
   beforeEach(function () {
     cy.login(1)
     cy.visit('/rooms')
