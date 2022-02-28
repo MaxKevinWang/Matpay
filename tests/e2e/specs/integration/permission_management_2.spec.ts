@@ -40,6 +40,7 @@ describe('Test Permission Management2', function () {
     cy.get('.spinner').should('not.exist', { timeout: 6000 })
     cy.get('#usercard_' + selectorify(user_2.user_id)).get('#kickButton').click().then(() => {
       cy.get('[data-cy=Yes]').click().then(() => {
+        cy.wait(1000)
         cy.get('#usercard_' + selectorify(user_2.user_id)).should('exist', { timeout: 3000 })
         cy.get('#usercard_' + selectorify(user_2.user_id)).should('include.text', '40')
       }
