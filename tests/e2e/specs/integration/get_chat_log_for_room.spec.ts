@@ -1,6 +1,7 @@
-import { selectorify, uuidgen } from '@/utils/utils'
-import { user_1, user_2 } from '../../../unit/mocks/mocked_user'
+import { uuidgen } from '@/utils/utils'
+import { user_3 } from '../../../unit/mocks/mocked_user'
 import { POSTLoginResponse } from '@/interface/api.interface'
+import { test_account3 } from '../../../test_utils'
 
 describe('Test get_chat_log_for_room', function () {
   afterEach(() => {
@@ -14,24 +15,33 @@ describe('Test get_chat_log_for_room', function () {
     cy.get('table').contains('test-sending-message').parent().contains('Detail').click()
     cy.get('.spinner').should('not.exist', { timeout: 6000 })
   })
-  xit('Test get chatlog synchronized', function () {
+  it('Test get chatlog synchronized', function () {
     const message = uuidgen()
     cy.request<POSTLoginResponse>('POST', 'https://matrix.dsn.scc.kit.edu/_matrix/client/r0/login', {
       type: 'm.login.password',
       identifier: {
         type: 'm.id.user',
-        user: '@test-3:dsn.tm.kit.edu'
+        user: user_3.user_id
       },
-      password: '#CQy2pzWD7wK'
+      password: test_account3.password
     })
-    /*    cy.request<POSTLoginResponse>('POST', { type: 'm.login.password', user: '@test-3:dsn.tm.kit.edu', password: '#CQy2pzWD7wK' }, 'https://matrix.dsn.scc.kit.edu/_matrix/client/r0/login', {
-
-    }) */
-    cy.request('PUT', 'https://matrix.dsn.scc.kit.edu/_matrix/client/r0/rooms/!MDXnrxrPjjppRhMozh:dsn.tm.kit.edu/send/m.room.message?access_token=syt_dGVzdC0z_eMyGzbIgpoYrPpcNNAcm_4P3JKn/' + uuidgen(), {
-      msgtype: 'm.text',
-      body: message
-    })
-    cy.get('.mb-5').children().last().find('.small mb-0 chat-message text-wrap text-break')
-      .contains(message)
+      .then((response) => {
+        cy.request({
+          method: 'PUT',
+          url: `https://matrix.dsn.scc.kit.edu/_matrix/client/r0/rooms/!MDXnrxrPjjppRhMozh:dsn.tm.kit.edu/send/m.room.message/${uuidgen()}`,
+          body: {
+            msgtype: 'm.text',
+            body: message
+          },
+          headers: {
+            Authorization: 'Bearer ' + response.body.access_token
+          }
+        })
+          .then(() => {
+            cy.wait(2000) // this wait is necessary due to long poll delay
+            cy.get('.mb-5').children().last().find('.chat-message')
+              .contains(message)
+          })
+      })
   })
 })
