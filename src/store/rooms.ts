@@ -1,7 +1,11 @@
 import { POSTRoomCreateResponse } from '@/interface/api.interface'
 import axios from 'axios'
 import { ActionTree, GetterTree, MutationTree } from 'vuex'
-import { MatrixRoomMemberStateEvent, MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
+import {
+  MatrixRoomJoinRulesStateEvent,
+  MatrixRoomMemberStateEvent,
+  MatrixRoomStateEvent
+} from '@/interface/rooms_event.interface'
 import { MatrixError } from '@/interface/error.interface'
 import { MatrixRoomID } from '@/models/id.model'
 import { Room, RoomTableRow } from '@/models/room.model'
@@ -161,7 +165,14 @@ export const rooms_store = {
       rootGetters
     }, payload: MatrixSyncInvitedRooms) {
       for (const [room_id, invite_state] of Object.entries(payload)) {
-        let room_name = ''
+        const join_rules = invite_state.invite_state.events.filter(i => i.type === 'm.room.join_rules')
+        if (join_rules.length > 0) {
+          // distinguish room type
+          if ((join_rules[0] as MatrixRoomJoinRulesStateEvent).content.join_rule === 'public') {
+            continue
+          }
+        }
+        let room_name = '<NO NAME>'
         const name_events = invite_state.invite_state.events.filter(i => i.type === 'm.room.name')
         if (name_events.length > 0) {
           room_name = (name_events[0] as MatrixRoomStateEvent).content.name as string
