@@ -3,8 +3,7 @@ import { selectorify, split_percentage, sum_amount, to_currency_display, uuidgen
 
 describe('Test US Input Tx Information 1', function () {
   afterEach(() => {
-    cy.logout()
-    cy.wait(3000)
+    cy.wait(5000)
   })
   beforeEach(function () {
     cy.login(1)

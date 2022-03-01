@@ -3,7 +3,6 @@ import { selectorify, split_percentage, sum_amount, to_currency_display, uuidgen
 
 describe('Test recall_tx_history', function () {
   afterEach(() => {
-    cy.logout()
     cy.wait(3000)
   })
   beforeEach(function () {
