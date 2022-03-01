@@ -2,6 +2,10 @@ import { selectorify, uuidgen } from '@/utils/utils'
 import { user_1, user_2 } from '../../../unit/mocks/mocked_user'
 
 describe('Test Permission Management2', function () {
+  before(() => {
+    cy.logoutAll()
+    cy.wait(10000) // Login API has very strict rate limiting
+  })
   afterEach(() => {
     cy.wait(3000)
   })

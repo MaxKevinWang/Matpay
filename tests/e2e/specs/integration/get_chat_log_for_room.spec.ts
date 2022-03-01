@@ -4,9 +4,9 @@ import { POSTLoginResponse } from '@/interface/api.interface'
 import { test_account3 } from '../../../test_utils'
 
 describe('Test get_chat_log_for_room', function () {
-  afterEach(() => {
-    cy.logout()
-    cy.wait(3000)
+  before(() => {
+    cy.logoutAll()
+    cy.wait(10000) // Login API has very strict rate limiting
   })
   beforeEach(function () {
     cy.login(1)
@@ -43,5 +43,9 @@ describe('Test get_chat_log_for_room', function () {
               .contains(message)
           })
       })
+  })
+  afterEach(() => {
+    cy.logout()
+    cy.wait(3000)
   })
 })

@@ -7,6 +7,8 @@ describe('Test invite_others_to_group', function () {
     cy.wait(3000)
   })
   before(function () {
+    cy.logoutAll()
+    cy.wait(10000) // Login API has very strict rate limiting
     cy.login(1)
     cy.visit('/rooms')
     cy.get('.alert-primary').should('not.exist', { timeout: 6000 })

@@ -26,7 +26,7 @@
 import { test_account1, test_account2, test_account3, test_homeserver } from '../../test_utils'
 import { POSTLoginResponse } from '@/interface/api.interface'
 import { user_1, user_2 } from '../../unit/mocks/mocked_user'
-import { selectorify } from '@/utils/utils'
+import { selectorify, uuidgen } from '@/utils/utils'
 
 Cypress.Commands.add('login', (id: 1 | 2 | 3) => {
   const homeserver = test_homeserver
@@ -86,4 +86,33 @@ Cypress.Commands.add('createTx', (description: string) => {
             })
         })
     })
+})
+
+Cypress.Commands.add('logoutAll', () => {
+  const test_accounts = [test_account1, test_account2, test_account3]
+  const homeserver = test_homeserver
+  for (const account of test_accounts) {
+    cy.request<POSTLoginResponse>('POST', `${homeserver}/_matrix/client/r0/login`, {
+      type: 'm.login.password',
+      identifier: {
+        type: 'm.id.user',
+        user: account.username
+      },
+      password: account.password
+    })
+      .then((response) => {
+        cy.request({
+          method: 'POST',
+          url: `${homeserver}/_matrix/client/v3/logout/all`,
+          headers: {
+            Authorization: 'Bearer ' + response.body.access_token
+          }
+        })
+      })
+      .then((response) => {
+        if (response.status !== 200) {
+          throw new Error('Cleanup failed.')
+        }
+      })
+  }
 })

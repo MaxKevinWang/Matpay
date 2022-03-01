@@ -5,6 +5,10 @@ describe('Test US Input Tx Information 1', function () {
   afterEach(() => {
     cy.wait(5000)
   })
+  before(() => {
+    cy.logoutAll()
+    cy.wait(10000) // Login API has very strict rate limiting
+  })
   beforeEach(function () {
     cy.login(1)
     cy.visit('room/!mVsdWCahipapKphWsO:dsn.tm.kit.edu')

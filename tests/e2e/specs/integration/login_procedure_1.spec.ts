@@ -4,6 +4,10 @@ describe('Test login procedure', () => {
   afterEach(() => {
     cy.wait(3000)
   })
+  before(() => {
+    cy.logoutAll()
+    cy.wait(10000) // Login API has very strict rate limiting
+  })
   it('Test login procedure', () => {
     cy.visit('/login')
     cy.contains('h2', 'Login')
@@ -13,6 +17,7 @@ describe('Test login procedure', () => {
     cy.get('#login')
       .click()
       .then(() => {
+        cy.get('.spinner-login').should('not.exist', { timeout: 6000 })
         cy.url().should('includes', 'rooms')
         cy.contains('h2', 'Rooms')
         cy.contains('h3', 'Joined Rooms')

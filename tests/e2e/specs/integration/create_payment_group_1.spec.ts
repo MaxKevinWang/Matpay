@@ -2,6 +2,10 @@ import { user_1 } from '../../../unit/mocks/mocked_user'
 import { uuidgen } from '@/utils/utils'
 
 describe('Test US Create Payment Group 1', function () {
+  before(() => {
+    cy.logoutAll()
+    cy.wait(10000) // Login API has very strict rate limiting
+  })
   beforeEach(function () {
     cy.login(1)
   })

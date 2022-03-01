@@ -2,6 +2,10 @@ import { user_1, user_2 } from '../../../unit/mocks/mocked_user'
 import { selectorify, split_percentage, sum_amount, to_currency_display, uuidgen } from '@/utils/utils'
 
 describe('Test store_transaction_message', function () {
+  before(() => {
+    cy.logoutAll()
+    cy.wait(10000) // Login API has very strict rate limiting
+  })
   afterEach(() => {
     cy.logout()
     cy.wait(3000)

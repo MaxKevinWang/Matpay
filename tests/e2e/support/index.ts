@@ -23,7 +23,8 @@ declare global {
     interface Chainable {
       login(account: 1 | 2 | 3): Cypress.Chainable
       logout(): Cypress.Chainable
-      createTx(description: string): void
+      createTx(description: string): void,
+      logoutAll(): void
     }
   }
 }
