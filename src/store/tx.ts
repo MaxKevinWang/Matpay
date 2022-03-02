@@ -8,7 +8,6 @@ import {
   TxCreateEvent,
   TxMessageEvent,
   TxModifyEvent,
-  TxRejectedEvent,
   TxSettleEvent
 } from '@/interface/tx_event.interface'
 import axios from 'axios'

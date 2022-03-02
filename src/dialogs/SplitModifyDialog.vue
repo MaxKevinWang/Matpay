@@ -32,13 +32,10 @@
 <script lang="ts">
 /* eslint-disable no-unused-expressions */
 import { defineComponent, PropType } from 'vue'
-import { mapActions, mapGetters } from 'vuex'
-import { RoomUserInfo, User } from '@/models/user.model'
+import { RoomUserInfo } from '@/models/user.model'
 import { Modal, Popover } from 'bootstrap'
-import CreateTxDialog from '@/dialogs/CreateTxDialog.vue'
 import { SimpleTransaction } from '@/models/transaction.model'
 import { MatrixUserID, TxID } from '@/models/id.model'
-import { cloneDeep } from 'lodash'
 
 export default defineComponent({
   name: 'SplitModifyDialog',

@@ -24,8 +24,8 @@
 import { GroupedTransaction } from '@/models/transaction.model'
 import { defineComponent, PropType } from 'vue'
 import ModificationDialog from '@/dialogs/ModificationDialog.vue'
-import { RoomUserInfo } from '@/models/user.model'
 import { mapGetters } from 'vuex'
+
 export default defineComponent({
   name: 'TxDetail',
   props: {

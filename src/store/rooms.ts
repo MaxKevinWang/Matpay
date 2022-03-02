@@ -12,6 +12,7 @@ import { Room, RoomTableRow } from '@/models/room.model'
 import { TxRejectedEvent } from '@/interface/tx_event.interface'
 import { MatrixSyncInvitedRooms } from '@/interface/sync.interface'
 import router from '@/router'
+
 interface State {
   joined_rooms: Room[],
   invited_rooms: Room[]

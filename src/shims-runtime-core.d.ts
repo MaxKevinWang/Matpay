@@ -1,4 +1,3 @@
-import * as runtimeCore from '@vue/runtime-core'
 import { GroupedTransaction, PendingApproval, SimpleTransaction } from '@/models/transaction.model'
 import { MatrixUserID, TxID } from '@/models/id.model'
 

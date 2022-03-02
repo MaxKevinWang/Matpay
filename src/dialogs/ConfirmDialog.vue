@@ -20,9 +20,8 @@
 
 <script lang="ts">
 /* eslint-disable no-unused-expressions */
-import { defineComponent, PropType } from 'vue'
-import { mapActions, mapGetters } from 'vuex'
-import { Modal, Popover } from 'bootstrap'
+import { defineComponent } from 'vue'
+import { Modal } from 'bootstrap'
 
 export default defineComponent({
   name: 'ConfirmDialog',

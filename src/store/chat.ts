@@ -2,13 +2,14 @@ import axios from 'axios'
 import { ActionTree, GetterTree, MutationTree } from 'vuex'
 import { GroupID, MatrixEventID, MatrixRoomID } from '@/models/id.model'
 import { ChatLog, ChatMessage, TxApprovedPlaceholder, TxPendingPlaceholder, TxPlaceholder } from '@/models/chat.model'
-import { RoomUserInfo, User } from '@/models/user.model'
+import { RoomUserInfo } from '@/models/user.model'
 import { MatrixRoomChatMessageEvent } from '@/interface/rooms_event.interface'
 import { GroupedTransaction, PendingApproval } from '@/models/transaction.model'
 import { PUTRoomEventSendResponse } from '@/interface/api.interface'
 import { uuidgen } from '@/utils/utils'
 import { MatrixError } from '@/interface/error.interface'
 import { TxRejectedEvent } from '@/interface/tx_event.interface'
+
 interface State {
   chat_log: Record<MatrixRoomID, ChatLog>,
   rejected_events: Record<MatrixRoomID, Set<MatrixEventID>>

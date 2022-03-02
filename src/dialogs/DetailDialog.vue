@@ -42,9 +42,9 @@
 <script lang="ts">
 /* eslint-disable no-unused-expressions */
 import { defineComponent, PropType } from 'vue'
-import { mapActions, mapGetters } from 'vuex'
-import { Modal, Popover } from 'bootstrap'
-import { TxApprovedPlaceholder, TxPendingPlaceholder, TxPlaceholder } from '@/models/chat.model'
+import { mapGetters } from 'vuex'
+import { Modal } from 'bootstrap'
+import { TxApprovedPlaceholder } from '@/models/chat.model'
 
 export default defineComponent({
   name: 'DetailDialog',

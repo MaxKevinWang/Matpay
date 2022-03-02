@@ -1,4 +1,4 @@
-import { ActionTree, createStore, GetterTree, MutationTree, StoreOptions } from 'vuex'
+import { ActionTree, GetterTree, MutationTree } from 'vuex'
 import axios from 'axios'
 import { GETLoginResponse, POSTLoginResponse } from '@/interface/api.interface'
 import { MatrixError } from '@/interface/error.interface'

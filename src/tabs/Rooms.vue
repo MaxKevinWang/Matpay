@@ -59,9 +59,8 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { MatrixRoomMemberStateEvent, MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
 import { mapActions, mapGetters } from 'vuex'
-import { Room, RoomTableRow } from '@/models/room.model'
+import { RoomTableRow } from '@/models/room.model'
 import CreateRoomDialog from '@/dialogs/CreateRoomDialog.vue'
 
 export default defineComponent({

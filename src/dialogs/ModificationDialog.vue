@@ -35,13 +35,12 @@
 <script lang="ts">
 /* eslint-disable no-unused-expressions */
 import { defineComponent, PropType } from 'vue'
-import { mapActions, mapGetters } from 'vuex'
+import { mapActions } from 'vuex'
 import { Modal, Popover } from 'bootstrap'
-import { TxApprovedPlaceholder } from '@/models/chat.model'
 import { RoomUserInfo } from '@/models/user.model'
-import { GroupedTransaction, PendingApproval, SimpleTransaction } from '@/models/transaction.model'
+import { GroupedTransaction } from '@/models/transaction.model'
 import SplitModifyDialog from '@/dialogs/SplitModifyDialog.vue'
-import { MatrixUserID, TxID } from '@/models/id.model'
+import { TxID } from '@/models/id.model'
 import { cloneDeep } from 'lodash'
 import Dinero from 'dinero.js'
 

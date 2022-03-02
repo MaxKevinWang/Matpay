@@ -37,8 +37,6 @@ import { get_file_from_content_repository } from '@/utils/ContentRepository'
 import { mapActions, mapGetters } from 'vuex'
 import SettlementDialog from '@/dialogs/SettlementDialog.vue'
 import { RoomUserInfo } from '@/models/user.model'
-import { TxPlaceholder } from '@/models/chat.model'
-import { MatrixUserID } from '@/models/id.model'
 
 export default defineComponent({
   name: 'UserCard',

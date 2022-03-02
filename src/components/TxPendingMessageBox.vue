@@ -25,13 +25,10 @@
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
 import { mapActions, mapGetters } from 'vuex'
-import { DEFAULT_AVATAR } from '@/utils/consts'
-import TxDetail from '@/components/TxDetail.vue'
 import { User } from '@/models/user.model'
-import { GroupID, MatrixEventID, MatrixRoomID, MatrixUserID, TxID } from '@/models/id.model'
-import { GroupedTransaction, PendingApproval, SimpleTransaction } from '@/models/transaction.model'
-import { TxPendingPlaceholder, TxPlaceholder } from '@/models/chat.model'
-import CreateRoomDialog from '@/dialogs/CreateRoomDialog.vue'
+import { MatrixRoomID } from '@/models/id.model'
+import { PendingApproval } from '@/models/transaction.model'
+import { TxPendingPlaceholder } from '@/models/chat.model'
 import ApprovalDialog from '@/dialogs/ApprovalDialog.vue'
 
 export default defineComponent({

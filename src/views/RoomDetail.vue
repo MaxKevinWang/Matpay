@@ -36,7 +36,6 @@
 import { defineComponent } from 'vue'
 import MemberList from '@/components/MemberList.vue'
 import { mapActions, mapGetters } from 'vuex'
-import { MatrixRoomMemberStateEvent } from '@/interface/rooms_event.interface'
 import ChatComponent from '@/components/ChatComponent.vue'
 import { RoomUserInfo } from '@/models/user.model'
 

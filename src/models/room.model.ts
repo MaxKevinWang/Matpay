@@ -1,4 +1,3 @@
-import { User } from '@/models/user.model'
 import { MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
 import { MatrixRoomID } from '@/models/id.model'
 

@@ -68,10 +68,9 @@
 <script lang="ts">
 /* eslint-disable no-unused-expressions */
 import { defineComponent, PropType } from 'vue'
-import { mapActions, mapGetters } from 'vuex'
-import { Modal, Popover } from 'bootstrap'
-import { TxPendingPlaceholder, TxPlaceholder } from '@/models/chat.model'
-import { PendingApproval } from '@/models/transaction.model'
+import { mapGetters } from 'vuex'
+import { Modal } from 'bootstrap'
+import { TxPendingPlaceholder } from '@/models/chat.model'
 
 export default defineComponent({
   name: 'ApprovalDialog',

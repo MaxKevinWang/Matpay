@@ -22,8 +22,7 @@
 
 <script lang="ts">
 /* eslint-disable no-unused-expressions */
-import { defineComponent, PropType } from 'vue'
-import { mapActions, mapGetters } from 'vuex'
+import { defineComponent } from 'vue'
 import { Modal, Popover } from 'bootstrap'
 
 export default defineComponent({

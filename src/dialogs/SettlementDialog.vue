@@ -30,9 +30,9 @@
 <script lang="ts">
 /* eslint-disable no-unused-expressions */
 import { defineComponent, PropType } from 'vue'
-import { mapActions, mapGetters } from 'vuex'
-import { Modal, Popover } from 'bootstrap'
-import { RoomUserInfo, User } from '@/models/user.model'
+import { mapGetters } from 'vuex'
+import { Modal } from 'bootstrap'
+import { RoomUserInfo } from '@/models/user.model'
 import { selectorify } from '@/utils/utils'
 
 export default defineComponent({

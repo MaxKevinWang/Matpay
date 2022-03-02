@@ -96,8 +96,6 @@ import { mapActions, mapGetters } from 'vuex'
 import TxList from '@/components/TxList.vue'
 import TxDetail from '@/components/TxDetail.vue'
 import { validate } from 'uuid'
-import router from '@/router'
-import { Offcanvas } from 'bootstrap'
 
 export default defineComponent({
   name: 'RoomTxHistory',

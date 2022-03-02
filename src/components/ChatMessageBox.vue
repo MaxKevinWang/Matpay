@@ -11,9 +11,8 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
-import { mapActions, mapGetters } from 'vuex'
-import { chat_store } from '@/store/chat'
-import { ChatMessage, TxPlaceholder } from '@/models/chat.model'
+import { mapGetters } from 'vuex'
+import { ChatMessage } from '@/models/chat.model'
 import { MatrixRoomID } from '@/models/id.model'
 
 export default defineComponent({
