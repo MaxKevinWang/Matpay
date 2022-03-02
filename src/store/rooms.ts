@@ -32,6 +32,11 @@ export const rooms_store = {
         name: '',
         state_events: []
       }
+      // remove invited if exist
+      const index = state.invited_rooms.findIndex(i => i.room_id === payload)
+      if (index > -1) {
+        state.invited_rooms.splice(index, 1)
+      }
       state.joined_rooms.push(new_room)
     },
     mutation_remove_joined_room (state: State, payload: MatrixRoomID) {

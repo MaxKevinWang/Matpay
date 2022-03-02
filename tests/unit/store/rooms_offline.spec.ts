@@ -36,6 +36,19 @@ describe('Test rooms store', function () {
       mutation(state, 'ABC')
       expect(state.joined_rooms[0].room_id).toEqual('ABC')
     })
+    it('Test mutation mutation_init_joined_room with invited', function () {
+      const mutation = store.mutations.mutation_init_joined_room
+      state.invited_rooms = [
+        {
+          name: 'ABC',
+          room_id: 'ABC',
+          state_events: []
+        }
+      ]
+      mutation(state, 'ABC')
+      expect(state.joined_rooms[0].room_id).toEqual('ABC')
+      expect(state.invited_rooms).toBeArrayOfSize(0)
+    })
     it('Test mutation mutation_reset_state', function () {
       const mutation = store.mutations.mutation_reset_state
       mutation(state)
