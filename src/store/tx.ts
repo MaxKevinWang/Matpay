@@ -736,7 +736,6 @@ export const tx_store = {
             pending_approval: new_pending_approval
           }, { root: true })
           return true
-          break
         }
         case 'com.matpay.approve': {
           const tx_event_approve = tx_event as TxApproveEvent
@@ -807,7 +806,6 @@ export const tx_store = {
             }, { root: true })
           }
           return true
-          break
         }
         case 'com.matpay.settle': {
           const tx_event_settle = tx_event as TxSettleEvent
