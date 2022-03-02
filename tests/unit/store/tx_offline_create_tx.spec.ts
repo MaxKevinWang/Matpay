@@ -1,7 +1,7 @@
 import store from '@/store/tx'
 import { MatrixRoomID } from '@/models/id.model'
 import { GroupedTransaction, PendingApproval, TxGraph } from '@/models/transaction.model'
-import { room_01_user_info, user_1, user_2, user_a, user_3 } from '../mocks/mocked_user'
+import { room_01_user_info, user_1, user_2, user_3, user_a } from '../mocks/mocked_user'
 import { uuidgen } from '@/utils/utils'
 import axios from 'axios'
 

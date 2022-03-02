@@ -8,7 +8,8 @@ import { random } from 'lodash'
 import axios, { AxiosResponse } from 'axios'
 import { POSTFilterCreateResponse } from '@/interface/api.interface'
 import {
-  initial_sync_response, initial_sync_response_no_joined_rooms,
+  initial_sync_response,
+  initial_sync_response_no_joined_rooms,
   initial_sync_response_no_rooms,
   luka_room_states,
   sqtv_room_states,

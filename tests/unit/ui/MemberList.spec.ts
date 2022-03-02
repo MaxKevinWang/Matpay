@@ -5,7 +5,8 @@ import {
   room_01_permission,
   room_01_user_info,
   room_02_permission,
-  room_03_permission, room_04_user_info,
+  room_03_permission,
+  room_04_user_info,
   user_1,
   user_2,
   user_3
@@ -14,11 +15,8 @@ import MemberList from '@/components/MemberList.vue'
 import { createStore } from 'vuex'
 import bootstrap from 'bootstrap'
 import UserInviteDialog from '@/dialogs/UserInviteDialog.vue'
-import UserCard from '@/components/UserCard.vue'
 import { MatrixRoomID, MatrixUserID } from '@/models/id.model'
-import { MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
 import { cloneDeep } from 'lodash'
-import { PropType } from 'vue'
 
 jest.mock('bootstrap')
 const mockedBootstrap = bootstrap as jest.Mocked<typeof bootstrap>

@@ -1,10 +1,9 @@
 import store from '@/store/tx'
-import { MatrixEventID, MatrixRoomID, MatrixUserID } from '@/models/id.model'
+import { MatrixRoomID } from '@/models/id.model'
 import { GroupedTransaction, PendingApproval, TxGraph } from '@/models/transaction.model'
 import { uuidgen } from '@/utils/utils'
 import {
   user_1,
-  user_2,
   user_a,
   user_aaa,
   user_b,

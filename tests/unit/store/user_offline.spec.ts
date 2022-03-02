@@ -3,13 +3,14 @@ import { RoomUserInfo } from '@/models/user.model'
 import { MatrixRoomID, MatrixUserID } from '@/models/id.model'
 import {
   MatrixRoomMemberStateEvent,
-  MatrixRoomPermissionConfiguration, MatrixRoomStateEvent
+  MatrixRoomPermissionConfiguration,
+  MatrixRoomStateEvent
 } from '@/interface/rooms_event.interface'
 import {
-  room_01_user_info,
   room_01_left_user_info,
   room_01_permission,
   room_01_room_id,
+  room_01_user_info,
   user_1,
   user_2,
   user_3,

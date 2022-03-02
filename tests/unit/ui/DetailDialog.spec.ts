@@ -1,13 +1,10 @@
 import { newStore } from '@/store/index'
-import { config, flushPromises, shallowMount } from '@vue/test-utils'
+import { config, shallowMount } from '@vue/test-utils'
 import DetailDialog from '@/dialogs/DetailDialog.vue'
 import { selectorify, split_percentage, sum_amount, to_currency_display, uuidgen } from '@/utils/utils'
-import SettlementDialog from '@/dialogs/SettlementDialog.vue'
 import { user_1, user_2 } from '../mocks/mocked_user'
 import { TxApprovedPlaceholder } from '@/models/chat.model'
 import { GroupedTransaction, SimpleTransaction } from '@/models/transaction.model'
-import { User } from '@/models/user.model'
-import { MatrixRoomID, MatrixUserID, TxID } from '@/models/id.model'
 import { createStore } from 'vuex'
 
 describe('Test DetailDialog', () => {

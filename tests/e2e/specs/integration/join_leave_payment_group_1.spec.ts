@@ -1,5 +1,5 @@
-import { selectorify, uuidgen } from '@/utils/utils'
-import { user_1, user_2 } from '../../../unit/mocks/mocked_user'
+import { selectorify } from '@/utils/utils'
+import { user_2 } from '../../../unit/mocks/mocked_user'
 
 describe('Test join_leave_payment_group', function () {
   before(() => {

@@ -1,5 +1,5 @@
 import { newStore } from '@/store'
-import { Dispatch, Payload } from 'vuex'
+import { Dispatch } from 'vuex'
 import { TxCreateEvent, TxRejectedEvent } from '@/interface/tx_event.interface'
 import { user_1, user_2 } from '../mocks/mocked_user'
 import { MatrixRoomChatMessageEvent, MatrixRoomEvent, MatrixRoomStateEvent } from '@/interface/rooms_event.interface'

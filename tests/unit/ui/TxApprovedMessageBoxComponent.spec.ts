@@ -1,8 +1,8 @@
-import { config, shallowMount, mount } from '@vue/test-utils'
+import { config, mount, shallowMount } from '@vue/test-utils'
 import TxApprovedMessageBox from '@/components/TxApprovedMessageBox.vue'
 import { room_01_room_id, user_1, user_2, user_3 } from '../mocks/mocked_user'
 import { TxApprovedPlaceholder } from '@/models/chat.model'
-import { sum_amount, to_currency_display, split_percentage } from '@/utils/utils'
+import { split_percentage, sum_amount, to_currency_display } from '@/utils/utils'
 import DetailDialog from '@/dialogs/DetailDialog.vue'
 
 describe('Test TxApprovedMessageBox Interface', () => {

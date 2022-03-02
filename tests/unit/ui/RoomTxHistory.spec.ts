@@ -1,6 +1,6 @@
 import { newStore } from '@/store/index'
 import { config, flushPromises, mount, shallowMount } from '@vue/test-utils'
-import { selectorify, split_percentage, sum_amount, to_currency_display, uuidgen } from '@/utils/utils'
+import { split_percentage, sum_amount, to_currency_display, uuidgen } from '@/utils/utils'
 import RoomTxHistory from '@/views/RoomTxHistory.vue'
 import { MatrixEventID, MatrixRoomID, MatrixUserID } from '@/models/id.model'
 import { GroupedTransaction, PendingApproval, TxGraph } from '@/models/transaction.model'

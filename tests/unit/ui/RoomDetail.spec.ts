@@ -2,7 +2,7 @@ import RoomDetail from '@/views/RoomDetail.vue'
 import { createStore } from 'vuex'
 import { MatrixRoomMemberStateEvent, MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
 import { createMemoryHistory, createRouter } from 'vue-router'
-import { flushPromises, mount, shallowMount } from '@vue/test-utils'
+import { flushPromises, shallowMount } from '@vue/test-utils'
 import { RoomUserInfo } from '@/models/user.model'
 import { room_01_user_info } from '../mocks/mocked_user'
 

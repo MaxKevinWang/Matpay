@@ -4,7 +4,6 @@ import { room_01_user_info, user_1, user_2, user_3 } from '../mocks/mocked_user'
 import { TxApproveEvent, TxCreateEvent, TxModifyEvent, TxSettleEvent } from '@/interface/tx_event.interface'
 import { uuidgen } from '@/utils/utils'
 import { GroupedTransaction, PendingApproval, SimpleTransaction, TxGraph } from '@/models/transaction.model'
-import { TxApprovedPlaceholder } from '@/models/chat.model'
 
 interface State {
   transactions: Record<MatrixRoomID, {

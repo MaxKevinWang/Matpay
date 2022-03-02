@@ -6,11 +6,10 @@ import ChatComponent from '@/components/ChatComponent.vue'
 import { createStore } from 'vuex'
 import { newStore } from '@/store'
 import router from '@/router'
-import { RoomUserInfo, User } from '@/models/user.model'
+import { RoomUserInfo } from '@/models/user.model'
 import bootstrap from 'bootstrap'
 import CreateTxDialog from '@/dialogs/CreateTxDialog.vue'
-import { GroupedTransaction, PendingApproval, SimpleTransaction } from '@/models/transaction.model'
-import { GroupID, MatrixEventID, MatrixRoomID, MatrixUserID } from '@/models/id.model'
+import { GroupedTransaction, PendingApproval } from '@/models/transaction.model'
 
 jest.mock('bootstrap')
 const mockedBootstrap = bootstrap as jest.Mocked<typeof bootstrap>

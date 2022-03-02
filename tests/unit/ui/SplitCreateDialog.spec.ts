@@ -4,7 +4,7 @@ import SplitCreateDialog from '@/dialogs/SplitCreateDialog.vue'
 import { selectorify, split_percentage, sum_amount, to_currency_display } from '@/utils/utils'
 import { user_1, user_2, user_3 } from '../mocks/mocked_user'
 import bootstrap from 'bootstrap'
-import { MatrixUserID, TxID } from '@/models/id.model'
+import { MatrixUserID } from '@/models/id.model'
 
 jest.mock('bootstrap')
 const mockedBootstrap = bootstrap as jest.Mocked<typeof bootstrap>

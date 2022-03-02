@@ -7,8 +7,6 @@ import { MatrixSyncInvitedRooms } from '@/interface/sync.interface'
 import { MatrixRoomStateEvent } from '@/interface/rooms_event.interface'
 import axios from 'axios'
 import { RoomUserInfo } from '@/models/user.model'
-import { createStore, GetterTree } from 'vuex'
-import { PendingApproval } from '@/models/transaction.model'
 
 jest.mock('axios')
 const mockedAxios = axios as jest.Mocked<typeof axios>

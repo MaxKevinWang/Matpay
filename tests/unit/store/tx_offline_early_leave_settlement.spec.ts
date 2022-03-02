@@ -1,5 +1,5 @@
 import store from '@/store/tx'
-import { MatrixEventID, MatrixRoomID, MatrixUserID } from '@/models/id.model'
+import { MatrixRoomID } from '@/models/id.model'
 import { room_02_user_info, user_a, user_b, user_bbb, user_c } from '../mocks/mocked_user'
 import { TxSettleEvent } from '@/interface/tx_event.interface'
 import { GroupedTransaction, PendingApproval, TxGraph } from '@/models/transaction.model'

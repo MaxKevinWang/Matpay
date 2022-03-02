@@ -26,7 +26,7 @@
 import { test_account1, test_account2, test_account3, test_homeserver } from '../../test_utils'
 import { POSTLoginResponse } from '@/interface/api.interface'
 import { user_1, user_2 } from '../../unit/mocks/mocked_user'
-import { selectorify, uuidgen } from '@/utils/utils'
+import { selectorify } from '@/utils/utils'
 
 Cypress.Commands.add('login', (id: 1 | 2 | 3) => {
   const homeserver = test_homeserver
