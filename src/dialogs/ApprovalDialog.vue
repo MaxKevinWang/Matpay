@@ -121,6 +121,9 @@ export default defineComponent({
     this.modal_control = new Modal(document.getElementById(id) as HTMLElement, {
       backdrop: false
     })
+  },
+  unmounted () {
+    this.hide()
   }
 })
 </script>

@@ -205,6 +205,9 @@ export default defineComponent({
       backdrop: false
     })
   },
+  unmounted () {
+    this.hide()
+  },
   watch: {
     users_info: {
       handler () {

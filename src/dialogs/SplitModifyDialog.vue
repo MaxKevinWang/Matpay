@@ -105,6 +105,9 @@ export default defineComponent({
       backdrop: false
     })
   },
+  unmounted () {
+    this.hide()
+  },
   watch: {
     current_split: {
       handler () {

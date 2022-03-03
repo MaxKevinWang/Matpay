@@ -172,6 +172,9 @@ export default defineComponent({
       backdrop: false
     })
   },
+  unmounted () {
+    this.hide()
+  },
   watch: {
     tx: {
       handler () {

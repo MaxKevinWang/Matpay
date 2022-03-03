@@ -82,6 +82,9 @@ export default defineComponent({
         backdrop: false
       })
     }
+  },
+  unmounted () {
+    this.hide()
   }
 })
 </script>

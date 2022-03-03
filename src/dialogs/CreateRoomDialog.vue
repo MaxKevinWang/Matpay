@@ -72,6 +72,9 @@ export default defineComponent({
     this.modal_control = new Modal(document.getElementById('room-create-modal') as HTMLElement, {
       backdrop: false
     })
+  },
+  unmounted () {
+    this.hide()
   }
 })
 </script>
