@@ -3,7 +3,7 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" :id="'DetailDialog-modal_' + this.reference.grouped_tx.group_id">Details</h5>
+          <h5 class="modal-title">Details</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click="hide()"></button>
         </div>
         <div class="modal-body">
