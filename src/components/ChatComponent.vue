@@ -2,6 +2,7 @@
   <div class="mb-5">
     <div v-for="(message, index) in chat_log.messages" :key="message.timestamp" ref="message_boxes">
       <component
+        :key="`approved-message-box-${message.grouped_tx.group_id}`"
         :id="`approved-message-box-${message.grouped_tx.group_id}`"
         data-box-type="approved"
         v-if="message.grouped_tx"
@@ -9,6 +10,7 @@
         :reference="message"
         :room_id="room_id"/>
       <component
+        :key="`pending-message-box-${message.approval.event_id.substring(1)}`"
         :id="`pending-message-box-${message.approval.event_id.substring(1)}`"
         data-box-type="pending"
         v-if="message.approval"
