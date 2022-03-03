@@ -152,6 +152,8 @@ export default defineComponent({
     current_split: {
       handler () {
         if (this.current_split) {
+          this.selected_members = []
+          this.selected_members_split = {}
           for (const [user_id, split_radio] of Object.entries(this.current_split)) {
             this.selected_members.push(user_id)
             this.selected_members_split[user_id] = split_radio.toString()
