@@ -14,13 +14,13 @@
                 <input class="form-check-input" type="checkbox" :id="`split-checkbox${selectorify(user.user.user_id)}`"
                      :value="user.user.user_id" v-model="selected_members">
               </span>
-              <label class="input-group-text" :for="`split-perc${selectorify(user.user.user_id)}`">{{
-                  user.displayname
-                }}</label>
+              <label class="input-group-text col-10 col-sm-5" :for="`split-perc${selectorify(user.user.user_id)}`">{{
+                  user.displayname}}
+              </label>
               <input
                 v-model="this.selected_members_split[user.user.user_id]"
                 type="text"
-                class="form-control"
+                class="col-10 col-sm-4"
                 placeholder="Split value"
                 aria-label="Recipient's username"
                 aria-describedby="basic-addon2"
@@ -169,5 +169,10 @@ export default defineComponent({
 })
 </script>
 <style scoped>
-
+input[type="text"]:disabled {
+  background: lightslategrey;
+}
+::placeholder {
+  color: #111111;
+}
 </style>
