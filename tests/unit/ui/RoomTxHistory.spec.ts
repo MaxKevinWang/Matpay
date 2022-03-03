@@ -825,7 +825,7 @@ describe('Test RoomTxHistory', () => {
       global: {
         mocks: {
           $router: {
-            push: () => {
+            back: () => {
               redirected = true
             }
           },
