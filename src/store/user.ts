@@ -143,14 +143,26 @@ export const user_store = {
       const self_user_id = rootGetters['auth/user_id']
       let result: RoomUserInfo | null = null
       // Case 1: member joined
+      let displayname = ''
       if (member_event.content.membership === 'join') {
         console.log('Parsing new join member event:', member_event)
+        // Parse & shorten username
+        if (member_event.content.displayname && member_event.content.displayname.length > 0) {
+          if (member_event.content.displayname.length > 25) {
+            // cut down
+            displayname = member_event.content.displayname.substring(0, 25) + '...'
+          } else {
+            displayname = member_event.content.displayname
+          }
+        } else {
+          displayname = member_event.state_key
+        }
         const user_info_tmp: RoomUserInfo = {
           user: {
             user_id: member_event.state_key,
-            displayname: member_event.content.displayname || member_event.state_key
+            displayname: displayname
           },
-          displayname: member_event.content.displayname || member_event.state_key,
+          displayname: displayname,
           avatar_url: member_event.content.avatar_url,
           user_type: permissions
             ? (permissions.users[member_event.state_key] >= 100
