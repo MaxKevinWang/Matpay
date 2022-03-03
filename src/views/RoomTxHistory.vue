@@ -7,6 +7,9 @@
          v-if="this.is_tx_fully_loaded && this.tx_list.length === 0">
       No transaction exists.
     </div>
+    <button type="button" class="btn btn-outline-secondary" @click="on_back_clicked()">
+      <i class="bi bi-arrow-left"></i>
+    </button>
     <div class="row">
       <button v-if="!is_tx_fully_loaded" class="btn btn-primary spinner" type="button" disabled>
         <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
@@ -166,6 +169,14 @@ export default defineComponent({
         this.show_detail = true
       }
     },
+    on_back_clicked () {
+      this.$router.push({
+        name: 'room_detail',
+        params: {
+          room_id: this.room_id
+        }
+      })
+    },
     on_error (e: string) {
       this.error = e
     }
@@ -234,5 +245,8 @@ export default defineComponent({
 }
 .expand-button {
   z-index: 1000;
+}
+.btn-outline-secondary {
+  margin-bottom: 20px;
 }
 </style>
