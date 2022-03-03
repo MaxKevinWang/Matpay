@@ -8,26 +8,32 @@
         </div>
         <div class="modal-body">
           <p>Input split as a percentage between 0 and 100. The sum of all splits should be 100.</p>
-          <div class="input-group mb-3 form-control" v-for="user in users" :key="user.user.user_id" :data-test="user.user.user_id">
-                   <span class="input-group-text" id="basic-addon3">
-              <input class="form-check-input" type="checkbox" :id="`split-checkbox${selectorify(user.user.user_id)}`" :value="user.user.user_id" v-model="selected_members" >
-            </span>
-            <label class="input-group-text" :for="`split-perc${selectorify(user.user.user_id)}`">{{ user.displayname }}</label>
-            <input
-              v-model="this.selected_members_split[user.user.user_id]"
-              type="text"
-              class="form-control"
-              placeholder="Split value"
-              aria-label="Recipient's username"
-              aria-describedby="basic-addon2"
-              :id="`split-perc${selectorify(user.user.user_id)}`"
-              :disabled="!this.selected_members.includes(user.user.user_id)"
-            >
-            <span class="input-group-text" id="basic-addon2">%</span>
+          <div class="input-group mb-3 form-control-md" v-for="user in users" :key="user.user.user_id"
+               :data-test="user.user.user_id">
+              <span class="input-group-text" id="basic-addon3">
+                <input class="form-check-input" type="checkbox" :id="`split-checkbox${selectorify(user.user.user_id)}`"
+                     :value="user.user.user_id" v-model="selected_members">
+              </span>
+              <label class="input-group-text" :for="`split-perc${selectorify(user.user.user_id)}`">{{
+                  user.displayname
+                }}</label>
+              <input
+                v-model="this.selected_members_split[user.user.user_id]"
+                type="text"
+                class="form-control"
+                placeholder="Split value"
+                aria-label="Recipient's username"
+                aria-describedby="basic-addon2"
+                :id="`split-perc${selectorify(user.user.user_id)}`"
+                :disabled="!this.selected_members.includes(user.user.user_id)"
+              >
+              <span class="input-group-text" id="basic-addon2">%</span>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-info" @click="on_default_split" id="default-split">Split Equally among Selected</button>
+          <button type="button" class="btn btn-info" @click="on_default_split" id="default-split">Split Equally among
+            Selected
+          </button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           <button type="button" class="btn btn-primary" @click="on_save_click" id="split_create_save">Save</button>
         </div>
@@ -71,10 +77,8 @@ export default defineComponent({
     }
   },
   emits: ['on-save-split'],
-  computed: {
-  },
-  components: {
-  },
+  computed: {},
+  components: {},
   methods: {
     show () {
       this.modal_control?.show()
@@ -100,7 +104,7 @@ export default defineComponent({
         this.popover_hint('You must select at least one user!')
         return
       }
-      const split : Record<MatrixUserID, number> = {}
+      const split: Record<MatrixUserID, number> = {}
       for (const selected of this.selected_members) {
         if (!this.selected_members_split[selected]) {
           this.popover_hint('Every selected user must have a split ratio!', selected)
