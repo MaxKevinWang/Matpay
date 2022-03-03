@@ -771,4 +771,75 @@ describe('Test RoomTxHistory', () => {
     await expect(wrapper.vm.tx_list.length).toEqual(1)
     await expect(wrapper.vm.tx_list[0]).toEqual(fake_tx)
   })
+  it('Test back button redirects', async () => {
+    const store1 = createStore({
+      modules: {
+        rooms: {
+          namespaced: true,
+          getters: {
+            get_room_name: () => (room_id: MatrixRoomID) => 'aaa',
+            get_joined_status_for_room: () => () => true
+          }
+        },
+        tx: {
+          namespaced: true,
+          getters: {
+            get_grouped_transactions_for_room: () => (room_id: MatrixRoomID) => [{
+              from: user_1,
+              group_id: uuidgen(),
+              state: 'approved',
+              txs: [
+                {
+                  to: user_2,
+                  tx_id: uuidgen(),
+                  amount: 10
+                }
+              ],
+              description: 'Title',
+              participants: [],
+              timestamp: new Date('1/15/2022'),
+              pending_approvals: []
+            }],
+            get_total_open_balance_for_user_for_room: () => (room_id: MatrixRoomID, source_user_id: MatrixUserID) => 10
+          }
+        },
+        sync: {
+          namespaced: true,
+          actions: {
+            action_sync_initial_state: jest.fn(),
+            action_sync_state: jest.fn(),
+            action_sync_full_tx_events_for_room: jest.fn()
+          }
+        },
+        auth: {
+          namespaced: true,
+          getters: {
+            is_logged_in: () => true,
+            user_id: () => user_2.user_id
+          }
+        }
+      }
+    })
+    let redirected = false
+    const wrapper = shallowMount(RoomTxHistory, {
+      global: {
+        mocks: {
+          $router: {
+            push: () => {
+              redirected = true
+            }
+          },
+          $route: {
+            params: {
+              room_id: 'aaa'
+            }
+          }
+        },
+        plugins: [store1]
+      }
+    })
+    await flushPromises()
+    await wrapper.find('.btn-outline-secondary').trigger('click')
+    expect(redirected).toBeTruthy()
+  })
 })
