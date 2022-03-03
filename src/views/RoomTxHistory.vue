@@ -170,12 +170,7 @@ export default defineComponent({
       }
     },
     on_back_clicked () {
-      this.$router.push({
-        name: 'room_detail',
-        params: {
-          room_id: this.room_id
-        }
-      })
+      this.$router.back()
     },
     on_error (e: string) {
       this.error = e
