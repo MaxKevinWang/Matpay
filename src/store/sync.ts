@@ -58,10 +58,14 @@ export const sync_store = {
         // Important: remove parsed events
         const parsed_message_event_id = state.room_events[payload].filter(i => i.room_id === payload).map(i => i.event_id)
         const parsed_state_event_id = state.room_state_events[payload].filter(i => i.room_id === payload).map(i => i.event_id)
+        const cached_event_id = state.cached_tx_events[payload].filter(i => i.room_id === payload).map(i => i.event_id)
         for (const event_id of parsed_message_event_id) {
           state.processed_events_id.delete(event_id)
         }
         for (const event_id of parsed_state_event_id) {
+          state.processed_events_id.delete(event_id)
+        }
+        for (const event_id of cached_event_id) {
           state.processed_events_id.delete(event_id)
         }
         delete state.room_events[payload]
@@ -78,19 +82,36 @@ export const sync_store = {
       room_id: MatrixRoomID,
       event: TxEvent
     }) {
-      state.cached_tx_events[payload.room_id].push(payload.event)
+      const index = state.cached_tx_events[payload.room_id].findIndex(i => i.event_id === payload.event.event_id)
+      if (index === -1) {
+        // cache only when not found
+        state.cached_tx_events[payload.room_id].push(payload.event)
+      }
+    },
+    mutation_remove_cached_tx_event (state: State, payload: {
+      room_id: MatrixRoomID,
+      event_id: MatrixEventID
+    }) {
+      const index = state.cached_tx_events[payload.room_id].findIndex(i => i.event_id === payload.event_id)
+      if (index !== -1) {
+        state.cached_tx_events[payload.room_id].splice(index, 1)
+      }
     },
     mutation_process_event (state: State, payload: {
       room_id: MatrixRoomID,
       event: MatrixRoomEvent
     }) {
+      const event = payload.event
+      if (!event.room_id) {
+        event.room_id = payload.room_id
+      }
       if ('state_key' in payload.event) {
-        state.room_state_events[payload.room_id].push(payload.event as MatrixRoomStateEvent)
+        state.room_state_events[payload.room_id].push(event as MatrixRoomStateEvent)
       } else {
-        state.room_events[payload.room_id].push(payload.event)
+        state.room_events[payload.room_id].push(event)
       }
       if (payload.event.event_id) {
-        state.processed_events_id.add(payload.event.event_id)
+        state.processed_events_id.add(event.event_id)
       }
     },
     mutation_init_state_complete (state: State) {
@@ -338,7 +359,14 @@ export const sync_store = {
           }
         } while (current_length !== 0)
         // merge the cached events
-        events = events.concat(state.cached_tx_events[room_id])
+        const current_cached = [...state.cached_tx_events[room_id]]
+        events = events.concat(current_cached)
+        for (const cached_tx_event of current_cached) {
+          commit('mutation_remove_cached_tx_event', {
+            room_id: room_id,
+            event_id: cached_tx_event.event_id
+          })
+        }
         // reverse, event processing
         events.sort((a, b) => a.origin_server_ts - b.origin_server_ts)
         console.log('Start processing events')
@@ -474,6 +502,7 @@ export const sync_store = {
             }
             // Then pass single events
             for (const [room_id, room_data] of Object.entries(response.data.rooms.join).filter(i => !state.ignored_rooms.has(i[0]))) {
+              const tx_sync_complete = state.room_tx_sync_complete[room_id]
               const timeline = room_data.timeline
               const account_data = room_data.account_data
               for (const event of account_data.events) {
@@ -482,13 +511,29 @@ export const sync_store = {
                   event: event
                 })
               }
+              // parse cached events
+              const current_cached = [...state.cached_tx_events[room_id]]
+              if (tx_sync_complete && current_cached.length > 0) {
+                for (const cached_tx_event of current_cached) {
+                  if (!state.processed_events_id.has(cached_tx_event.event_id)) {
+                    commit('mutation_process_event', {
+                      room_id: room_id,
+                      event: cached_tx_event
+                    })
+                    commit('mutation_remove_cached_tx_event', {
+                      room_id: room_id,
+                      event_id: cached_tx_event.event_id
+                    })
+                  }
+                }
+              }
               // then all events
               for (const event of timeline.events) {
                 console.log(event)
                 if (TX_EVENT_TYPES.includes(event.type)) { // transaction events
                   // For transaction events, we are only able to process them after full sync
                   // So we differentiate 2 cases
-                  if (state.room_tx_sync_complete[room_id]) {
+                  if (tx_sync_complete) {
                     // For full synced rooms: parse immediately
                     if (!state.processed_events_id.has(event.event_id)) {
                       commit('mutation_process_event', {
@@ -599,7 +644,7 @@ export const sync_store = {
           }
         }
       })
-      commit('mutation_set_next_batch', { next_batch: response.data.next_batch })
+      // commit('mutation_set_next_batch', { next_batch: response.data.next_batch })
       // only state events
       const state_response = await axios.get<MatrixRoomStateEvent[]>(`${homeserver}/_matrix/client/r0/rooms/${payload.room_id}/state`)
       for (const event of state_response.data) {
@@ -610,8 +655,8 @@ export const sync_store = {
           })
         }
       }
-      commit('mutation_init_state_complete')
       await dispatch('rooms/action_parse_state_events_for_all_rooms', null, { root: true })
+      commit('mutation_init_state_complete')
       if (response.data.rooms && response.data.rooms.join) {
         const timeline = response.data.rooms.join[payload.room_id].timeline
         commit('mutation_set_room_tx_prev_batch', {

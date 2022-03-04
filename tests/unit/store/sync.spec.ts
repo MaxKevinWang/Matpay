@@ -609,9 +609,29 @@ describe('Test sync store', function () {
       })
       it('Test long poll', async function () {
         const room_id_1 = '!SqtvWlRFkJPEsbntuD:dsn.tm.kit.edu'
+        const cached_event : TxCreateEvent = {
+          content: {
+            description: 'aaaa',
+            from: user_1.user_id,
+            group_id: uuidgen(),
+            txs: [
+              {
+                amount: 125,
+                to: user_2.user_id,
+                tx_id: uuidgen()
+              }
+            ]
+          },
+          event_id: 'cache01',
+          origin_server_ts: 500000,
+          room_id: room_id_1,
+          sender: user_1.user_id,
+          type: 'com.matpay.create'
+        }
         state.room_events[room_id_1] = []
         state.room_state_events[room_id_1] = []
         state.room_tx_sync_complete[room_id_1] = true
+        state.cached_tx_events[room_id_1] = [cached_event]
         const room_id_2 = '!ElXKiDHBrqPJAcPXFS:dsn.tm.kit.edu'
         state.room_events[room_id_2] = []
         state.room_state_events[room_id_2] = []
@@ -651,6 +671,7 @@ describe('Test sync store', function () {
         })
         expect(Object.values(dispatched)).toSatisfyAll(i => i)
         expect(state.processed_events_id.has('$vtEISdkvDDMus03ggfWHtHuiul9H7XLR-2M05ZlgJYM')).toEqual(true)
+        expect(state.processed_events_id.has('cache01')).toEqual(true)
         expect(state.cached_tx_events['!VrVxkmqIUvHOdhwHir:dsn.tm.kit.edu']).toSatisfyAny(i => i.event_id === '$dHHsmRzoBIUwmw0w_FpfVfi5YJO-hhfwYuoAxzx6WtY')
       })
     })
@@ -733,7 +754,6 @@ describe('Test sync store', function () {
           room_id: room_id
         })
         expect(state.init_state_complete).toEqual(true)
-        expect(state.next_batch).toEqual('1')
         expect(Object.keys(state.room_events)).toContain(room_id)
         expect(Object.keys(state.room_state_events)).toContain(room_id)
         expect(Object.keys(state.cached_tx_events)).toContain(room_id)
