@@ -43,7 +43,7 @@
       </tr>
       </thead>
       <tbody>
-      <tr v-for="room in this.get_invited_rooms()" :key="room.room_id">
+      <tr v-for="room in this.invites" :key="room.room_id">
         <th scope="row">{{ room.name ? room.name : 'NO NAME' }}</th>
         <td>
           <button class="btn btn-success" data-cy="accept-invitation" @click="accept_invitation(room.room_id)">Accept</button>
@@ -60,7 +60,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { mapActions, mapGetters } from 'vuex'
-import { RoomTableRow } from '@/models/room.model'
+import { Room, RoomTableRow } from '@/models/room.model'
 import CreateRoomDialog from '@/dialogs/CreateRoomDialog.vue'
 
 export default defineComponent({
@@ -95,6 +95,18 @@ export default defineComponent({
       } else {
         return this.get_room_table_rows
       }
+    },
+    invites (): Room[] {
+      const invites_orig : Room[] = this.get_invited_rooms()
+      const invite_room_id_set = new Set()
+      const result : Room[] = []
+      for (const invite of invites_orig) {
+        if (!invite_room_id_set.has(invite.room_id)) {
+          result.push(invite)
+          invite_room_id_set.add(invite.room_id)
+        }
+      }
+      return result
     }
   },
   methods: {
