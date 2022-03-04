@@ -24,7 +24,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button id="modify-confirm" type="button" class="btn btn-primary" @click="on_confirm()">Submit</button>
+          <button id="modify-confirm" type="button" :disabled="disabled" class="btn btn-primary" @click="on_confirm()">Submit</button>
         </div>
       </div>
     </div>
@@ -64,7 +64,8 @@ export default defineComponent({
       description: '' as string,
       amount: 0 as number,
       amount_input: '' as string,
-      split: {} as Record<TxID, number>
+      split: {} as Record<TxID, number>,
+      disabled: false as boolean
     }
   },
   emits: ['on-error'],
@@ -140,11 +141,13 @@ export default defineComponent({
             tx_new.txs.filter(i => i.tx_id === tx_id)[0].amount = split_result[index].getAmount()
           }
           try {
+            this.disabled = true
             await this.action_modify_tx_for_room({
               room_id: this.room_id,
               tx_old: this.tx,
               tx_new: tx_new
             })
+            this.disabled = false
             this.$router.push({
               name: 'room_detail',
               params: {

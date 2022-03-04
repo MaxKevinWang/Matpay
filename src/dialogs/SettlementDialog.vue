@@ -20,7 +20,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="settle_close">Close</button>
-          <button type="button" class="btn btn-primary" :disabled="balance >= 0" @click="on_settle_click" id="settle-button">Settle</button>
+          <button type="button" class="btn btn-primary" :disabled="balance >= 0 || disabled" @click="on_settle_click" id="settle-button">Settle</button>
         </div>
       </div>
     </div>
@@ -52,7 +52,8 @@ export default defineComponent({
   data () {
     return {
       modal_control: null as Modal | null,
-      is_shown: false as boolean
+      is_shown: false as boolean,
+      disabled: false as boolean
     }
   },
   computed: {
@@ -72,7 +73,9 @@ export default defineComponent({
       this.is_shown = false
     },
     on_settle_click () {
+      this.disabled = true
       this.$emit('on-settle')
+      this.disabled = false
     }
   },
   mounted () {

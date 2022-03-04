@@ -37,7 +37,7 @@
         </div>
         <div class="modal-footer">
           <p>Date: {{ new Date().toLocaleDateString() }}</p>
-          <button id="create-confirm" type="button" class="btn btn-primary" @click="on_confirm()">Confirm</button>
+          <button id="create-confirm" type="button" :disabled="disabled" class="btn btn-primary" @click="on_confirm()">Confirm</button>
         </div>
       </div>
     </div>
@@ -76,7 +76,8 @@ export default defineComponent({
       room_members: [] as Array<RoomUserInfo>,
       selected_from: '' as string,
       split: {} as Record<MatrixUserID, number>,
-      error: null as string | null
+      error: null as string | null,
+      disabled: false as boolean
     }
   },
   computed: {},
@@ -163,10 +164,12 @@ export default defineComponent({
             state: 'defined',
             timestamp: new Date()
           }
+          this.disabled = true
           await this.action_create_tx_for_room({
             room_id: this.room_id,
             tx: new_tx
           })
+          this.disabled = false
           // clear dialog
           this.amount_input = ''
           this.description = ''
