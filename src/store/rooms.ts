@@ -111,6 +111,32 @@ export const rooms_store = {
         }, { root: true })
       }
     },
+    async action_parse_state_events_for_room ({
+      state,
+      commit,
+      dispatch,
+      getters,
+      rootGetters
+    }, payload: {
+      room_id: MatrixRoomID
+    }) {
+      const room_id = payload.room_id
+      const name_event = getters.get_name_event_for_room(room_id)
+      if (name_event) {
+        commit('mutation_set_name_for_joined_room', {
+          room_id: room_id,
+          name: name_event.content.name
+        })
+      }
+      await dispatch('user/action_parse_permission_event_for_room', {
+        room_id: room_id,
+        permission_event: getters.get_permission_event_for_room(room_id)
+      }, { root: true })
+      dispatch('user/action_parse_member_events_for_room', {
+        room_id: room_id,
+        member_events: getters.get_member_state_events_for_room(room_id)
+      }, { root: true })
+    },
     async action_parse_single_state_event_for_room ({
       state,
       commit,

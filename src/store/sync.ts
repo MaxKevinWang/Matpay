@@ -655,7 +655,7 @@ export const sync_store = {
           })
         }
       }
-      await dispatch('rooms/action_parse_state_events_for_all_rooms', null, { root: true })
+      await dispatch('rooms/action_parse_state_events_for_room', { room_id: payload.room_id }, { root: true })
       commit('mutation_init_state_complete')
       if (response.data.rooms && response.data.rooms.join) {
         const timeline = response.data.rooms.join[payload.room_id].timeline
