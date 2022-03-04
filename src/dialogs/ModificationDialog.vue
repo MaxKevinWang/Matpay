@@ -159,9 +159,11 @@ export default defineComponent({
             this.hide()
           } catch (e) {
             this.$emit('on-error', e)
+            this.disabled = false
           }
         }
       } else {
+        this.disabled = false
         this.popover_hint(this.description.length >= 1)
         this.popover_no_number(this.is_number())
       }

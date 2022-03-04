@@ -179,12 +179,14 @@ export default defineComponent({
           this.hide()
         } catch (e: unknown) {
           this.error = (e as Error).toString()
+          this.disabled = false
         }
       } else {
         this.popover_hint(this.description.length >= 1,
           this.is_number(),
           this.selected_from !== '',
           Object.keys(this.split).length > 0)
+        this.disabled = false
       }
     },
     on_save_split (split: Record<MatrixUserID, number>) {
