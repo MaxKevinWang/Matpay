@@ -90,7 +90,7 @@ export default defineComponent({
           this.invite_user_id = ''
           this.hide()
         } catch (error) {
-          this.popover_hint('Error: ' + error)
+          this.popover_hint((error as Error).toString())
         }
       }
     }
