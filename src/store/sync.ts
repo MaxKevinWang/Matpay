@@ -197,7 +197,7 @@ export const sync_store = {
             },
             state: {
               lazy_load_members: true,
-              not_types: ['*']
+              not_types: ['m.room.member']
             },
             ephemeral: {
               not_types: ['*']
@@ -228,13 +228,21 @@ export const sync_store = {
             // ignore public rooms
             const promises_room_type_async: Promise<any>[] = []
             for (const room_id of Object.keys(response.data.rooms.join)) {
-              promises_room_type_async.push(axios.get<MatrixRoomJoinRulesStateEvent['content']>(`${homeserver}/_matrix/client/v3/rooms/${room_id}/state/m.room.join_rules/`)
-                .then((state_response) => {
-                  if (state_response.status !== 200 || state_response.data.join_rule === 'public') {
-                    commit('mutation_add_ignored_room', room_id)
-                  }
-                })
-              )
+              const join_rules = response.data.rooms.join[room_id].state.events.filter(i => i.type === 'm.room.join_rules')
+              if (join_rules.length > 0) {
+                const join_rules_typed = join_rules[0] as MatrixRoomJoinRulesStateEvent
+                if (join_rules_typed.content.join_rule === 'public') {
+                  commit('mutation_add_ignored_room', room_id)
+                }
+              } else {
+                promises_room_type_async.push(axios.get<MatrixRoomJoinRulesStateEvent['content']>(`${homeserver}/_matrix/client/v3/rooms/${room_id}/state/m.room.join_rules/`)
+                  .then((state_response) => {
+                    if (state_response.status !== 200 || state_response.data.join_rule === 'public') {
+                      commit('mutation_add_ignored_room', room_id)
+                    }
+                  })
+                )
+              }
             }
             await Promise.all(promises_room_type_async)
             commit('mutation_init_state_complete')
