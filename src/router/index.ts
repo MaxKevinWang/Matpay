@@ -1,25 +1,54 @@
-import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router'
-import Home from '../views/Home.vue'
+import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
+import Login from '@/tabs/Login.vue'
+import Rooms from '@/tabs/Rooms.vue'
+import RoomDetail from '@/views/RoomDetail.vue'
+import RoomTxHistory from '@/views/RoomTxHistory.vue'
+import Register from '@/views/Register.vue'
 
-const routes: Array<RouteRecordRaw> = [
+export const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    name: 'Home',
-    component: Home
+    redirect: {
+      name: 'rooms'
+    }
   },
   {
-    path: '/about',
-    name: 'About',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
+    path: '/rooms',
+    name: 'rooms',
+    component: Rooms
+  },
+  {
+    path: '/login',
+    name: 'login',
+    component: Login
+  },
+  {
+    path: '/room/:room_id',
+    name: 'room_detail',
+    component: RoomDetail
+  },
+  {
+    path: '/history/:room_id/:current_group_id?',
+    name: 'room_history',
+    component: RoomTxHistory
+  },
+  {
+    path: '/register',
+    name: 'register',
+    component: Register
   }
 ]
 
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: createWebHistory(),
   routes
 })
-
+router.beforeEach((to, from) => {
+  if (to.name === 'login' || to.name === 'register') {
+    return
+  }
+  if (!localStorage.getItem('access_token')) {
+    router.push({ name: 'login' })
+  }
+})
 export default router
